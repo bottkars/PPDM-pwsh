@@ -399,6 +399,50 @@ function Get-PPDMassets {
         }   
     }
 }
+function Get-PPDMinventory_sources {
+    [CmdletBinding()]
+    param(
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2",
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $id
+    )
+    begin {
+        $Response=@()
+        $METHOD = "GET"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                $URI = "/$myself/$id"
+            }
+            default {
+                $URI = "/$myself"
+            }
+        }        
+        try {
+            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body"
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                write-output $response | convertfrom-json
+            }
+            default {
+                write-output ($response | convertfrom-json).content
+            } 
+        }   
+    }
+}
 
 function Get-PPDMactivities {
     [CmdletBinding()]
@@ -408,8 +452,11 @@ function Get-PPDMactivities {
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2",
-        [Parameter(Mandatory = $true, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
-        $query,       
+        [Parameter(Mandatory = $false, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
+        $query,
+        [Parameter(Mandatory = $false, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('RUNNING')]
+        $Filter,                 
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [alias('taskid')]$id
     )
@@ -423,10 +470,20 @@ function Get-PPDMactivities {
     Process {
         switch ($PsCmdlet.ParameterSetName) {
             'query' {
-                $URI = "/$myself"
-                $Body = [ordered]@{
-                    'q' = $query
-                } | convertto-json -compress
+                Switch ($Filter)
+                    {
+                        'Running'
+                            {
+                                
+                                $filterstring='filter=parentId%20eq%20null%20and%20classType%20in%20(%22JOB%22%2C%20%22JOB_GROUP%22)%20and%20state%20in%20(%22RUNNING%22%2C%20%22QUEUED%22%2C%20%22PENDING_CANCELLATION%22)'
+                            }
+                        default 
+                            {
+                                $filterstring=""
+                            }
+                    }
+                if ($query)  { $query="q=$query"}  
+                $URI="/$($myself)?$filterstring&$query"
             }
             'byID' {
                 $URI = "/$myself/$id"
@@ -436,7 +493,7 @@ function Get-PPDMactivities {
             }
         }        
         try {
-            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body" -apiver $apiver -PPDM_API_BaseUri $PPDM_API_BaseUri
+            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD  -apiver $apiver -PPDM_API_BaseUri $PPDM_API_BaseUri
         }
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
@@ -668,6 +725,126 @@ function Start-PPDMdiscoveries {
         }   
     }
 }
+
+#######
+# protection-policies
+#######
+
+
+function Get-PPDMprotection_policies {
+    [CmdletBinding()]
+    param(
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2"
+    )
+    begin {
+        $Response=@()
+        $METHOD = "GET"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+
+            default {
+                $URI = "/$myself"
+            }
+        }        
+        try {
+            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body" -apiver $apiver -PPDM_API_BaseUri $PPDM_API_BaseUri
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                write-output $response | convertfrom-json
+            }
+            default {
+                write-output ($response | convertfrom-json).content
+            } 
+        }   
+    }
+}
+
+function Start-PPDMprotection_policies {
+    [CmdletBinding()]
+    param(
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2",
+        [Parameter(Mandatory = $true,  ValueFromPipelineByPropertyName = $true)]
+        [string][alias('id')]$PolicyID,
+        [Parameter(Mandatory = $false,  ValueFromPipelineByPropertyName = $false)]
+        [ValidateSet('FULL', 'GEN0', 'DIFFERENTIAL', 'LOG', 'INCREMENTAL', 'CUMULATIVE', 'AUTO_FULL')]
+        $BackupType = 'FULL',
+        [Parameter(Mandatory = $false,  ValueFromPipelineByPropertyName = $false)]
+        [ValidateSet('DAY', 'WEEK', 'MONTH', 'YEAR' )]
+        $RetentionUnit = 'DAY',
+        [Parameter(Mandatory = $false,  ValueFromPipelineByPropertyName = $false)]
+        [Int32]$RetentionInterval = '7'        
+
+    )
+    begin {
+        $Response=@()
+        $METHOD = "POST"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(10) -replace "_", "-").ToLower()
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                $URI = "/$myself"
+            }
+            default {
+                $URI = "/$myself"
+            }
+        }    
+        $Body = [ordered]@{
+                'assetIds' = $AssetIDs
+                'backupType' = $BackupType
+                'disableProtectionPolicyProcessing' = false
+                'retention' = @{
+                  'interval' = $RetentionInterval
+                  'unit' = $RetentionUnit
+                }
+            } | convertto-json -compress
+        write-verbose ($body | out-string)
+        $Parameters = @{
+            body = $body 
+            Uri             = "/$Myself/$PolicyID/backups"
+            Method          = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver     = $apiver
+        }           
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                write-output $response | convertfrom-json
+            }
+            default {
+                write-output ($response | convertfrom-json).content
+            } 
+        }   
+    }
+}
+
+
+
 ###########################
 ###### Appliance Management
 # Appliance content is delivered via hal-json and thus shall be triggered my restmethod
