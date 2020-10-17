@@ -50,7 +50,7 @@ function Connect-PPDMapiEndpoint {
     )
     Begin {
         if ($trustCert.IsPresent) {
-            if ($PSVersiontable.PSVersion -ge 6.0) {
+            if ($PSVersiontable.PSVersion -ge 6.0.0.0) {
                 $global:SkipCertificateCheck = $TRUE
             }
             else {
