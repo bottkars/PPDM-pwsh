@@ -68,7 +68,7 @@ Semantically invalid content on a POST, which could be a range error, inconsiste
                     Write-Host -ForegroundColor Magenta $ExceptionMessage
                     Write-Host -ForegroundColor White "500 Internal Server Error
 This code is returned for internal errors -
-Possible Cause: BoSH Director not reachable
+Possible Cause: API Server is not ready
 "
                 }
                 "*501*" {

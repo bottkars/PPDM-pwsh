@@ -18,3 +18,11 @@ Get-PPDMprotection_policies | ft
 Start-PPDMprotection_policies -PolicyID 4f8ee8f7-68ef-4c09-8789-17301e82be3a
 Get-PPDMactivities -Filter RUNNING | ft
 Get-PPDMactivities  -query Kubernetes -Filter RUNNING | ft
+
+
+
+storage
+```powershell
+Get-PPDMstorage_systems
+Get-PPDMdatadomain_cloud_units -storageSystemId ed9a3cd6-7e69-4332-a299-aaf258e23328
+```
