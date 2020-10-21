@@ -31,3 +31,9 @@ storage
 Get-PPDMstorage_systems
 Get-PPDMdatadomain_cloud_units -storageSystemId ed9a3cd6-7e69-4332-a299-aaf258e23328
 ```
+
+
+
+```Powerhell
+Get-PPDMactivities  -query "Performing Cloud DR Protect" -Filter RUNNING | ft       
+```

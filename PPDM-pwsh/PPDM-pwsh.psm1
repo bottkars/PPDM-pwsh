@@ -50,15 +50,15 @@ function Connect-PPDMapiEndpoint {
     )
     Begin {
         if ($trustCert.IsPresent) {
-            if ($PSVersiontable.PSVersion -ge 6.0.0.0) {
+            if ($($PSVersionTable.PSVersion.Major) -ge 6) {
                 $global:SkipCertificateCheck = $TRUE
             }
             else {
+                
                 Unblock-PPDMSSLCerts    
             }
             
         }  
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::TLS12
         if ($force.IsPresent) {
             write-verbose "Removing old Scope"
             Remove-Variable PPDM_API_BaseUri -Scope Global -ErrorAction SilentlyContinue
@@ -468,8 +468,7 @@ function Get-PPDMactivities {
         switch ($PsCmdlet.ParameterSetName) {
             'query' {
                 Switch ($Filter) {
-                    'Running' {
-                                
+                    'Running' {                                
                         $filterstring = 'filter=parentId%20eq%20null%20and%20classType%20in%20(%22JOB%22%2C%20%22JOB_GROUP%22)%20and%20state%20in%20(%22RUNNING%22%2C%20%22QUEUED%22%2C%20%22PENDING_CANCELLATION%22)'
                     }
                     default {
