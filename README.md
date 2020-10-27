@@ -22,31 +22,33 @@ Connect-PPDMapiEndpoint -PPDM_API_URI https://<your ppdm server> -user -trustCer
 this uses a user password authentication. the token is saved as a Global Variable.
 You also can use a secure Credentials string to connect. Credentials will be stored in Session ofr easy reconnect
 
-## Get configured Protection Policies
+## :stuck_out_tongue: Backups ! :stuck_out_tongue:
+
+### Get configured Protection Policies
 ```Powershell
  Get-PPDMprotection_policies | ft
 ```
 ![image](https://user-images.githubusercontent.com/8255007/97300880-4e4fb500-1857-11eb-9632-c1c7c4b07157.png)
 
 
-## Start a Protection Policy (ad-Hoc Backup) by an ID
+### Start a Protection Policy (ad-Hoc Backup) by an ID
 ```Powershell
 Start-PPDMprotection_policies -PolicyID <ID>
 ```
 
-## Start Protection Policy based on Pipeline Query
+### Start Protection Policy based on Pipeline Query
 this starts the Policy that matches the name Exchange and is not Self Service
 ```Powershell
 Get-PPDMprotection_policies | where { ($_.name -match "Exchange") -and ($_.passive -eq $False) } | Start-PPDMprotection_policies
 ```
 
-## Query the Queued activity
+### :star: Query the Queued activity
 ```Powershell
 Get-PPDMactivities -days 1 -PredefinedFilter QUEUED
 ```
 ![image](https://user-images.githubusercontent.com/8255007/97305950-0d0ed380-185e-11eb-9340-a4bc607082e9.png)
 
-## Query Finished Successfull Activities, query for "Manual" in name
+### :star: Query Finished Successfull Activities, query for "Manual" in name
 ```Powershell
 Get-PPDMactivities -days 1 -PredefinedFilter PROTECT_OK -query Manual | ft
 ```
@@ -56,24 +58,24 @@ Get-PPDMactivities -days 1 -PredefinedFilter PROTECT_OK -query Manual | ft
 
 
 ## working with assets
+
+### getting all assets
 ```Powershell
 Get-PPDMassets | ft
 ```
-
-now we want to see a specifig asset
+### getting specific asset(s)
+now we want to see a specific asset
 ```Powershell
 Get-PPDMassets | where name -eq dcnode
 ``` 
 And finally view the Storage and Replica Locations .....
 
-
-# Get a map of PPDM Copies per Asset ID
+### Get a map of PPDM Copies per Asset ID
 ```Powershell
 (Get-PPDMassets | where name -eq dcnode | Get-PPDMcopy_map).storagelocations
 ```
 
-
-
+## Some other Commands
 ```Powershell
 Get-PPDMinventory_sources | ft
 Get-PPDMprotection_policies | ft
@@ -91,7 +93,7 @@ Get-PPDMdatadomain_cloud_units -storageSystemId ed9a3cd6-7e69-4332-a299-aaf258e2
 
 
 
-# Monitor activities
+# :star: :star: :star:Monitor activities
 
 ## get activity Metrics
 
