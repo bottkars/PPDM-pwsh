@@ -1,4 +1,4 @@
-# PPDM-pwsh
+﻿# PPDM-pwsh
 
 Powershell Prototype for DellEMC PowerProtect DataManager  API
 
@@ -34,7 +34,7 @@ You also can use a secure Credentials string to connect. Credentials will be sto
 Start-PPDMprotection_policies -PolicyID <ID>
 ```
 
-## Start Protection Policy based on Pieline Query
+## Start Protection Policy based on Pipeline Query
 this starts the Policy that matches the name Exchange and is not Self Service
 ```Powershell
 Get-PPDMprotection_policies | where { ($_.name -match "Exchange") -and ($_.passive -eq $False) } | Start-PPDMprotection_policies
@@ -46,17 +46,33 @@ Get-PPDMactivities -days 1 -PredefinedFilter QUEUED
 ```
 ![image](https://user-images.githubusercontent.com/8255007/97305950-0d0ed380-185e-11eb-9340-a4bc607082e9.png)
 
-## Query FInished Successfull  Activities, query for "Manual" in name
+## Query Finished Successfull Activities, query for "Manual" in name
 ```Powershell
 Get-PPDMactivities -days 1 -PredefinedFilter PROTECT_OK -query Manual | ft
 ```
 
 ![image](https://user-images.githubusercontent.com/8255007/97305737-d0db7300-185d-11eb-868e-a74d6999ea5d.png)
-##
+
+
+
+## working with assets
+```Powershell
 Get-PPDMassets | ft
-Get-PPDMactivities  | ft
-Get-PPDMactivities  -query Kubernetes - Start a Protection Policy based on Verbose | ft
 ```
+
+now we want to see a specifig asset
+```Powershell
+Get-PPDMassets | where name -eq dcnode
+``` 
+And finally view the Storage and Replica Locations .....
+
+
+# Get a map of PPDM Copies per Asset ID
+```Powershell
+(Get-PPDMassets | where name -eq dcnode | Get-PPDMcopy_map).storagelocations
+```
+
+
 
 ```Powershell
 Get-PPDMinventory_sources | ft
@@ -74,11 +90,14 @@ Get-PPDMdatadomain_cloud_units -storageSystemId ed9a3cd6-7e69-4332-a299-aaf258e2
 ```
 
 
-# Get a map of PPDM COpies per Asset ID
-```Powershell
-(Get-PPDMcopy_map -id 64639e28-97ab-5c97-879d-52641074abde).storageLocations
-```
+
 # Monitor activities
+
+
+:bomb: Things can fail, i want to know !
+```Powershell
+Get-PPDMactivities  -query Kubernetes -days 14 -PredefinedFilter PROTECT_FAILED | Select-Object name, id -ExpandProperty result
+```
 
 ```Powershell
 ## get a date stamp from -1 week ( Adjust to you duration)
