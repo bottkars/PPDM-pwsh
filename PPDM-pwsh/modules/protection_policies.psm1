@@ -1,4 +1,3 @@
-
 function Get-PPDMprotection_policies {
     [CmdletBinding()]
     param(
