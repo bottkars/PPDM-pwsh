@@ -1,6 +1,6 @@
 ﻿# PPDM-pwsh
 
-## :heart: Powershell Modules for DellEMC PowerProtect DataManager API :love:
+## :heart: Powershell Modules for DellEMC PowerProtect DataManager API :heart:
 
 
 :sunrise: This is a Pre-Release Version :sunrise:
