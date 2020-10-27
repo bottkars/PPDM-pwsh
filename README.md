@@ -1,4 +1,4 @@
-﻿# PPDM-pwsh
+# PPDM-pwsh
 
 Powershell Prototype for DellEMC PowerProtect DataManager  API
 ```
