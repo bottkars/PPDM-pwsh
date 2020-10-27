@@ -1,20 +1,61 @@
-# PPDM-pwsh
+﻿# PPDM-pwsh
 
 Powershell Prototype for DellEMC PowerProtect DataManager  API
+
+
+:sunrise: This is a Pre-Release Version :sunrise:
+
+
+
+## installing the Module
+
+the module should be installed from [PSgallery](https://www.powershellgallery.com/packages/PPDM-pwsh/)
+```Powershell
+Install-Module -Name PPDM-pwsh	
 ```
-
-
-### examles
+We need toinitially load the Module and connect to the API Endpoint:
+### Loading the Module
 ```Powershell
 ipmo .\PPDM-pwsh -Force
-Connect-PPDMapiEndpoint -PPDM_API_URI https://ppdm.home.labbuildr.com -user -trustCert -Verbose
+Connect-PPDMapiEndpoint -PPDM_API_URI https://<your ppdm server> -user -trustCert -Verbose
+```
+this uses a user password authentication. the token is saved as a Global Variable.
+You also can use a secure Credentials string to connect. Credentials will be stored in Session ofr easy reconnect
+
+## Get configured Protection Policies
+```Powershell
+ Get-PPDMprotection_policies | ft
+```
+![image](https://user-images.githubusercontent.com/8255007/97300880-4e4fb500-1857-11eb-9632-c1c7c4b07157.png)
+
+
+## Start a Protection Policy (ad-Hoc Backup) by an ID
+```Powershell
+Start-PPDMprotection_policies -PolicyID <ID>
 ```
 
+## Start Protection Policy based on Pieline Query
+this starts the Policy that matches the name Exchange and is not Self Service
 ```Powershell
-Start-PPDMprotection_policies -PolicyID 4f8ee8f7-68ef-4c09-8789-17301e82be3a -Verbose
+Get-PPDMprotection_policies | where { ($_.name -match "Exchange") -and ($_.passive -eq $False) } | Start-PPDMprotection_policies
+```
+
+## Query the Queued activity
+```Powershell
+Get-PPDMactivities -days 1 -PredefinedFilter QUEUED
+```
+![image](https://user-images.githubusercontent.com/8255007/97305950-0d0ed380-185e-11eb-9340-a4bc607082e9.png)
+
+## Query FInished Successfull  Activities, query for "Manual" in name
+```Powershell
+Get-PPDMactivities -days 1 -PredefinedFilter PROTECT_OK -query Manual | ft
+```
+
+![image](https://user-images.githubusercontent.com/8255007/97305737-d0db7300-185d-11eb-868e-a74d6999ea5d.png)
+##
 Get-PPDMassets | ft
 Get-PPDMactivities  | ft
-Get-PPDMactivities  -query Kubernetes -Verbose | ft
+Get-PPDMactivities  -query Kubernetes - Start a Protection Policy based on Verbose | ft
 ```
 
 ```Powershell

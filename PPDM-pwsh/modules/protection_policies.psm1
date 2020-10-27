@@ -62,13 +62,13 @@ function Start-PPDMprotection_policies {
         $apiver = "/api/v2",
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [string][alias('id')]$PolicyID,
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $false)]
+        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
         [ValidateSet('FULL', 'GEN0', 'DIFFERENTIAL', 'LOG', 'INCREMENTAL', 'CUMULATIVE', 'AUTO_FULL')]
         $BackupType = 'FULL',
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $false)]
+        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
         [ValidateSet('DAY', 'WEEK', 'MONTH', 'YEAR' )]
         $RetentionUnit = 'DAY',
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $false)]
+        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
         [Int32]$RetentionInterval = '7'        
 
     )
@@ -91,7 +91,7 @@ function Start-PPDMprotection_policies {
         $Body = [ordered]@{
             'assetIds'                          = $AssetIDs
             'backupType'                        = $BackupType
-            'disableProtectionPolicyProcessing' = false
+            'disableProtectionPolicyProcessing' = 'false'
             'retention'                         = @{
                 'interval' = $RetentionInterval
                 'unit'     = $RetentionUnit
@@ -121,7 +121,7 @@ function Start-PPDMprotection_policies {
                 write-output $response | convertfrom-json
             }
             default {
-                write-output ($response | convertfrom-json).content
+                write-output ($response | convertfrom-json)
             } 
         }   
     }

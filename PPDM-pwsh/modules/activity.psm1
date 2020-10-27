@@ -3,11 +3,7 @@ function Get-PPDMactivities {
     [CmdletBinding(ConfirmImpact = 'Low',
         HelpUri = 'https://developer.dellemc.com/data-protection/powerprotect/data-manager/tutorials/monitor-activities')]
     param(
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2",
+ #       [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]        
         $query,
@@ -16,10 +12,14 @@ function Get-PPDMactivities {
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
         $days = 1,
         [Parameter(Mandatory = $true, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('PROTECT_OK', 'PROTECT_FAILED', 'SYSTEM_FAILED', 'SYSTEM_OK', 'CLOUD_PROTECT_OK', 'CLOUD_PROTECT_FAILED')]
+        [ValidateSet('RUNNING','QUEUED','PROTECT_OK', 'PROTECT_FAILED', 'SYSTEM_FAILED', 'SYSTEM_OK', 'CLOUD_PROTECT_OK', 'CLOUD_PROTECT_FAILED')]
         $PredefinedFilter,                         
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [alias('taskid')]$id
+        [alias('taskid')]$id,
+        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
     )
     begin {
         $Response = @()
@@ -52,16 +52,22 @@ function Get-PPDMactivities {
                     'CLOUD_PROTECT_FAILED' {
                         $filterstring = 'startTime ge "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_PROTECT") and result.status eq "FAILED"'
                     }
+                    'QUEUED' {
+                        $filterstring = 'createTime gt "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT") and state eq "QUEUED"'
+                    }
+                    'RUNNING' {
+                        $filterstring = 'createTime gt "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT") and state eq "RUNNING"'
+                    }
                 }
                 $filterstring = [System.Web.HTTPUtility]::UrlEncode($filterstring)
                 $filterstring = "filter=$filterstring"
                 
                 if ($query) {
                     $query = "q=$query" 
-                    $URI = "/$($myself)?$filterstring&$query"         
+                    $URI = "/$($myself)?pageSize=25&page=1&orderby=createTime%20DESC&$filterstring&$query"         
                 }
                 else {
-                    $URI = "/$($myself)?$filterstring"
+                    $URI = "/$($myself)?pageSize=25&page=1&orderby=createTime%20DESC&$filterstring"
                 }    
             }
             'query' {
@@ -69,7 +75,7 @@ function Get-PPDMactivities {
                 $filterstring = "filter=$filterstring"
                 if ($query) {
                     $query = "q=$query" 
-                    $URI = "/$($myself)?$filterstring&$query"
+                    $URI = "/$($myself)?pageSize=25&page=1&orderby=startTime%20DESC&$filterstring&$query"
                 }
                 else {
                     $URI = "/$($myself)?$filterstring"
