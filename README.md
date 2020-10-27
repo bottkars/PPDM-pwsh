@@ -93,14 +93,30 @@ Get-PPDMdatadomain_cloud_units -storageSystemId ed9a3cd6-7e69-4332-a299-aaf258e2
 
 # Monitor activities
 
+## get activity Metrics
 
+```Powershell
+Get-PPDMactivity_metrics
+```
+this gets all metrics of the actual day, us -days parameters for extended list
+
+## get failed activities
 :bomb: Things can fail, i want to know !
 ```Powershell
 Get-PPDMactivities  -query Kubernetes -days 14 -PredefinedFilter PROTECT_FAILED | Select-Object name, id -ExpandProperty result
 ```
+### Custom Filters
+From above, we can see that predefined query filters are used.
+PowerProtect comes with it´s own query filters, see more 
+from 
+```Powershell
+Get-Help Get-PPDMactivities -Online
+```
+You can use your own Filters:
+
 
 ```Powershell
-## get a date stamp from -1 week ( Adjust to you duration)
+# get a date stamp from -1 week ( Adjust to you duration)
 $myDate=(get-date).AddDays(-7)
 $usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
 
@@ -112,18 +128,15 @@ Get-PPDMactivities -Filter $FILTER  | Select-Object * -ExpandProperty result | f
 $FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT") and result.status eq "FAILED"'
 Get-PPDMactivities -Filter $FILTER  | Select-Object * -ExpandProperty result | ft 
 
-## Protect SUCCEEDED
+# Protect SUCCEEDED
 $FILTER='result.status in  ("OK","OK_WITH_ERRORS") and startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("PROTECT")'
 Get-PPDMactivities -Filter $FILTER  | Select-Object * -ExpandProperty result | ft 
-```
+
 
 # filter for failed system jobs
-```Powershell
 $FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "FAILED"'
-```
- # filter for Successfull system:
 
-```Powershell
+# filter for Successfull system:
 $FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "OK"'
 ```
 

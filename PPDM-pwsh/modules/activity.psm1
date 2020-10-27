@@ -120,7 +120,7 @@ function Get-PPDMactivity_metrics {
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2",
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-        $days = 1
+        $days = "1"
     )
     begin {
         $Response = @()
@@ -134,7 +134,7 @@ function Get-PPDMactivity_metrics {
         $filter = 'parentId eq null and classType in ("JOB", "JOB_GROUP") and createTime gt "' + $timespan + '" and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT")'
         $filter = [System.Web.HTTPUtility]::UrlEncode($filter) 
         switch ($PsCmdlet.ParameterSetName) {
-            'default' {
+            default {
                 $URI = "/$($myself)?filter=$filter"
             }
         }        
