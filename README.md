@@ -102,8 +102,8 @@ Get-PPDMactivity_metrics
 ```
 this gets all metrics of the actual day, us -days parameters for extended list
 
-## get failed activities
-:bomb: Things can fail, i want to know !
+## :bomb: get failed activities
+Things can fail, i want to know !
 ```Powershell
 Get-PPDMactivities  -query Kubernetes -days 14 -PredefinedFilter PROTECT_FAILED | Select-Object name, id -ExpandProperty result
 ```
