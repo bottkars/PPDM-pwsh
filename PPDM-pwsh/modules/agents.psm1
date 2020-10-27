@@ -1,11 +1,12 @@
-# /api/v2/credentials
-function Get-PPDMcredentials {
+# agents-list
+
+function Get-PPDMagents_list {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [string]$ID,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2"
+        $apiver = ""
 
     )
     begin {
@@ -31,6 +32,7 @@ function Get-PPDMcredentials {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            apiport          = 443 
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
@@ -48,78 +50,37 @@ function Get-PPDMcredentials {
                 write-output $response 
             }
             default {
-                write-output $response.content 
+                write-output $response
             } 
         }   
     }
 }
 
-# https://developer.dellemc.com/data-protection/powerprotect/data-manager/api/credentials-management/createcredential
-# POST /api/v2/credentials
 
-
-function New-PPDMcredentials {
+#/api/v2/agent-registration-status
+function Get-PPDMagent_registration_status {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-        [string]$name,
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('DATADOMAIN',
-        'POWERPROTECT',
-        'DBUSER',
-        'OS',
-        'STANDARD',
-        'VCENTER',
-        'KUBERNETES',        
-        'SMISSERVER',
-        'CDR',
-        'SAPHANA_DB_USER',
-        'SAPHANA_SYSTEM_DB_USER',
-        'DDBOOST',
-        'RMAN')]
-        [string]$type,
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
-        [pscredential]$credentials,
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('BASIC','CONFIG','TOKEN','USER_KEY')]
-        [string]$authmethod,
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [string]$ID,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
 
     )
     begin {
         $Response = @()
-        $METHOD = "POST"
+        $METHOD = "GET"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
-   
     }     
     Process {
         switch ($PsCmdlet.ParameterSetName) {
-
+            'byID' {
+                $URI = "/$myself/$ID"
+            }
             default {
                 $URI = "/$myself"
             }
-        }
-        if (!$($Credentials)) {
-            $username = Read-Host -Prompt "Please Enter New username"
-            $SecurePassword = Read-Host -Prompt "Enter Password for user $username" -AsSecureString
-            $Credentials = New-Object System.Management.Automation.PSCredential($username, $Securepassword)
-        }
-        $password = $($Credentials.GetNetworkCredential()).password
-        $Body = @{
-            'type' = $type
-            'name' =  $name
-            'username' = $($Credentials.username)
-            'password' = $password
-        }
-        
-        if ($authmethod) {
-            $Body.Add('method',$authmethod)
-        }
-        
-        $body = $Body| ConvertTo-Json
-        write-verbose ($body | out-string )
+        }  
         $Parameters = @{
             body             = $body 
             Uri              = $Uri
@@ -127,6 +88,7 @@ function New-PPDMcredentials {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            apiport          = 8443  
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
@@ -144,11 +106,8 @@ function New-PPDMcredentials {
                 write-output $response 
             }
             default {
-                write-output $response.content 
+                write-output $response
             } 
         }   
     }
 }
-
-
-    

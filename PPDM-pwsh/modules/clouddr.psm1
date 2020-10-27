@@ -34,6 +34,7 @@ function Get-PPDMcloud_dr_server_version {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -90,6 +91,7 @@ function Get-PPDMcloud_dr_server_deployment {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -144,6 +146,7 @@ function Get-PPDMcloud_dr_accounts {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -205,6 +208,7 @@ function Get-PPDMcloud_dr_data_targets {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -265,6 +269,7 @@ function Get-PPDMcloud_dr_storage_containers {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -318,6 +323,7 @@ function Get-PPDMcloud_dr_server_configuration {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -373,6 +379,7 @@ function Get-PPDMcloud_dr_sessions {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -429,6 +436,7 @@ function Get-PPDMcloud_dr_vcenters {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters

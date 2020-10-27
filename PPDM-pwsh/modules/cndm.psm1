@@ -33,6 +33,7 @@ function Get-PPDMkubernetes_clusters  {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -70,8 +71,6 @@ function Get-PPDMpvc_storage_class_mappings  {
         $Response = @()
         $METHOD = "GET"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
-   
     }     
     Process {
         switch ($PsCmdlet.ParameterSetName) {
@@ -87,6 +86,7 @@ function Get-PPDMpvc_storage_class_mappings  {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters

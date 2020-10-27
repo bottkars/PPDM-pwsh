@@ -75,7 +75,8 @@ function Connect-PPDMapiEndpoint {
         }          
     }
     Process {
-        $Global:PPDM_API_BaseUri = "$($PPDM_API_URI):8443"
+        $Global:PPDM_API_BaseUri = "$($PPDM_API_URI)"
+        $Global:PPDM_API_PORT = "8443"
         Write-Verbose $Global:PPDM_API_BaseUri
         switch ($PsCmdlet.ParameterSetName) {
             'SSO' {
@@ -124,12 +125,12 @@ function Connect-PPDMapiEndpoint {
             if ($Global:SkipCertificateCheck) {            
                 $Response = Invoke-RestMethod -SkipCertificateCheck `
                     -Method POST -Headers $headers -Body $body `
-                    -UseBasicParsing -Uri "$($Global:PPDM_API_BaseUri)/api/v2/login" 
+                    -UseBasicParsing -Uri "$($Global:PPDM_API_BaseUri):$($Global:PPDM_API_PORT)/api/v2/login" 
             }   
             else {
                 $Response = Invoke-RestMethod `
                     -Method POST -Headers $headers -Body $body `
-                    -UseBasicParsing -Uri "$($Global:PPDM_API_BaseUri)/api/v2/login"
+                    -UseBasicParsing -Uri "$($Global:PPDM_API_BaseUri):$($Global:PPDM_API_PORT)/api/v2/login"
             }
         }
         catch {
@@ -185,7 +186,7 @@ function Update-PPDMToken {
     process {
         $Parameters = @{
             UseBasicParsing = $true 
-            Uri             = "$($Global:PPDM_API_BaseUri)$apiver/token"
+            Uri             = "$($Global:PPDM_API_BaseUri):$($Global:PPDM_API_PORT)$apiver/token"
             Method          = $Method
             Headers         = $Global:PPDM_API_Headers
             ContentType     = "application/json"
@@ -243,6 +244,9 @@ function Invoke-PPDMapirequest {
         $apiver = "/api/v2",
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
         [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
+        $apiport = "$($Global:PPDM_API_PORT)",        
+        [Parameter(Mandatory = $false, ParameterSetName = 'default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
         $PPDM_API_BaseUri = $($Global:PPDM_API_BaseUri),
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
         [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
@@ -252,7 +256,7 @@ function Invoke-PPDMapirequest {
         [Parameter(Mandatory = $true, ParameterSetName = 'infile')]
         $InFile
     )
-    $uri = "$($Global:PPDM_API_BaseUri)$apiver$uri"
+    $uri = "$($Global:PPDM_API_BaseUri):$apiport$apiver$uri"
     if ($Global:PPDM_API_Headers) {
         $Headers = $Global:PPDM_API_Headers
         Write-Verbose ($Headers | Out-String)
@@ -346,56 +350,12 @@ function Disconnect-PPDMsession {
     Remove-Variable PPDM_API_Credentials -Scope Global -ErrorAction SilentlyContinue
     Remove-Variable PPDM_Scope -Scope Global -ErrorAction SilentlyContinue
     Remove-Variable PPDM_Refresh_token -Scope Global -ErrorAction SilentlyContinue
-
+    Remove-Variable PPDM_API_PORT -Scope Global -ErrorAction SilentlyContinue
 
 }
 
 
-# /api/v2/assets
-function Get-PPDMassets {
-    [CmdletBinding()]
-    param(
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2",
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $id
-    )
-    begin {
-        $Response = @()
-        $METHOD = "GET"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "/").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
-   
-    }     
-    Process {
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                $URI = "/$myself/$id"
-            }
-            default {
-                $URI = "/$myself"
-            }
-        }        
-        try {
-            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body"
-        }
-        catch {
-            Get-PPDMWebException  -ExceptionMessage $_
-            break
-        }
-        write-verbose ($response | Out-String)
-    } 
-    end {    
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response | convertfrom-json
-            }
-            default {
-                write-output ($response | convertfrom-json).content
-            } 
-        }   
-    }
-}
+
 function Get-PPDMinventory_sources {
     [CmdletBinding()]
     param(
@@ -441,43 +401,24 @@ function Get-PPDMinventory_sources {
     }
 }
 
-function Get-PPDMactivities {
+
+function Get-PPDMalerts {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2",
-        [Parameter(Mandatory = $false, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
-        $query,
-        [Parameter(Mandatory = $false, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('RUNNING')]
-        $Filter,                 
-        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [alias('taskid')]$id
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $id
     )
     begin {
         $Response = @()
         $METHOD = "GET"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "/").ToLower()
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
         # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
         switch ($PsCmdlet.ParameterSetName) {
-            'query' {
-                Switch ($Filter) {
-                    'Running' {                                
-                        $filterstring = 'filter=parentId%20eq%20null%20and%20classType%20in%20(%22JOB%22%2C%20%22JOB_GROUP%22)%20and%20state%20in%20(%22RUNNING%22%2C%20%22QUEUED%22%2C%20%22PENDING_CANCELLATION%22)'
-                    }
-                    default {
-                        $filterstring = ""
-                    }
-                }
-                if ($query) { $query = "q=$query" }  
-                $URI = "/$($myself)?$filterstring&$query"
-            }
             'byID' {
                 $URI = "/$myself/$id"
             }
@@ -486,7 +427,7 @@ function Get-PPDMactivities {
             }
         }        
         try {
-            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD  -apiver $apiver -PPDM_API_BaseUri $PPDM_API_BaseUri
+            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body"
         }
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
@@ -515,9 +456,7 @@ function Get-PPDMprotection_engines {
     begin {
         $Response = @()
         $METHOD = "GET"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
-   
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()   
     }     
     Process {
         switch ($PsCmdlet.ParameterSetName) {
@@ -534,6 +473,7 @@ function Get-PPDMprotection_engines {
             Method           = $Method
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -593,6 +533,7 @@ function Start-PPDMasset_backups {
             Method           = $Method
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }           
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -697,6 +638,7 @@ function Start-PPDMdiscoveries {
             Method           = $Method
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }       
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -819,6 +761,7 @@ function Start-PPDMprotection_policies {
             Method           = $Method
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }           
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -880,6 +823,7 @@ function Get-PPDMcommon_settings {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -933,6 +877,7 @@ function Get-PPDMcomponents {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -988,6 +933,7 @@ function Get-PPDMconfigurations {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -1043,6 +989,7 @@ function Get-PPDMconfigstatus {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -1098,6 +1045,7 @@ function Get-PPDMnodes {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -1160,6 +1108,7 @@ function Set-PPDMnodes {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -1216,6 +1165,7 @@ function Get-PPDMdisks {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -1407,6 +1357,7 @@ function Set-PPDMcomponents {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -1464,6 +1415,7 @@ function Get-PPDMTELEMETRY_SETTING {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
