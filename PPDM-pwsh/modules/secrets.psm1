@@ -26,7 +26,7 @@ function Get-PPDMcertificates {
                 $URI = "/$myself/$ID"
             }
             'byHost' {
-                    $URI = "/$myself?host=$newhost&port=$port&type=Host"
+                    $URI = "/$($myself)?host=$newhost&port=$port&type=Host"
                 }            
             default {
                 $URI = "/$myself"
