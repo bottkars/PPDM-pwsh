@@ -56,5 +56,15 @@ Get-PPDMactivities -PredefinedFilter PROTECT_FAILED -days 1|  where { $_.actions
 and very a running avtivity by either suing the new activity is, or scope a query to running:
 ```Powershell
 Get-PPDMactivities -PredefinedFilter RUNNING
-Powershell 
+```
 ![image](https://user-images.githubusercontent.com/8255007/97603502-ca3f2e00-1a0c-11eb-8c85-f4f85eb43deb.png)
+
+
+i can now scope the activities "finder" to find the First Object on teh Succeded Policies and veryfy it is the same
+
+```Powershell
+Get-PPDMactivities -PredefinedFilter PROTECT_OK -days 1 | Select-Object -First 1
+```
+
+
+![image](https://user-images.githubusercontent.com/8255007/97605261-b7c5f400-1a0e-11eb-9465-7ef3b0d0a93f.png)
