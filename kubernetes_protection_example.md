@@ -1,4 +1,4 @@
-# Example Backup of Kubernets Protection Policies
+# Example Backup of Kubernetes Protection Policies
 ![image](https://user-images.githubusercontent.com/8255007/97606694-5ef75b00-1a10-11eb-87fd-4926dd327082.png)
 
 In this Use Case, we have one Protection Policy for Kubernetes.
