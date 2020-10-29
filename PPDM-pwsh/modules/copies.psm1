@@ -43,3 +43,54 @@ function Get-PPDMcopies {
         }   
     }
 }
+
+
+
+
+
+function Get-PPDMlatest_copies {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $true)]
+        $id,        
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2"
+
+    )
+    begin {
+        $Response = @()
+        $METHOD = "GET"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+        $URI = "/$myself"
+        $filter= 'assetId in ("'+$id+'")'
+        $Parameters = @{
+            filter           = $filter
+            Uri              = $Uri
+            Method           = $Method
+            RequestMethod    = 'Rest'
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            apiport          = 8443 
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        } 
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                write-output $response.content
+            } 
+        }   
+    }
+}

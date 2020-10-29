@@ -253,6 +253,8 @@ function Invoke-PPDMapirequest {
         [ValidateSet('Rest', 'Web')]$RequestMethod,        
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
         $Body,
+        [Parameter(Mandatory = $false, ParameterSetName = 'default')]
+        $Filter,
         [Parameter(Mandatory = $true, ParameterSetName = 'infile')]
         $InFile
     )
@@ -263,7 +265,6 @@ function Invoke-PPDMapirequest {
         Write-Verbose "==> Calling $uri"
         $Parameters = @{
             UseBasicParsing = $true 
-            Uri             = $Uri
             Method          = $Method
             Headers         = $Headers
             ContentType     = $ContentType
@@ -280,9 +281,17 @@ function Invoke-PPDMapirequest {
                     $Parameters.Add('body', $query)
                     Write-Verbose $Query | Out-String
                 }
+                if ($filter) {
+                    $filterstring = [System.Web.HTTPUtility]::UrlEncode($filter)
+                    $filterstring = "filter=$filterstring"
+                    Write-Verbose $filterstring | Out-String
+                    $uri = "$($uri)?$filterstring"
+                    Write-Verbose $uri
+                }
 
             }
         }
+        $Parameters.Add('URI', $uri)
         if ($Global:SkipCertificateCheck) {
             $Parameters.Add('SkipCertificateCheck', $True)
         }
