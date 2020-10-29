@@ -459,6 +459,8 @@ function Start-PPDMasset_backups {
         $apiver = "/api/v2",
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [string][alias('id')]$AssetID,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('FULL', 'SYNTHETIC_FULL', 'DIFFERNTIAL', 'GEN0','LOG','INCREMENTAL','CUMULATIVE','AUTO_FULL')]
         $BackupType = 'FULL'
     )
     begin {

@@ -158,3 +158,46 @@ function Get-PPDMactivity_metrics {
         }   
     }
 }
+
+
+#/api/v2/activities/{id}/retry
+function Restart-PPDMactivities {
+    [CmdletBinding(ConfirmImpact = 'Low',
+        HelpUri = 'https://developer.dellemc.com/data-protection/powerprotect/data-manager/api/monitoring/getallactivitymetrics')]
+    param(
+        [Parameter(Mandatory = $True, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
+        $Id,
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2"
+
+    )
+    begin {
+        $Response = @()
+        $METHOD = "POST"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(12) -replace "_", "-").ToLower()
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                $URI = "/$myself/$id/retry"
+            }
+        }        
+        try {
+            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD  -apiver $apiver -PPDM_API_BaseUri $PPDM_API_BaseUri -Verbose:($PSBoundParameters['Verbose'] -eq $true)
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+    
+            default {
+                write-output $response.content 
+            } 
+        }   
+    }
+}
