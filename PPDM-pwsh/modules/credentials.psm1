@@ -110,7 +110,7 @@ function New-PPDMcredentials {
         $Body = @{
             'type' = $type
             'name' =  $name
-            'username' = $($Credentials.username)
+            'username' = $($Credentials.GetNetworkCredential()).username
             'password' = $password
         }
         

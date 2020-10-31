@@ -1,0 +1,38 @@
+{
+  "DiskProvisioning": "thin",
+  "IPAllocationPolicy": "dhcpPolicy",
+  "IPProtocol": "IPv4",
+  "PropertyMapping": [
+    {
+      "Key": "vami.ip0.brs",
+      "Value": "100.250.1.123"
+    },
+    {
+      "Key": "vami.gateway.brs",
+      "Value": "100.250.1.1"
+    },
+    {
+      "Key": "vami.netmask0.brs",
+      "Value": "255.255.255.0"
+    },
+    {
+      "Key": "vami.DNS.brs",
+      "Value": "192.168.1.44"
+    },
+    {
+      "Key": "vami.fqdn.brs",
+      "Value": "ppdmdemo.home.labbuidr.com"
+    }
+  ],
+  "NetworkMapping": [
+    {
+      "Name": "VM Network",
+      "Network": ""
+    }
+  ],
+  "MarkAsTemplate": false,
+  "PowerOn": false,
+  "InjectOvfEnv": false,
+  "WaitForIP": false,
+  "Name": null
+}
