@@ -88,7 +88,7 @@ function Add-PPDMinventory_sources {
     Process {
         switch ($PsCmdlet.ParameterSetName) {
             'Host' {
-                $URI = "/$myself/$id"
+                $URI = "/$myself"
                 $body = @{
 
                     name        = $Name
