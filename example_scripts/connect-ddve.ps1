@@ -1,2 +1,3 @@
 Get-PPDMcertificates -newhost ddve.home.labbuildr.com -Port 3009 | Approve-PPDMcertificates
-$new_credentials=New-PPDMcredentials -name sysadmin -type DATADOMAIN
+New-PPDMcredentials -name sysadmin -type DATADOMAIN | Add-PPDMinventory_sources -Hostname ddve.home.labbuildr.com -Type EXTERNALDATADOMAIN -Name ddve -port 3009 
+Get-PPDMserver_disaster_recovery_configurations | Set-PPDMserver_disaster_recovery_configurations -repositoryHost ddve.home.labbuildr.com -repositoryPath /data/col1/ppdm-demo -Type DD -backupsEnabled

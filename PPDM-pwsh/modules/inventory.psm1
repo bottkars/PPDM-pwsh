@@ -106,9 +106,18 @@ function Add-PPDMinventory_sources {
                 $URI = "/$myself"
             }
         }  
-        Write-Verbose ($body | Out-String)      
+        Write-Verbose ($body | Out-String)  
+        $Parameters = @{
+            body             = $body 
+            Uri              = $Uri
+            Method           = $Method
+            RequestMethod    = 'Rest'
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }      
         try {
-            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body"
+            $Response += Invoke-PPDMapirequest @Parameters            
         }
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
@@ -127,3 +136,55 @@ function Add-PPDMinventory_sources {
         }   
     }
 }
+
+
+function Remove-PPDMinventory_sources {
+    [CmdletBinding()]
+    param(
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2",
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        $id
+    )
+    begin {
+        $Response = @()
+        $METHOD = "DELETE"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+
+        $URI = "/$myself/$id"
+        $Parameters = @{
+#            body             = $body 
+            Uri              = $Uri
+            Method           = $Method
+            RequestMethod    = 'Rest'
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }      
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters      
+            }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                write-output $response | convertfrom-json
+            }
+            default {
+                write-output ($response | convertfrom-json).content
+            } 
+        }   
+    }
+}
+
+
+

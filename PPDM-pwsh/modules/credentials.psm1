@@ -106,12 +106,12 @@ function New-PPDMcredentials {
             $SecurePassword = Read-Host -Prompt "Enter Password for user $username" -AsSecureString
             $Credentials = New-Object System.Management.Automation.PSCredential($username, $Securepassword)
         }
-        $password = $($Credentials.GetNetworkCredential()).password
         $Body = @{
             'type'     = $type
             'name'     = $name
             'username' = $($Credentials.GetNetworkCredential()).username
-            'password' = $password
+            'password' = $($Credentials.GetNetworkCredential()).password
+
         }
         
         if ($authmethod) {
