@@ -73,7 +73,7 @@ function Add-PPDMinventory_sources {
         [Parameter(Mandatory = $true, ParameterSetName = 'Host', ValueFromPipelineByPropertyName = $true)]
         $Name,        
         [Parameter(Mandatory = $true, ParameterSetName = 'Host', ValueFromPipelineByPropertyName = $true)]
-        $credentialID, 
+        [alias('secretID')]$ID, 
         [Parameter(Mandatory = $false, ParameterSetName = 'Host', ValueFromPipelineByPropertyName = $true)]
         $port,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
@@ -96,7 +96,7 @@ function Add-PPDMinventory_sources {
                     address     = $Hostname
                     port        = $port
                     credentials = @{
-                        id = $credentialID
+                        id = $ID
                     }
                 } | ConvertTo-Json
 

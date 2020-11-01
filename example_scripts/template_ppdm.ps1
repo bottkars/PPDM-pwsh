@@ -1,8 +1,8 @@
 $ovapath="$HOME/Downloads/dellemc-ppdm-sw-19.6.0-3.ova"
 $env:GOVC_FOLDER='/home_dc/vm/labbuildr_vms'
 $env:GOVC_VM='ppdm_demo'
-$env:GOVC_DATASTORE='mgmtvms'
-$env:GOVC_HOST='esxi-mgmt.home.labbuildr.com'
+$env:GOVC_DATASTORE='vsanDatastore'
+$env:GOVC_HOST='/home_dc/host/home_cluster/e200-n4.home.labbuildr.com'
 write-Host "Reading OVA Spec"
 $SPEC=govc import.spec $ovapath| ConvertFrom-Json -Depth 7
 $SPEC.DiskProvisioning="thin"
@@ -26,8 +26,8 @@ $SPEC.PropertyMapping[4].Value = "ppdmdemo.home.labbuidr.com"
 $SPEC | ConvertTo-Json | Set-Content -Path spec.json
 Write-Host "Importing OVA, this will take a while ..."
 govc import.ova -name $env:GOVC_VM -options="./spec.json" $ovapath 
-govc vm.network.change -net=VLAN250_single ethernet-0
-$CPU=govc vm.change -c=0
+govc vm.network.change -net=VLAN250 ethernet-0
+# $CPU=govc vm.change -c=0
 Write-Host "Powering on vm $env:GOVC_VM"
 govc vm.power -on $env:GOVC_VM
 

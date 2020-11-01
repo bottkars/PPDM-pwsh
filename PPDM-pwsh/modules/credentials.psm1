@@ -65,23 +65,23 @@ function New-PPDMcredentials {
         [string]$name,
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('DATADOMAIN',
-        'POWERPROTECT',
-        'DBUSER',
-        'OS',
-        'STANDARD',
-        'VCENTER',
-        'KUBERNETES',        
-        'SMISSERVER',
-        'CDR',
-        'SAPHANA_DB_USER',
-        'SAPHANA_SYSTEM_DB_USER',
-        'DDBOOST',
-        'RMAN')]
+            'POWERPROTECT',
+            'DBUSER',
+            'OS',
+            'STANDARD',
+            'VCENTER',
+            'KUBERNETES',        
+            'SMISSERVER',
+            'CDR',
+            'SAPHANA_DB_USER',
+            'SAPHANA_SYSTEM_DB_USER',
+            'DDBOOST',
+            'RMAN')]
         [string]$type,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [pscredential]$credentials,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('BASIC','CONFIG','TOKEN','USER_KEY')]
+        [ValidateSet('BASIC', 'CONFIG', 'TOKEN', 'USER_KEY')]
         [string]$authmethod,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
@@ -108,17 +108,17 @@ function New-PPDMcredentials {
         }
         $password = $($Credentials.GetNetworkCredential()).password
         $Body = @{
-            'type' = $type
-            'name' =  $name
+            'type'     = $type
+            'name'     = $name
             'username' = $($Credentials.GetNetworkCredential()).username
             'password' = $password
         }
         
         if ($authmethod) {
-            $Body.Add('method',$authmethod)
+            $Body.Add('method', $authmethod)
         }
         
-        $body = $Body| ConvertTo-Json
+        $body = $Body | ConvertTo-Json
         write-verbose ($body | out-string )
         $Parameters = @{
             body             = $body 
@@ -144,11 +144,52 @@ function New-PPDMcredentials {
                 write-output $response 
             }
             default {
-                write-output $response.content 
+                write-output $response
             } 
         }   
     }
 }
 
 
-    
+#DELETE /api/v2/credentials/{id}   
+function Remove-PPDMcredentials {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [string]$ID,
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2"
+
+    )
+    begin {
+        $Response = @()
+        $METHOD = "DELETE"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+        
+        $URI = "/$myself/$ID"
+        $Parameters = @{
+            body             = $body 
+            Uri              = $Uri
+            Method           = $Method
+            RequestMethod    = 'Rest'
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }      
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        write-output $response
+    }   
+}
