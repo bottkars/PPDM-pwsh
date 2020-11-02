@@ -32,8 +32,4 @@ Write-Host "Powering on vm $env:GOVC_VM"
 govc vm.power -on $env:GOVC_VM
 
 
-$API=Connect-PPDMapiEndpoint -PPDM_API_URI https://ppdm-demo.home.labbuildr.com -user -trustCert -force -Verbose
-Approve-PPDMEula
-# Get-PPDMTimezones | where id -match Berlin
-Set-PPDMconfigurations -NTPservers 139.162.149.127 -Timezone "Europe/Berlin" -admin_Password 'Password123!'
-Get-PPDMconfigurations | Get-PPDMconfigstatus
+

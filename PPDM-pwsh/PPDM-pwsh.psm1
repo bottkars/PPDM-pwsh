@@ -20,7 +20,7 @@ function Unblock-PPDMSSLCerts {
 
 	    }
 
-"@
+"@ -ErrorAction SilentlyContinue
 
     [System.Net.ServicePointManager]::CertificatePolicy = New-Object -TypeName TrustAllCertsPolicy
 
@@ -469,7 +469,7 @@ function Start-PPDMasset_backups {
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [string][alias('id')]$AssetID,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('FULL', 'SYNTHETIC_FULL', 'DIFFERNTIAL', 'GEN0','LOG','INCREMENTAL','CUMULATIVE','AUTO_FULL')]
+        [ValidateSet('FULL', 'SYNTHETIC_FULL', 'DIFFERNTIAL', 'GEN0', 'LOG', 'INCREMENTAL', 'CUMULATIVE', 'AUTO_FULL')]
         $BackupType = 'FULL'
     )
     begin {
@@ -568,24 +568,27 @@ function Get-PPDMdiscoveries {
     }
 }
 
+#{start: "/inventory-sources/69c8ac3a-3eca-55f1-a2e0-347e63a90540", level: "DataCopies"}
+#level: "DataCopies"
+#start: "/inventory-sources/69c8ac3a-3eca-55f1-a2e0-347e63a90540"
 function Start-PPDMdiscoveries {
     [CmdletBinding()]
     param(
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2",
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [string]$id,
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('DataCopies')]
         [string]$level,
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-        [string]$start        
+        [ValidateSet('inventory-sources', 'hosts', 'storage-systems')]
+        [string]$start,      
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2"
     )
     begin {
         $Response = @()
         $METHOD = "POST"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(10) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
-   
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(10) -replace "_", "-").ToLower()   
     }     
     Process {
         switch ($PsCmdlet.ParameterSetName) {
@@ -593,11 +596,12 @@ function Start-PPDMdiscoveries {
                 $URI = "/$myself"
                 $Body = [ordered]@{
                     'id'    = $id
-                    'start' = $start
-                    'level' = $level
+                    'start' = "/$start/$id"
+                    'level' = "$level"
                 } | ConvertTo-Json
             }
         } 
+        Write-Verbose ($Body | Out-String)
         $Parameters = @{
             body             = $body 
             Uri              = $Uri
@@ -621,7 +625,7 @@ function Start-PPDMdiscoveries {
                 write-output $response | convertfrom-json
             }
             default {
-                write-output ($response | convertfrom-json).content
+                write-output ($response.content | convertfrom-json)
             } 
         }   
     }
@@ -1391,3 +1395,51 @@ function Get-PPDMTimezones {
 
 # Start CDR Configuration
 # {"operation":"start"}
+
+function Wait-PPDMApplianceFresh {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [string]$URI,
+        [switch]$trustCert
+    )
+
+    Begin {
+        $Parameters = @{
+            UseBasicParsing = $true 
+            Uri             = "$Uri/#/fresh"
+            Method          = "GET"
+            ContentType     = "application/json"
+        }
+        if ($trustCert.IsPresent) {
+            if ($($PSVersionTable.PSVersion.Major) -ge 6) {
+                $Parameters.Add('SkipCertificateCheck', $True)
+            }
+            else {
+                Unblock-PPDMSSLCerts    
+            }
+        }
+    }
+
+    Process {
+        do {
+            Try {     
+                $req = Invoke-WebRequest @Parameters
+            }
+            Catch {
+                $message = $_.exception.message
+                Write-Warning $message
+                start-sleep  20
+            }
+            Finally {
+                If ($req.statuscode) {
+                    Write-Host $req.statuscode
+                }
+            }
+        } until ($req.statuscode -eq "200")    
+        
+    }
+    End {
+        Write-Host "Appliance $URI is ready for configuration now"
+    }
+}
