@@ -30,12 +30,12 @@ function Unblock-PPDMSSLCerts {
 function Connect-PPDMapiEndpoint {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $false, ParameterSetName = 'User', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Credential', ValueFromPipelineByPropertyName = $true)]
         [pscredential]$PPDM_API_Credentials = $Global:PPDM_API_Credentials,
-        [Parameter(Mandatory = $true, ParameterSetName = 'User')]
-        [switch]$user,
+        # [Parameter(Mandatory = $true, ParameterSetName = 'User')]
+        #[switch]$user,
         #        [Parameter(Mandatory = $false, ParameterSetName = 'client', ValueFromPipelineByPropertyName = $true)]
-        [pscredential]$PPDM_API_ClientCredentials = $Global:PPDM_API_ClientCredentials,
+        # [pscredential]$PPDM_API_ClientCredentials = $Global:PPDM_API_ClientCredentials,
         #        [Parameter(Mandatory = $True, ParameterSetName = 'Client')]
         #        [switch]$Client,
         [Parameter(Mandatory = $false, Position = 0, ValueFromPipelineByPropertyName = $true)]
@@ -85,7 +85,7 @@ function Connect-PPDMapiEndpoint {
                     $body = "grant_type=password&passcode=$SSOToken"
                 }
             }
-            'USER' {
+            default    {
                 if (!$($Global:PPDM_API_Credentials)) {
                     $username = Read-Host -Prompt "Please Enter PPDM username"
                     $SecurePassword = Read-Host -Prompt "Password for user $username" -AsSecureString
@@ -97,6 +97,14 @@ function Connect-PPDMapiEndpoint {
                     'password' = $password
                 }
    
+            }
+            'Credential'
+            {
+                $password = $($PPDM_API_Credentials.GetNetworkCredential()).password
+                $Body = @{
+                    'username' = $($PPDM_API_Credentials.username)
+                    'password' = $password
+                }
             }
             <#           'CLIENT' {
                 if (!$PPDM_API_ClientCredentials) {
@@ -136,7 +144,7 @@ function Connect-PPDMapiEndpoint {
         catch {
             Get-PPDMWebException -ExceptionMessage $_
             switch ($PsCmdlet.ParameterSetName) {
-                'USER' {
+                'Credential' {
                     Remove-Variable PPDM_API_Credentials
                 } 
                 'CLIENT' {
@@ -152,7 +160,7 @@ function Connect-PPDMapiEndpoint {
             'Client' {
                 $Global:PPDM_API_ClientCredentials = $PPDM_API_ClientCredentials
             }
-            'User' {
+            default {
                 $Global:PPDM_API_Credentials = $PPDM_API_Credentials
             }
         }
