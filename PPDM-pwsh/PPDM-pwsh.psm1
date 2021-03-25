@@ -1025,12 +1025,12 @@ function Set-PPDMconfigurations {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateCount(1, 2)][ValidateScript( { $_ -match [IPAddress]$_ })]
+        [ValidateCount(1,2)][ValidateScript( { $_ -match [IPAddress]$_ })]
         [string[]]$NTPservers,
         [String]$Timezone = 'Europe/Berlin - Central European Time',
         [Parameter(Mandatory = $true)]
-        [ValidatePattern('^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{9,}$')]
-        [String]$admin_Password,
+ #       [ValidatePattern('^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{9,}$')]
+        [securestring][alias('admin_password')]$Password,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
 
@@ -1040,10 +1040,10 @@ function Set-PPDMconfigurations {
         $root_oldpassword = 'changeme'
         $support_oldpassword = '$upp0rt!'        
         $lockbox_oldpassphrase = 'Ch@ngeme1'
-
-        if (!$PSBoundParameters.ContainsKey('root_Password')) { $root_Password = $Admin_Password }
-        if (!$PSBoundParameters.ContainsKey('support_Password')) { $support_Password = $Admin_Password }
-        if (!$PSBoundParameters.ContainsKey('lockbox_Passphrase')) { $lockbox_Passphrase = $Admin_Password }
+        $admin_password = [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($password))
+        if (!$PSBoundParameters.ContainsKey('root_Password')) { $root_Password = $admin_password }
+        if (!$PSBoundParameters.ContainsKey('support_Password')) { $support_Password = $admin_password }
+        if (!$PSBoundParameters.ContainsKey('lockbox_Passphrase')) { $lockbox_Passphrase = $admin_password }
         $Response = @()
         $METHOD = "PUT"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
@@ -1090,7 +1090,7 @@ function Set-PPDMconfigurations {
             $Configurations.osUsers | where userName -eq $user | Add-Member -NotePropertyName newPassword -NotePropertyValue (get-variable ${user}_password).value -Force
         }
         write-host "setting user Configuration for ApplicationUser"
-        $Configurations | Add-Member -NotePropertyName applicationUserPassword -NotePropertyValue $admin_Password -Force
+        $Configurations | Add-Member -NotePropertyName applicationUserPassword -NotePropertyValue $password -Force
         write-host "setting Lockbox"
         $Configurations.lockbox | Add-Member -NotePropertyName passphrase -NotePropertyValue $lockbox_oldpassphrase -Force
         $Configurations.lockbox | Add-Member -NotePropertyName newPassphrase -NotePropertyValue $lockbox_passphrase -Force

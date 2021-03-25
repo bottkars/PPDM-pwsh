@@ -57,7 +57,50 @@ function Get-PPDMcredentials {
 # https://developer.dellemc.com/data-protection/powerprotect/data-manager/api/credentials-management/createcredential
 # POST /api/v2/credentials
 
+<#
+.Synopsis
+Stores Credentials / Secrets for external Inventory SOurces / Storage in PPDM´s Database
+.Description
 
+When Connecting to Data Sources, Storage and Invetories, certain Credential Types need to be passed.
+This can be Tokens, Keys, Credential or other
+
+.Example
+Create a Data Domain user interactive:
+
+New-PPDMcredentials -name ddve3 -type DATADOMAIN
+Please Enter New username: sysad3
+Enter Password for user sysad3: ************
+
+id       : c3ddda66-fa4d-48f8-b233-5217a90dbf37
+name     : ddve3
+username : sysad3
+password :
+type     : DATADOMAIN
+method   :
+secretId : ac9553ce-cb3f-419d-883d-240577dff127
+internal : False
+_links   : @{self=}
+
+.Example
+Create Credetials Programmatically
+$SecurePassword=ConvertTo-SecureString "PlainPassword" -AsPlainText -Force
+$username="limitedadmin"
+$Credentials = New-Object System.Management.Automation.PSCredential($username, $Securepassword)
+
+
+New-PPDMcredentials -name datadomain3 -type DATADOMAIN -credentials $Credentials
+
+id       : a89df348-1c00-4424-8a54-b6e0329bea6a
+name     : datadomain3
+username : sysadmin
+password :
+type     : DATADOMAIN
+method   :
+secretId : 9397c905-5d46-4e2b-80ae-d782b4fb98ab
+internal : False
+
+#>
 function New-PPDMcredentials {
     [CmdletBinding()]
     param(
