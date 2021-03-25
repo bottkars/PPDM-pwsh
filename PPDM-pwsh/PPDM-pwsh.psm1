@@ -39,8 +39,8 @@ function Connect-PPDMapiEndpoint {
         #        [Parameter(Mandatory = $True, ParameterSetName = 'Client')]
         #        [switch]$Client,
         [Parameter(Mandatory = $false, Position = 0, ValueFromPipelineByPropertyName = $true)]
-        [string]
-        $PPDM_API_URI = $Global:PPDM_API_BaseUri,
+        [string][alias('PPDM_API_URI')]
+        $PPDM_API_BaseURI = $GLOBAL:PPDM_API_BaseUri,
         [switch]$trustCert,
         #        [Parameter(Mandatory = $True, ParameterSetName = 'SSO')]
         #        [switch]$SSO,
@@ -75,7 +75,9 @@ function Connect-PPDMapiEndpoint {
         }          
     }
     Process {
-        $Global:PPDM_API_BaseUri = "$($PPDM_API_URI)"
+        $PPDM_API_BaseURI=$PPDM_API_BaseURI -replace "HTTPS://",""
+        $PPDM_API_BaseURI=$PPDM_API_BaseURI -replace "HTTP://",""
+        $Global:PPDM_API_BaseUri = "HTTPS://$($PPDM_API_BaseURI)"
         $Global:PPDM_API_PORT = "8443"
         Write-Verbose $Global:PPDM_API_BaseUri
         switch ($PsCmdlet.ParameterSetName) {
