@@ -22,7 +22,7 @@ function Unblock-PPDMSSLCerts {
 
 "@ -ErrorAction SilentlyContinue
 
-    [System.Net.ServicePointManager]::CertificatePolicy = New-Object -TypeName TrustAllCertsPolicy
+    [System.Net.ServicePointManager]::CertificatePolicy = New-Object -TypeName TrustAllCertsPolicy -ErrorAction SilentlyContinue
 
 
 
@@ -1090,7 +1090,7 @@ function Set-PPDMconfigurations {
             $Configurations.osUsers | where userName -eq $user | Add-Member -NotePropertyName newPassword -NotePropertyValue (get-variable ${user}_password).value -Force
         }
         write-host "setting user Configuration for ApplicationUser"
-        $Configurations | Add-Member -NotePropertyName applicationUserPassword -NotePropertyValue $password -Force
+        $Configurations | Add-Member -NotePropertyName applicationUserPassword -NotePropertyValue $admin_password -Force
         write-host "setting Lockbox"
         $Configurations.lockbox | Add-Member -NotePropertyName passphrase -NotePropertyValue $lockbox_oldpassphrase -Force
         $Configurations.lockbox | Add-Member -NotePropertyName newPassphrase -NotePropertyValue $lockbox_passphrase -Force
@@ -1104,7 +1104,7 @@ function Set-PPDMconfigurations {
                 write-output $response 
             }
             default {
-                write-verbose $body
+                write-verbose ($body | out-string)
 
                 $Parameters = @{
                     body             = "$body" 

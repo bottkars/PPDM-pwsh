@@ -19,7 +19,7 @@ Function Get-PPDMWebException {
                 "*SSL/TLS secure channel*" {
                     Write-Host -ForegroundColor Magenta $ExceptionMessage
                     Write-Host -ForegroundColor White "SSL/TLS secure channel error indicates untrusted certificates. Connect using -trustCert Option !"
-
+                    
                 }
                     
                 "*400*" {
@@ -46,8 +46,7 @@ Function Get-PPDMWebException {
                 }
                 "*406*" {
                     Write-Host -ForegroundColor Magenta $ExceptionMessage
-                    Write-Host -ForegroundColor White "406 Not Acceptable Accept headers do not meet requirements (for example, output format, version,language)
-"
+                    Write-Host -ForegroundColor White "406 Not Acceptable Accept headers do not meet requirements (for example, output format, version,language)"
                 }
                 "*409*" {
                     Write-Host -ForegroundColor Magenta $ExceptionMessage
@@ -71,7 +70,7 @@ This code is returned for internal errors -
 Possible Cause: API Server is not ready
 "
                 }
-                "*501*" {
+                "*501*" { White
                     Write-Host -ForegroundColor Magenta $ExceptionMessage
                     Write-Host -ForegroundColor White "501 Not Implemented Not currently used"
                 }
@@ -83,6 +82,7 @@ Possible Cause: API Server is not ready
                 "*503*" {
                     Write-Host -ForegroundColor Magenta $ExceptionMessage
                     Write-Host -ForegroundColor White "503 Service Unavailable"
+                    Write-Host -ForegroundColor White " Sleeping 5 Seconds before retry"
                 }
                 "*SSL/TLS*" {
                     Write-Host -ForegroundColor White "You are using an untrusted Connection (i.E. Selfsigned Certificates) to PDM
