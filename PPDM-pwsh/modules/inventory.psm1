@@ -52,7 +52,11 @@ function Add-PPDMinventory_sources {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true, ParameterSetName = 'Host', ValueFromPipelineByPropertyName = $true)]
-        [alias('address', 'fqdn')]$Hostname,
+        [alias('fqdn')]$Hostname, 
+        [Parameter(Mandatory = $true, ParameterSetName = 'GENERIC_NAS', ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('CIFS', 'NFS')]$Protocol, 
+        [Parameter(Mandatory = $true, ParameterSetName = 'GENERIC_NAS', ValueFromPipelineByPropertyName = $true)]
+        [string[]]$address,                    
         [Parameter(Mandatory = $true, ParameterSetName = 'Host', ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('DATADOMAINMANAGEMENTCENTER',
             #        'SMISPROVIDER',
@@ -73,8 +77,10 @@ function Add-PPDMinventory_sources {
         [Parameter(Mandatory = $true, ParameterSetName = 'Host', ValueFromPipelineByPropertyName = $true)]
         $Name,        
         [Parameter(Mandatory = $true, ParameterSetName = 'Host', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'GENERIC_NAS', ValueFromPipelineByPropertyName = $true)]
         [alias('secretID')]$ID, 
         [Parameter(Mandatory = $false, ParameterSetName = 'Host', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'GENERIC_NAS', ValueFromPipelineByPropertyName = $true)]
         $port,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
@@ -99,9 +105,29 @@ function Add-PPDMinventory_sources {
                         id = $ID
                     }
                 } | ConvertTo-Json
+            }
+            'GENERIC_NAS' {
+                $URI = "/$($myself)-batch"
+                $body = @{}
+                $body.Add('requests',@())    
 
-
-            }    
+                # this goes to foreach
+                $request = @{}
+                $request.Add('id','1')
+                $requestbody = @{
+                    name        = $address
+                    type        = 'GENERICNASMANAGEMENTSERVER'
+                    address     = $address -replace ":"
+                    port        = $port
+                    credentials = @{
+                        id = $ID
+                    }
+                }
+                $request.Add('body',$requestbody)
+                $body.requests += $request
+                
+                $body = $body | ConvertTo-Json -Depth 6
+            }                 
             default {
                 $URI = "/$myself"
             }
@@ -157,7 +183,7 @@ function Remove-PPDMinventory_sources {
 
         $URI = "/$myself/$id"
         $Parameters = @{
-#            body             = $body 
+            #            body             = $body 
             Uri              = $Uri
             Method           = $Method
             RequestMethod    = 'Rest'
@@ -167,7 +193,7 @@ function Remove-PPDMinventory_sources {
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters      
-            }
+        }
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
             break
