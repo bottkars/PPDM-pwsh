@@ -75,8 +75,8 @@ function Connect-PPDMapiEndpoint {
         }          
     }
     Process {
-        $PPDM_API_BaseURI=$PPDM_API_BaseURI -replace "HTTPS://",""
-        $PPDM_API_BaseURI=$PPDM_API_BaseURI -replace "HTTP://",""
+        $PPDM_API_BaseURI = $PPDM_API_BaseURI -replace "HTTPS://", ""
+        $PPDM_API_BaseURI = $PPDM_API_BaseURI -replace "HTTP://", ""
         $Global:PPDM_API_BaseUri = "HTTPS://$($PPDM_API_BaseURI)"
         $Global:PPDM_API_PORT = "8443"
         Write-Verbose $Global:PPDM_API_BaseUri
@@ -87,7 +87,7 @@ function Connect-PPDMapiEndpoint {
                     $body = "grant_type=password&passcode=$SSOToken"
                 }
             }
-            default    {
+            default {
                 if (!$($Global:PPDM_API_Credentials)) {
                     $username = Read-Host -Prompt "Please Enter PPDM username"
                     $SecurePassword = Read-Host -Prompt "Password for user $username" -AsSecureString
@@ -100,8 +100,7 @@ function Connect-PPDMapiEndpoint {
                 }
    
             }
-            'Credential'
-            {
+            'Credential' {
                 $password = $($PPDM_API_Credentials.GetNetworkCredential()).password
                 $Body = @{
                     'username' = $($PPDM_API_Credentials.username)
@@ -268,7 +267,12 @@ function Invoke-PPDMapirequest {
         [Parameter(Mandatory = $true, ParameterSetName = 'infile')]
         $InFile
     )
-    $uri = "$($Global:PPDM_API_BaseUri):$apiport$apiver$uri"
+    $apiver = $apiver.trimstart('/')
+    $apiver = $apiver.trimend('/')
+    $uri = $uri.trimstart('/')
+    $uri = $uri.trimend('/')
+
+    $uri = "$($Global:PPDM_API_BaseUri):$apiport/$apiver/$uri"
     if ($Global:PPDM_API_Headers) {
         $Headers = $Global:PPDM_API_Headers
         Write-Verbose ($Headers | Out-String)

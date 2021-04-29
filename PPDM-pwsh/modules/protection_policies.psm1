@@ -178,8 +178,6 @@ function New-PPDMprotection_policies {
         $Response = @()
         $METHOD = "POST"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
-   
     }     
     Process {
         switch ($PsCmdlet.ParameterSetName) {
@@ -189,48 +187,59 @@ function New-PPDMprotection_policies {
 
         }
         Write-Verbose "Casting Time"
-        [DateTIme]$RunTime = $startime - $endtime     
-        $Body = [ordered]@{ 
-            'name' = $Name
-            'assetType' = $assetType
-            'type' = 'ACTIVE'
-            'dataConsistency' = $dataConsistency
-            'enabled' = $enabled.IsPresent
-            'description' = $Description
-            'encrypted' = $encrypted.IsPresent
-            'priority' = 1
-            'passive' = $passive.IsPresent
-            'forceFull' = $forceFull.IsPresent
-            'details' = @{
-                'vm' = @{
-                    'protectionEngine' = 'VMDIRECT'
-                }
-            }
-            'stages' = @(
-                @{
-                    'id'            = (New-Guid).Guid   
-                    'type'          = 'PROTECTION'
-                    'passive'       = $passive.IsPresent
-                    'target'        = @{
-                        'storageSystemId' = 'ed9a3cd6-7e69-4332-a299-aaf258e23328'
+        $RunTime = $startime - $endtime     
+
+        switch ($assetType){
+            'VMWARE_VIRTUAL_MACHINE'{
+                $Body = [ordered]@{ 
+                    'name' = $Name
+                    'assetType' = $assetType
+                    'type' = 'ACTIVE'
+                    'dataConsistency' = $dataConsistency
+                    'enabled' = $enabled.IsPresent
+                    'description' = $Description
+                    'encrypted' = $encrypted.IsPresent
+                    'priority' = 1
+                    'passive' = $passive.IsPresent
+                    'forceFull' = $forceFull.IsPresent
+                    'details' = @{
+                        'vm' = @{
+                            'protectionEngine' = 'VMDIRECT'
+                        }
                     }
-                    'operations'    = @(
+                    'stages' = @(
                         @{
-                            'backupType' = 'SYNTHETIC_FULL'
-                            'schedule'   = @{
-                                'frequency'  = 'MONTHLY'
-                                'duration'   = 'PT10H'
-                                'dayOfMonth' = 1
+                            'id'            = (New-Guid).Guid   
+                            'type'          = 'PROTECTION'
+                            'passive'       = $passive.IsPresent
+                            'target'        = @{
+                                'storageSystemId' = 'ff2fffb0-d688-4e56-bfb7-6658ed2fd5e5'
+                            }
+                            'operations'    = @(
+                                @{
+                                    'backupType' = 'SYNTHETIC_FULL'
+                                    'schedule'   = @{
+                                        'frequency'  = 'MONTHLY'
+                                        'duration'   = 'PT10H'
+                                        'dayOfMonth' = 1
+                                    }
+                                }
+                            )
+                            'retention'     = @{
+                                'interval' = 1
+                                'unit'     = 'MONTH'
                             }
                         }
-                    )
-                    'retention'     = @{
-                        'interval' = 1
-                        'unit'     = 'MONTH'
-                    }
-                }
-            ) 
-        }| convertto-json -Depth 7
+                    ) 
+                }| convertto-json -Depth 7
+            }
+            default
+            {
+                write-host "Not jet implemented"
+                return
+            }
+        }
+        
             write-verbose ($body | out-string)
             $Parameters = @{
                 body = $body 
