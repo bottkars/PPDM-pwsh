@@ -1,137 +1,137 @@
 function Get-PPDMprotection_policies {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $id,
-        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [switch]$asset_assignments,
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2"
-    )
-    begin {
-        $Response = @()
-        $METHOD = "GET"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    $id,
+    [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [switch]$asset_assignments,
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
+  )
+  begin {
+    $Response = @()
+    $METHOD = "GET"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
-    }     
-    Process {
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                $URI = "/$myself/$id"
-                if ($asset_assignments.IsPresent) {
-                    $URI = "$URI/asset-assignments"
-                }    
-            }
-            default {
-                $URI = "/$myself"
-            }
-        } 
-        $Parameters = @{
-            body             = $body 
-            Uri              = $URI
-            Method           = $Method
-            PPDM_API_BaseUri = $PPDM_API_BaseUri
-            apiver           = $apiver
-            Verbose          = $PSBoundParameters['Verbose'] -eq $true
-        }           
-        try {
-            $Response += Invoke-PPDMapirequest @Parameters       
-        }
-        catch {
-            Get-PPDMWebException  -ExceptionMessage $_
-            break
-        }
-        write-verbose ($response | Out-String)
+  }     
+  Process {
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        $URI = "/$myself/$id"
+        if ($asset_assignments.IsPresent) {
+          $URI = "$URI/asset-assignments"
+        }    
+      }
+      default {
+        $URI = "/$myself"
+      }
     } 
-    end {    
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                if ( $asset_assignments.IsPresent ) {
-                    write-output ($response | convertfrom-json).content
-                }
-                else {
-                    write-output $response | convertfrom-json
-                }            
-            }
-            default {
-                write-output ($response | convertfrom-json).content
-            } 
-        }   
+    $Parameters = @{
+      body             = $body 
+      Uri              = $URI
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }           
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters       
     }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        if ( $asset_assignments.IsPresent ) {
+          write-output ($response | convertfrom-json).content
+        }
+        else {
+          write-output $response | convertfrom-json
+        }            
+      }
+      default {
+        write-output ($response | convertfrom-json).content
+      } 
+    }   
+  }
 }
 
 function Start-PPDMprotection_policies {
-    [CmdletBinding()]
-    param(
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2",
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-        [string][alias('id')]$PolicyID,
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
-        [ValidateSet('FULL', 'GEN0', 'DIFFERENTIAL', 'LOG', 'INCREMENTAL', 'CUMULATIVE', 'AUTO_FULL')]
-        $BackupType = 'FULL',
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
-        [ValidateSet('DAY', 'WEEK', 'MONTH', 'YEAR' )]
-        $RetentionUnit = 'DAY',
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
-        [Int32]$RetentionInterval = '7'        
+  [CmdletBinding()]
+  param(
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2",
+    [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+    [string][alias('id')]$PolicyID,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
+    [ValidateSet('FULL', 'GEN0', 'DIFFERENTIAL', 'LOG', 'INCREMENTAL', 'CUMULATIVE', 'AUTO_FULL')]
+    $BackupType = 'FULL',
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
+    [ValidateSet('DAY', 'WEEK', 'MONTH', 'YEAR' )]
+    $RetentionUnit = 'DAY',
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
+    [Int32]$RetentionInterval = '7'        
 
-    )
-    begin {
-        $Response = @()
-        $METHOD = "POST"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(10) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+  )
+  begin {
+    $Response = @()
+    $METHOD = "POST"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(10) -replace "_", "-").ToLower()
+    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
-    }     
-    Process {
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                $URI = "/$myself"
-            }
-            default {
-                $URI = "/$myself"
-            }
-        }    
-        $Body = [ordered]@{
-            'assetIds'                          = $AssetIDs
-            'backupType'                        = $BackupType
-            'disableProtectionPolicyProcessing' = 'false'
-            'retention'                         = @{
-                'interval' = $RetentionInterval
-                'unit'     = $RetentionUnit
-            }
-        } | convertto-json -compress
-        write-verbose ($body | out-string)
-        $Parameters = @{
-            body             = $body 
-            Uri              = "/$Myself/$PolicyID/backups"
-            Method           = $Method
-            PPDM_API_BaseUri = $PPDM_API_BaseUri
-            apiver           = $apiver
-            Verbose          = $PSBoundParameters['Verbose'] -eq $true
-        }           
-        try {
-            $Response += Invoke-PPDMapirequest @Parameters
-        }
-        catch {
-            Get-PPDMWebException  -ExceptionMessage $_
-            break
-        }
-        write-verbose ($response | Out-String)
-    } 
-    end {    
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response | convertfrom-json
-            }
-            default {
-                write-output ($response | convertfrom-json)
-            } 
-        }   
+  }     
+  Process {
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        $URI = "/$myself"
+      }
+      default {
+        $URI = "/$myself"
+      }
+    }    
+    $Body = [ordered]@{
+      'assetIds'                          = $AssetIDs
+      'backupType'                        = $BackupType
+      'disableProtectionPolicyProcessing' = 'false'
+      'retention'                         = @{
+        'interval' = $RetentionInterval
+        'unit'     = $RetentionUnit
+      }
+    } | convertto-json -compress
+    write-verbose ($body | out-string)
+    $Parameters = @{
+      body             = $body 
+      Uri              = "/$Myself/$PolicyID/backups"
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }           
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
     }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response | convertfrom-json
+      }
+      default {
+        write-output ($response | convertfrom-json)
+      } 
+    }   
+  }
 }
 <#
 {
@@ -881,7 +881,7 @@ function Start-PPDMprotection_policies {
 
 <#
 .SYNOPSIS
-Creates a Primary Backup Policy for Vistutalk Machines.
+Creates a Primary Backup Policy for Virtual Machines.
 
 Primary Backup Copy can be hourly, daily, weekly, monthly
 
@@ -945,395 +945,598 @@ _links                         : @{self=}
 
 #>
 function New-PPDMVMPrimaryBackupPolicy {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $True, ValueFromPipeline = $false)]
-        [ValidateLength(1, 150)][string]$Name,
-        [Parameter(Mandatory = $True, ValueFromPipeline = $false)]
-        [ValidateLength(1, 150)][string]$StorageSystemID,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
-        [switch]$hourly_w_full_weekly,  
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]
-        [switch]$hourly_w_full_monthly,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
-        [switch]$hourly,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]        
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')]
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')] 
-        [int][ValidateRange(1, 22)]$CreateCopyIntervalHrs, 
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [switch]$hourly,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [switch]$hourly_w_full_weekly,  
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]
+    [switch]$hourly_w_full_monthly,
+
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [switch]$daily,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [switch]$daily_w_full_weekly,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [switch]$daily_w_full_monthly,
+
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [switch]$weekly,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [switch]$weekly_w_full_weekly,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+    [switch]$weekly_w_full_monthly,
+
+    
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    
+    [switch]$monthly_day,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [switch]$monthly_day_of_week,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [switch]$monthly_day_w_full_monthly,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [switch]$monthly_day_of_week_w_full_monthly,
+
+
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]  
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [ValidateLength(1, 150)][string]$Name,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]  
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [ValidateLength(1, 150)][string]$StorageSystemID,
+
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]        
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')] 
+    [int][ValidateRange(1, 22)]$CreateCopyIntervalHrs, 
 
 
 
 
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
-        [switch]$daily,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
-        [switch]$daily_w_full_weekly,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
-        [switch]$daily_w_full_monthly,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]                      
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')]
-        [String][ValidateSet("SUNDAY",
-            "MONDAY",
-            "TUESDAY",
-            "WEDNESDAY",
-            "THURSDAY",
-            "FRIDAY",
-            "SATURDAY")]$CreateFull_Every_DayofWeek,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]            
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
-        [int][ValidateRange(1, 28)]$CreateFull_Every_DayofMonth,
+
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]                      
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')]
+    [String][ValidateSet("SUNDAY",
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY")]$CreateFull_Every_DayofWeek,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]            
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [int][ValidateRange(1, 28)]$CreateFull_Every_DayofMonth,
 
 
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
-        [switch]$weekly,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
-        [switch]$weekly_w_full_weekly,        
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
-        [switch]$monthly_day,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
-        [switch]$monthly_day_of_week,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
-        [switch]$monthly_day_w_full_monthly,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
-        [switch]$monthly_day_of_week_w_full_monthly,
 
 
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
-        [int][ValidateRange(1, 28)]$CreateCopydayofMonth,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]        
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
-        [String][ValidateSet("SUNDAY",
-        "MONDAY",
-        "TUESDAY",
-        "WEDNESDAY",
-        "THURSDAY",
-        "FRIDAY",
-        "SATURDAY")]$CreateCopyDayofWeek,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
-        [int][ValidateRange(1, 4)]$CreateCopyWeekofMonth,
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]        
-        [String[]][ValidateSet("SUNDAY",
-            "MONDAY",
-            "TUESDAY",
-            "WEDNESDAY",
-            "THURSDAY",
-            "FRIDAY",
-            "SATURDAY")]$CreateCopyDays,                            
-        [Parameter(Mandatory = $True, ValueFromPipeline = $false)]
-        [ValidateSet("YEAR",
-            "MONTH",
-            "WEEK",
-            "DAY")][string]$RetentionUnit,
-        [Parameter(Mandatory = $True, ValueFromPipeline = $false)]
-        [ValidateRange(1, 2555)][int]$RetentionInterval,
 
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
-        [switch]$enabled,
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
-        [DateTime]$startime = "8:00 PM",
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
-        [DateTime]$endtime = "8:00 AM",
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
-        [switch]$encrypted, 
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
-        [string]$Description = '' ,
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2",
-        [switch]$noop           
-    )
-    begin {
-        $Response = @()
-        $METHOD = "POST"
-    }     
-    Process {
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [int][ValidateRange(1, 28)]$CreateCopydayofMonth,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]        
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [String][ValidateSet("SUNDAY",
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY")]$CreateCopyDayofWeek,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [int][ValidateRange(1, 4)]$CreateCopyWeekofMonth,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]        
+    [String[]][ValidateSet("SUNDAY",
+      "MONDAY",
+      "TUESDAY",
+      "WEDNESDAY",
+      "THURSDAY",
+      "FRIDAY",
+      "SATURDAY")]$CreateCopyDays,  
+      
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]  
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [ValidateSet("YEAR",
+      "MONTH",
+      "WEEK",
+      "DAY")]
+    [string]$RetentionUnit,
 
-        $URI = "/protection-policies"
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [string][ValidateSet('FSS', 'VSS')]$backupMode = 'VSS',
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [switch]$excludeSwapFiles,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [switch]$disableQuiescing,    
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [ValidateRange(1, 2555)][int]$RetentionInterval,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [switch]$enabled,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [DateTime]$startime = "8:00PM",
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [DateTime]$endtime = "8:00AM",
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [switch]$encrypted, 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [string]$Description = '' ,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    $apiver = "/api/v2",
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_weekly')] 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_w_full_monthly')]  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_weekly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_w_full_monthly')]                   
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_w_full_monthly')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_w_full_monthly')]
+    [switch]$noop           
+  )
+  begin {
+    $Response = @()
+    $METHOD = "POST"
+  }     
+  Process {
+
+    $URI = "/protection-policies"
   
-        $operations = @()
-        $copyoperation = @{
-            'schedule' = @{
-                'duration'  = "PT$(($starttime - $endtimetime).Hours)H"
-                'startTime' = $(Get-DAte $starttime -Format yyyy-MM-ddThh:mm:ss.000Z)
-            }            
-        }
-        $copyoperation.Add('backupType', 'SYNTHETIC_FULL')         
+    $operations = @()
+    $copyoperation = @{
+      'schedule' = @{
+        'duration'  = "PT$(($starttime - $endtime).Hours)H"
+        'startTime' = $(Get-DAte $starttime -Format yyyy-MM-ddThh:mm:ss.000Z)
+      }            
+    }
+    $copyoperation.Add('backupType', 'SYNTHETIC_FULL')         
 
-        $fulloperation = @{
-            'backupType' = 'FULL'
-            'schedule'   = @{
-                'duration'  = "PT$(($starttime - $endtimetime).Hours)H"
-                'startTime' = $(Get-DAte $starttime -Format yyyy-MM-ddThh:mm:ss.000Z)
-            }            
-        }        
-        switch (($($PSCmdlet.ParameterSetName) -split "_")[0]) {
-            'hourly' {
-                $copyoperation.schedule.Add('frequency', 'HOURLY')
-                $copyoperation.schedule.Add('interval', $CreateCopyIntervalHrs)
-                $operations += $copyoperation                         
-            }
-            'daily' {
-                $copyoperation.schedule.Add('frequency', 'DAILY')
-                $operations += $copyoperation                    
-            } 
-            'weekly' {
-                $copyoperation.schedule.Add('frequency', 'WEEKLY')
-                $copyoperation.schedule.Add('weekDays', @($CreateCopyDays))
-                $operations += $copyoperation                    
-            }
-            'monthlyday' {
-                $copyoperation.schedule.Add('frequency', 'MONTHLY')
-                $copyoperation.schedule.Add('dayOfMonth',$CreateCopydayofMonth)
-                $operations += $copyoperation 
-            }
+    $fulloperation = @{
+      'backupType' = 'FULL'
+      'schedule'   = @{
+        'duration'  = "PT$(($starttime - $endtime).Hours)H"
+        'startTime' = $(Get-DAte $starttime -Format yyyy-MM-ddThh:mm:ss.000Z)
+      }            
+    }        
+    switch (($($PSCmdlet.ParameterSetName) -split "_")[0]) {
+      'hourly' {
+        $copyoperation.schedule.Add('frequency', 'HOURLY')
+        $copyoperation.schedule.Add('interval', $CreateCopyIntervalHrs)
+        $operations += $copyoperation                         
+      }
+      'daily' {
+        $copyoperation.schedule.Add('frequency', 'DAILY')
+        $operations += $copyoperation                    
+      } 
+      'weekly' {
+        $copyoperation.schedule.Add('frequency', 'WEEKLY')
+        $copyoperation.schedule.Add('weekDays', @($CreateCopyDays))
+        $operations += $copyoperation                    
+      }
+      'monthlyday' {
+        $copyoperation.schedule.Add('frequency', 'MONTHLY')
+        $copyoperation.schedule.Add('dayOfMonth', $CreateCopydayofMonth)
+        $operations += $copyoperation 
+      }
               
-            'monthlydayofweek' {
-                $copyoperation.schedule.Add('frequency', 'MONTHLY')
-                $copyoperation.schedule.Add('weekDays', @($CreateCopyDayofWeek))
-                If ($CreateCopyWeekofMonth){
-                $copyoperation.schedule.Add('weekOfMonth', $CreateCopyWeekofMonth)    
-                }
-                else{
-                $copyoperation.schedule.Add('genericDay', 'LAST')    
-                }
-                $operations += $copyoperation 
-            }                      
+      'monthlydayofweek' {
+        $copyoperation.schedule.Add('frequency', 'MONTHLY')
+        $copyoperation.schedule.Add('weekDays', @($CreateCopyDayofWeek))
+        If ($CreateCopyWeekofMonth) {
+          $copyoperation.schedule.Add('weekOfMonth', $CreateCopyWeekofMonth)    
         }
+        else {
+          $copyoperation.schedule.Add('genericDay', 'LAST')    
+        }
+        $operations += $copyoperation 
+      }                      
+    }
 
 
 
-        switch (($($PSCmdlet.ParameterSetName) -split "_w")[1]) {
+    switch (($($PSCmdlet.ParameterSetName) -split "_w")[1]) {
 
-            'full_weekly' {
-                $copyoperation.Add('backupType', 'SYNTHETIC_FULL')         
-                $operations += $copyoperation                
-                $fulloperation.schedule.Add('frequency', 'WEEKLY')
-                $fulloperation.schedule.Add('weekDays', @($CreateFull_Every_DayofWeek))
-                $operations += $fulloperation
+      'full_weekly' {
+        $copyoperation.Add('backupType', 'SYNTHETIC_FULL')         
+        $operations += $copyoperation                
+        $fulloperation.schedule.Add('frequency', 'WEEKLY')
+        $fulloperation.schedule.Add('weekDays', @($CreateFull_Every_DayofWeek))
+        $operations += $fulloperation
                 
+      }
+      'full_monthly' {
+        $copyoperation.Add('backupType', 'SYNTHETIC_FULL')         
+        $operations += $copyoperation   
+        $fulloperation.schedule.Add('frequency', 'MONTHLY')
+        $fulloperation.schedule.Add('dayOfMonth', $CreateFull_Every_DayofMonth)
+        $operations += $fulloperation
+      }            
+    } 
+    $Body = [ordered]@{ 
+      'name'            = $Name
+      'assetType'       = 'VMWARE_VIRTUAL_MACHINE'
+      'type'            = 'ACTIVE'
+      'dataConsistency' = 'CRASH_CONSISTENT'
+      'enabled'         = $enabled.IsPresent
+      'description'     = $Description
+      'encrypted'       = $encrypted.IsPresent
+      'priority'        = 1
+      'passive'         = $false
+      'forceFull'       = $false
+      'details'         = @{
+        'vm' = @{
+          'protectionEngine' = 'VMDIRECT'
+        }
+      }
+      'stages'          = @(
+        @{
+          'id'         = (New-Guid).Guid   
+          'type'       = 'PROTECTION'
+          'passive'    = $false
+          'attributes' = @{
+            'vm'         = @{
+              'excludeSwapFiles' = $excludeSwapFiles.IsPresent
+              'disableQuiescing' = $disableQuiescing.IsPresent
             }
-            'full_monthly' {
-                $copyoperation.Add('backupType', 'SYNTHETIC_FULL')         
-                $operations += $copyoperation   
-                $fulloperation.schedule.Add('frequency', 'MONTHLY')
-                $fulloperation.schedule.Add('dayOfMonth', $CreateFull_Every_DayofMonth)
-                $operations += $fulloperation
-            }            
-        } 
-        $Body = [ordered]@{ 
-            'name'            = $Name
-            'assetType'       = 'VMWARE_VIRTUAL_MACHINE'
-            'type'            = 'ACTIVE'
-            'dataConsistency' = 'CRASH_CONSISTENT'
-            'enabled'         = $enabled.IsPresent
-            'description'     = $Description
-            'encrypted'       = $encrypted.IsPresent
-            'priority'        = 1
-            'passive'         = $false
-            'forceFull'       = $false
-            'details'         = @{
-                'vm' = @{
-                    'protectionEngine' = 'VMDIRECT'
-                }
+            'protection' = @{
+              'backupMode' = $backupMode
             }
-            'stages'          = @(
-                @{
-                    'id'         = (New-Guid).Guid   
-                    'type'       = 'PROTECTION'
-                    'passive'    = $false
-                    'attributes' = @{
-                        'vm'         = @{
-                            'excludeSwapFiles' = $false
-                            'disableQuiescing' = $false
-                        }
-                        'protection' = @{
-                            'backupMode' = 'FSS'
-                        }
-                    }                     
-                    'target'     = @{
-                        'storageSystemId' = $StorageSystemID
-                    }
-                    'operations' = $operations
-                    'retention'  = @{
-                        'interval' = $RetentionInterval
-                        'unit'     = $RetentionUnit
-                    }
-                }
-            ) 
-        } | convertto-json -Depth 7
+          }                     
+          'target'     = @{
+            'storageSystemId' = $StorageSystemID
+          }
+          'operations' = $operations
+          'retention'  = @{
+            'interval' = $RetentionInterval
+            'unit'     = $RetentionUnit
+          }
+        }
+      ) 
+    } | convertto-json -Depth 7
 
 
         
-        write-verbose ($body | out-string)
-        $Parameters = @{
-            body             = $body 
-            Uri              = $URI
-            Method           = $Method
-            PPDM_API_BaseUri = $PPDM_API_BaseUri
-            apiver           = $apiver
-            Verbose          = $PSBoundParameters['Verbose'] -eq $true
-        } 
-        if (!$noop.IsPresent) {      
-            try {
-                $Response += Invoke-PPDMapirequest @Parameters
-            }
-            catch {
-                Get-PPDMWebException  -ExceptionMessage $_
-                break
-            }
-            write-verbose ($response | Out-String)
-        } 
+    write-verbose ($body | out-string)
+    $Parameters = @{
+      body             = $body 
+      Uri              = $URI
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
     } 
-    end {    
-        switch ($PsCmdlet.ParameterSetName) {
-            default {
-                write-output ($response | convertfrom-json)
-            } 
-        }   
-    }
+    if (!$noop.IsPresent) {      
+      try {
+        $Response += Invoke-PPDMapirequest @Parameters
+      }
+      catch {
+        Get-PPDMWebException  -ExceptionMessage $_
+        break
+      }
+      write-verbose ($response | Out-String)
+    } 
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      default {
+        write-output ($response | convertfrom-json)
+      } 
+    }   
+  }
 }
 
 
 
 
 function New-PPDMprotection_policies {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $True, ValueFromPipeline = $false)]
-        [ValidateLength(1, 150)][string]$Name,
-        [Parameter(Mandatory = $True, ValueFromPipeline = $false)]
-        [ValidateLength(1, 150)][string]$StorageSystemID,        
-        [Parameter(Mandatory = $True, ValueFromPipeline = $false)]
-        [ValidateSet('VMAX_STORAGE_GROUP',
-            'VMWARE_VIRTUAL_MACHINE',
-            'ORACLE_DATABASE',
-            'MICROSOFT_SQL_DATABASE',
-            'FILE_SYSTEM',
-            'KUBERNETES',
-            'SAP_HANA_DATABASE',
-            'MICROSOFT_EXCHANGE_DATABASE'
-        )]
-        $assetType,
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
-        [ValidateSet('CRASH_CONSISTENT',
-            'APPLICATION_CONSISTENT' )]
-        $dataConsistency = 'CRASH_CONSISTENT',
-        [Parameter(Mandatory = $true, ValueFromPipeline = $false)]
-        [switch]$enabled,
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
-        [DateTime]$startime = "8:00 PM",
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
-        [DateTime]$endtime = "6:00 AM",
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
-        [switch]$passive,  
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
-        [switch]$encrypted, 
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
-        [switch]$forceFull,
-        [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
-        [string]$Description = '' ,
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2"           
-    )
-    begin {
-        $Response = @()
-        $METHOD = "POST"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-    }     
-    Process {
-        switch ($PsCmdlet.ParameterSetName) {
-            default {
-                $URI = "/$myself"
-            }
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $True, ValueFromPipeline = $false)]
+    [ValidateLength(1, 150)][string]$Name,
+    [Parameter(Mandatory = $True, ValueFromPipeline = $false)]
+    [ValidateLength(1, 150)][string]$StorageSystemID,        
+    [Parameter(Mandatory = $True, ValueFromPipeline = $false)]
+    [ValidateSet('VMAX_STORAGE_GROUP',
+      'VMWARE_VIRTUAL_MACHINE',
+      'ORACLE_DATABASE',
+      'MICROSOFT_SQL_DATABASE',
+      'FILE_SYSTEM',
+      'KUBERNETES',
+      'SAP_HANA_DATABASE',
+      'MICROSOFT_EXCHANGE_DATABASE'
+    )]
+    $assetType,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
+    [ValidateSet('CRASH_CONSISTENT',
+      'APPLICATION_CONSISTENT' )]
+    $dataConsistency = 'CRASH_CONSISTENT',
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false)]
+    [switch]$enabled,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
+    [DateTime]$startime = "8:00PM",
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
+    [DateTime]$endtime = "6:00AM",
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
+    [switch]$passive,  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
+    [switch]$encrypted, 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
+    [switch]$forceFull,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
+    [string]$Description = '' ,
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"           
+  )
+  begin {
+    $Response = @()
+    $METHOD = "POST"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+  }     
+  Process {
+    switch ($PsCmdlet.ParameterSetName) {
+      default {
+        $URI = "/$myself"
+      }
 
-        }
-        Write-Verbose "Casting Time"
-        $RunTime = $startime - $endtime     
-
-        switch ($assetType) {
-            'VMWARE_VIRTUAL_MACHINE' {
-                $Body = [ordered]@{ 
-                    'name'            = $Name
-                    'assetType'       = $assetType
-                    'type'            = 'ACTIVE'
-                    'dataConsistency' = $dataConsistency
-                    'enabled'         = $enabled.IsPresent
-                    'description'     = $Description
-                    'encrypted'       = $encrypted.IsPresent
-                    'priority'        = 1
-                    'passive'         = $passive.IsPresent
-                    'forceFull'       = $forceFull.IsPresent
-                    'details'         = @{
-                        'vm' = @{
-                            'protectionEngine' = 'VMDIRECT'
-                        }
-                    }
-                    'stages'          = @(
-                        @{
-                            'id'         = (New-Guid).Guid   
-                            'type'       = 'PROTECTION'
-                            'passive'    = $passive.IsPresent
-                            'target'     = @{
-                                'storageSystemId' = $StorageSystemID
-                            }
-                            'operations' = @(
-                                @{
-                                    'backupType' = 'SYNTHETIC_FULL'
-                                    'schedule'   = @{
-                                        'frequency'  = 'monthly_'
-                                        'duration'   = "PT$(($starttime - $endtimetime).Hours)H"
-                                        'dayOfMonth' = 1
-                                        'startTime'  = $(Get-DAte $starttime -Format yyyy-MM-ddThh:mm:ss.000Z)
-                                    }
-                                }
-                            )
-                            'retention'  = @{
-                                'interval' = 1
-                                'unit'     = 'MONTH'
-                            }
-                        }
-                    ) 
-                } | convertto-json -Depth 7
-            }
-            default {
-                write-host "Not jet implemented"
-                return
-            }
-        }
-        
-        write-verbose ($body | out-string)
-        $Parameters = @{
-            body             = $body 
-            Uri              = "/$Myself"
-            Method           = $Method
-            PPDM_API_BaseUri = $PPDM_API_BaseUri
-            apiver           = $apiver
-            Verbose          = $PSBoundParameters['Verbose'] -eq $true
-        }           
-        try {
-            $Response += Invoke-PPDMapirequest @Parameters
-        }
-        catch {
-            Get-PPDMWebException  -ExceptionMessage $_
-            break
-        }
-        write-verbose ($response | Out-String)
-    } 
-    end {    
-        switch ($PsCmdlet.ParameterSetName) {
-            default {
-                write-output ($response | convertfrom-json)
-            } 
-        }   
     }
+    Write-Verbose "Casting Time"
+    $RunTime = $startime - $endtime     
+
+    switch ($assetType) {
+      'VMWARE_VIRTUAL_MACHINE' {
+        $Body = [ordered]@{ 
+          'name'            = $Name
+          'assetType'       = $assetType
+          'type'            = 'ACTIVE'
+          'dataConsistency' = $dataConsistency
+          'enabled'         = $enabled.IsPresent
+          'description'     = $Description
+          'encrypted'       = $encrypted.IsPresent
+          'priority'        = 1
+          'passive'         = $passive.IsPresent
+          'forceFull'       = $forceFull.IsPresent
+          'details'         = @{
+            'vm' = @{
+              'protectionEngine' = 'VMDIRECT'
+            }
+          }
+          'stages'          = @(
+            @{
+              'id'         = (New-Guid).Guid   
+              'type'       = 'PROTECTION'
+              'passive'    = $passive.IsPresent
+              'target'     = @{
+                'storageSystemId' = $StorageSystemID
+              }
+              'operations' = @(
+                @{
+                  'backupType' = 'SYNTHETIC_FULL'
+                  'schedule'   = @{
+                    'frequency'  = 'monthly_'
+                    'duration'   = "PT$(($starttime - $endtime).Hours)H"
+                    'dayOfMonth' = 1
+                    'startTime'  = $(Get-DAte $starttime -Format yyyy-MM-ddThh:mm:ss.000Z)
+                  }
+                }
+              )
+              'retention'  = @{
+                'interval' = 1
+                'unit'     = 'MONTH'
+              }
+            }
+          ) 
+        } | convertto-json -Depth 7
+      }
+      default {
+        write-host "Not jet implemented"
+        return
+      }
+    }
+        
+    write-verbose ($body | out-string)
+    $Parameters = @{
+      body             = $body 
+      Uri              = "/$Myself"
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }           
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      default {
+        write-output ($response | convertfrom-json)
+      } 
+    }   
+  }
 }
 
 
@@ -1429,3 +1632,171 @@ function New-PPDMprotection_policies {
 }
 }
 }#>
+
+
+function Remove-PPDMprotection_policies {
+  [CmdletBinding()]
+  param(
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2",
+    [Parameter(Mandatory = $true, Position = 1, ValueFromPipelineByPropertyName = $true)]
+    $id
+  )
+  begin {
+    $Response = @()
+    $METHOD = "DELETE"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
+    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+ 
+  }     
+  Process {
+
+    $URI = "/$myself/$id"
+    $Parameters = @{
+      #            body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Rest'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }      
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters      
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response | convertfrom-json
+      }
+      default {
+        write-output ($response | convertfrom-json).content
+      } 
+    }   
+  }
+}
+
+
+
+function Remove-PPDMProtection_policy_assignment {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+    [alias('fqdn')][string[]]$AssetID, 
+    [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+    [alias('PLC')]$ID, 
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
+
+  )
+  begin {
+    $Response = @()
+    $METHOD = "POST"
+  }     
+  Process {
+
+    $URI = "/protection-policies/$ID/asset-unassignments"
+    if ($AssetID.Count -eq 1) {
+      $body = "[`"$AssetID`"]"
+    }
+    else {
+      $body = @(
+        @($AssetID)
+      ) | ConvertTo-Json -Depth 3
+    }
+        
+    Write-Verbose ($body | Out-String)  
+    $Parameters = @{
+      body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Rest'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }      
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters            
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'Host' {
+        write-output $response 
+      }
+      default {
+        write-output ($response )
+      } 
+    }   
+  }
+}
+
+function Add-PPDMProtection_policy_assignment {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+    [alias('fqdn')][string[]]$AssetID, 
+    [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+    [alias('PLC')]$ID, 
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
+
+  )
+  begin {
+    $Response = @()
+    $METHOD = "POST"
+  }     
+  Process {
+
+    $URI = "/protection-policies/$ID/asset-assignments"
+    if ($AssetID.Count -eq 1) {
+      $body = "[`"$AssetID`"]"
+    }
+    else {
+      $body = @(
+        @($AssetID)
+      ) | ConvertTo-Json -Depth 3
+    }
+        
+    Write-Verbose ($body | Out-String)  
+    $Parameters = @{
+      body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Rest'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }      
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters            
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'Host' {
+        write-output $response 
+      }
+      default {
+        write-output ($response )
+      } 
+    }   
+  }
+}
+
