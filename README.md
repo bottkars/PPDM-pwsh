@@ -102,7 +102,7 @@ New-PPDMExchangeBackupPolicy -Schedule $sched -StorageSystemID ed9a3cd6-7e69-433
 ```
 this Translates into a PPDM Schedule as follows:
 
-[PPDM_SCHEDULE](https://github.com/bottkars/bottkars.github.io/raw/master/images/PPDM_NEW_SCHEDULE.png)
+![image](https://github.com/bottkars/bottkars.github.io/raw/master/images/PPDM_NEW_SCHEDULE.png)
 
 # :star: :star: :star:Monitor activities
 
