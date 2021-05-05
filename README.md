@@ -14,7 +14,7 @@ the module should be installed from [PSgallery](https://www.powershellgallery.co
 ```Powershell
 Install-Module -Name PPDM-pwsh	
 ```
-We need toinitially load the Module and connect to the API Endpoint:
+We need to initially load the Module and connect to the API Endpoint:
 ### Loading the Module
 ```Powershell
 ipmo .\PPDM-pwsh -Force
@@ -94,15 +94,24 @@ Get-PPDMdatadomain_cloud_units -storageSystemId ed9a3cd6-7e69-4332-a299-aaf258e2
 
 # :new: :star: Protection Policy Creation
 
-Create a Centralized Exchange Backup Policy
+
 ##
+Create a Centralized Exchange Backup Policy
+In order to create a Primary Backup for Exchange, we fisrt need to create a Schdule locally
+Schedules for Primary Backup set the Time / Window for Synthetic Fulls, and Optionally
+the Time For FULLS 
+
 ```Powershell
 $schedule=New-PPDMBackupSchedule -hourly_w_full_weekly -CreateCopyIntervalHrs 2 -CreateFull_Every_DayofWeek SUNDAY -RetentionUnit DAY -RetentionInterval 7 
-New-PPDMExchangeBackupPolicy -Schedule $sched -StorageSystemID ed9a3cd6-7e69-4332-a299-aaf258e23328 -consistencyCheck LOGS_ONLY -enabled -encrypted -Name CI_EX_CLI_CENTRAL2
 ```
-this Translates into a PPDM Schedule as follows:
+this Translates into a Primary PPDM Backup Schedule as follows:
 
 ![image](https://github.com/bottkars/bottkars.github.io/raw/master/images/PPDM_NEW_SCHEDULE.png)
+
+Now we can set the Backup Policy with Above Schedule, and control Exchange Specific Feature
+```Powershell
+New-PPDMExchangeBackupPolicy -Schedule $sched -StorageSystemID ed9a3cd6-7e69-4332-a299-aaf258e23328 -consistencyCheck LOGS_ONLY -enabled -encrypted -Name CI_EX_CLI_CENTRAL2
+```
 
 # :star: :star: :star:Monitor activities
 
