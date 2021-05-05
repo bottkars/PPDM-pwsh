@@ -874,3 +874,72 @@ function Remove-PPDMsmtp {
   "type": "object"
 }
 #>
+
+
+#post api/v2/certificates-replacement
+
+#{"privateKey":"-----BEGIN RSA PRIVATE KEY-----END RSA PRIVATE KEY-----"
+#,"certificateChain":"----------"}
+
+function Set-PPDMcertificates {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, ParameterSetName = 'certificate_from_file' )]
+        [System.IO.FileInfo]$certificateChainfile,  
+        [Parameter(Mandatory = $True, ParameterSetName = 'byID')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'certificate_from_file' )]
+        [System.IO.FileInfo]$privateKeyfile, 
+        [Parameter(Mandatory = $false, ParameterSetName = 'certificate_from_file' )]
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ParameterSetName = 'certificate_from_file' )]
+        $apiver = "/api/v2"
+
+    )
+    begin {
+        $Response = @()
+        $METHOD = "POST"
+        $Myself = 'certificates-replacement'
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                $URI = "/$myself"
+            }
+        } 
+        $privateKey_content = (Get-Content $privateKeyfile | Out-String )
+        $certificateChain_content = (Get-Content $certificateChainfile | Out-String )
+
+        $body = @{
+            privateKey     = $privateKey_content
+            certificateChain = $certificateChain_content
+        } | convertto-json 
+        $Parameters = @{
+            body             = $body 
+            Uri              = $Uri
+            Method           = $Method
+            RequestMethod    = 'Rest'
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            ResponseHeadersVariable = 'HeaderResponse'
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }      
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                write-output $response.Date
+                Write-Host "Certificates have been set. Refresh your Browser. You might restart nginx on the Appliance (systemclt restart nginx ) for changes to take place immediately"
+            } 
+        }   
+    }
+}

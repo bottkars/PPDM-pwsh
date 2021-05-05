@@ -54,6 +54,17 @@ function Get-PPDMprotection_details {
     }
 }
 
+<#
+.Synopsis
+Gets PPDM Alerts
+
+.Description
+Retrieve PPDM Alerts, IDś, State as 
+
+.Example
+
+Get-PPDMalerts | where acknowledgement -match UNACKNOWLEDGED | Set-PPDMalerts_acknowledgement -acknowledgeState ACKNOWLEDGED
+#>
 function Get-PPDMalerts {
     [CmdletBinding()]
     param(
