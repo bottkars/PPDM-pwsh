@@ -1,19 +1,121 @@
+<#
+.Synopsis
+Get all Protection Policies from PPDM
+.Description
+Retrieve al Protection Policies
+- supports PPDM Filters
+
+.Example
+Get all Protection Policies as table format 
+
+id                                   name                          description                         assetType                   type   targetStorageProvisionStrategy
+--                                   ----                          -----------                         ---------                   ----   ------------------
+13ca2528-171f-4628-9063-b35aa9d265c5 Silver_SPBM                   This Policy does DDVE Cloud Tier    VMWARE_VIRTUAL_MACHINE      ACTIVE AUTO_PROVISION
+200fb9c7-22a8-406b-b495-b6d6457de034 GOLD_SPBM                                                         VMWARE_VIRTUAL_MACHINE      ACTIVE AUTO_PROVISION
+a374a075-4b9f-4ea8-bfc7-3700bea23314 GOLD_SPBM_NOTOOLS                                                 VMWARE_VIRTUAL_MACHINE      ACTIVE AUTO_PROVISION
+ef4d7868-0786-4968-88b2-4da913c2f905 GOLD_SPBM_APP_AWARE                                               VMWARE_VIRTUAL_MACHINE      ACTIVE AUTO_PROVISION
+23a74ead-6f91-4c49-844a-1f903a39ad70 Centralized_SQL                                                   MICROSOFT_SQL_DATABASE      ACTIVE AUTO_PROVISION
+0b1c9b16-0775-4f5a-b613-9a0b75ca6aa6 Gold_Kubernetes                                                   KUBERNETES                  ACTIVE AUTO_PROVISION
+a8d0fa51-b334-47ef-9c00-23499bfef896 SQL_APP_DIRECT                This Policy uses Application Direct MICROSOFT_SQL_DATABASE      ACTIVE AUTO_PROVISION
+ead5f20a-efd6-42bc-a353-985121f62ed2 Gold_VMware                                                       VMWARE_VIRTUAL_MACHINE      ACTIVE AUTO_PROVISION
+38d3acbc-8b41-477b-a5ab-6a85c74bfa9f Exchange Silver                                                   MICROSOFT_EXCHANGE_DATABASE ACTIVE AUTO_PROVISION
+4f8ee8f7-68ef-4c09-8789-17301e82be3a Kube Backup Platform Services                                     KUBERNETES                  ACTIVE AUTO_PROVISION
+e890a685-9fe9-4f9e-b91f-cfd61e7b131e Exchange Silver SelfService                                       MICROSOFT_EXCHANGE_DATABASE ACTIVE AUTO_PROVISION
+aa9665ac-9a25-44db-a3e1-cbf0e698c971 CI_EX_CLI_CENTRAL2                                                MICROSOFT_EXCHANGE_DATABASE ACTIVE AUTO_PROVISION
+
+.Example
+Get Protection Policy with ID
+Get-PPDMprotection_policies -id a374a075-4b9f-4ea8-bfc7-3700bea23314
+
+id                             : a374a075-4b9f-4ea8-bfc7-3700bea23314
+name                           : GOLD_SPBM_NOTOOLS
+description                    :
+assetType                      : VMWARE_VIRTUAL_MACHINE
+type                           : ACTIVE
+targetStorageProvisionStrategy : AUTO_PROVISION
+enabled                        : True
+passive                        : False
+forceFull                      : False
+priority                       : 1
+credentials                    :
+encrypted                      : False
+dataConsistency                : CRASH_CONSISTENT
+complianceInterval             :
+details                        : @{vm=}
+summary                        : @{numberOfAssets=1; totalAssetCapacity=8589934592; totalAssetProtectionCapacity=2341732352; numberOfJobFailures=0;
+                                 numberOfSlaFailures=0; numberOfSlaSuccess=0; lastExecutionStatus=SUCCEEDED}
+stages                         : {@{id=2e07bd54-7fc1-7dea-0ec7-c827e41faec2; type=CDR; passive=False; retention=; target=;
+                                 sourceStageId=4dd98961-1e1b-29a2-8712-c37ce8c1ec69; attributes=; operations=System.Object[]},
+                                 @{id=4dd98961-1e1b-29a2-8712-c37ce8c1ec69; type=PROTECTION; passive=False; retention=; target=; attributes=;
+                                 operations=System.Object[]}}
+filterIds                      : {}
+createdAt                      : 08.02.2021 12:03:48
+updatedAt                      : 08.02.2021 12:17:50
+slaId                          :
+_links                         : @{self=}
+
+.Example
+Use Filter to match a name
+Get-PPDMprotection_policies -filter 'name lk "%NOTOOLS%"'
+
+id                             : a374a075-4b9f-4ea8-bfc7-3700bea23314
+name                           : GOLD_SPBM_NOTOOLS
+description                    :
+assetType                      : VMWARE_VIRTUAL_MACHINE
+type                           : ACTIVE
+targetStorageProvisionStrategy : AUTO_PROVISION
+enabled                        : True
+passive                        : False
+forceFull                      : False
+priority                       : 1
+credentials                    :
+encrypted                      : False
+dataConsistency                : CRASH_CONSISTENT
+complianceInterval             :
+details                        : @{vm=}
+summary                        : @{numberOfAssets=1; totalAssetCapacity=8589934592;
+                                 totalAssetProtectionCapacity=2341732352; numberOfJobFailures=0;
+                                 numberOfSlaFailures=0; numberOfSlaSuccess=0; lastExecutionStatus=SUCCEEDED}
+stages                         : {@{id=2e07bd54-7fc1-7dea-0ec7-c827e41faec2; type=CDR; passive=False; retention=;
+                                 target=; sourceStageId=4dd98961-1e1b-29a2-8712-c37ce8c1ec69; attributes=;
+                                 operations=System.Object[]}, @{id=4dd98961-1e1b-29a2-8712-c37ce8c1ec69;
+                                 type=PROTECTION; passive=False; retention=; target=; attributes=;
+                                 operations=System.Object[]}}
+filterIds                      : {}
+createdAt                      : 08.02.2021 12:03:48
+updatedAt                      : 08.02.2021 12:17:50
+slaId                          :
+_links                         : @{self=}
+
+
+
+
+#>
 function Get-PPDMprotection_policies {
   [CmdletBinding()]
   param(
     [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     $id,
-    [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     [switch]$asset_assignments,
+    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    $filter,
+    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]    
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-    $apiver = "/api/v2"
+    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    $apiver = "/api/v2",
+    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    $body    
   )
   begin {
     $Response = @()
     $METHOD = "GET"
     $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
   }     
   Process {
@@ -35,6 +137,9 @@ function Get-PPDMprotection_policies {
       PPDM_API_BaseUri = $PPDM_API_BaseUri
       apiver           = $apiver
       Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }
+    if ($filter){
+      $parameters.Add('filter',$filter)
     }           
     try {
       $Response += Invoke-PPDMapirequest @Parameters       
