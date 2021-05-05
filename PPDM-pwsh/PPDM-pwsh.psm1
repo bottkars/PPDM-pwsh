@@ -250,6 +250,9 @@ function Invoke-PPDMapirequest {
         $ContentType = 'application/json', 
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
         [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
+        $ResponseHeadersVariable,     
+        [Parameter(Mandatory = $false, ParameterSetName = 'default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
         $apiver = "/api/v2",
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
         [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
@@ -302,7 +305,9 @@ function Invoke-PPDMapirequest {
                     $uri = "$($uri)?$filterstring"
                     Write-Verbose $uri
                 }
-
+                if ($ResponseHeadersVariable) {
+                    $Parameters.Add('ResponseHeadersVariable', 'HeadersResponse')
+                }
             }
         }
         $Parameters.Add('URI', $uri)
@@ -335,7 +340,10 @@ function Invoke-PPDMapirequest {
         Write-Warning "PPDM_API_Headers are not present. Did you connect to PPDM_API  using connect-PPDMAPIendpoint ? "
         break
     }
-    
+    if ($ResponseHeadersVariable)
+    {
+        Write-Output $HeadersResponse 
+    }
     Write-Output $Result
 }
 

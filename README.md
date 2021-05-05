@@ -92,7 +92,17 @@ Get-PPDMstorage_systems
 Get-PPDMdatadomain_cloud_units -storageSystemId ed9a3cd6-7e69-4332-a299-aaf258e23328
 ```
 
+# :new: :star: Protection Policy Creation
 
+Create a Centralized Exchange Backup Policy
+##
+```Powershell
+$schedule=New-PPDMBackupSchedule -hourly_w_full_weekly -CreateCopyIntervalHrs 2 -CreateFull_Every_DayofWeek SUNDAY -RetentionUnit DAY -RetentionInterval 7 
+New-PPDMExchangeBackupPolicy -Schedule $sched -StorageSystemID ed9a3cd6-7e69-4332-a299-aaf258e23328 -consistencyCheck LOGS_ONLY -enabled -encrypted -Name CI_EX_CLI_CENTRAL2
+```
+this Translates into a PPDM Schedule as follows:
+
+[PPDM_SCHEDULE](https://github.com/bottkars/bottkars.github.io/raw/master/images/PPDM_NEW_SCHEDULE.png)
 
 # :star: :star: :star:Monitor activities
 
