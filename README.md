@@ -14,6 +14,12 @@ the module should be installed from [PSgallery](https://www.powershellgallery.co
 ```Powershell
 Install-Module -Name PPDM-pwsh	
 ```
+
+:stuck_out_tongue: Install the Pre-Release Version:
+```Powershell
+Install-Module PPDM-pwsh -AllowPrerelease -MinimumVersion 19.8
+```
+
 We need to initially load the Module and connect to the API Endpoint:
 ### Loading the Module
 ```Powershell
