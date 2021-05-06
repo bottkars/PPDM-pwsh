@@ -165,7 +165,8 @@ Starting a Policy requires Stage and Policy ID.
 CMDlet Supports the Input ov a Policy Obcect including. See Example
 .Example
 $PolicyObject = Get-PPDMprotection_policies  -body @{pageSize=1} -filter 'name eq "GOLD_SPBM_NOTOOLS"'
-
+Start-PPDMprotection -PolicyObject $PolicyObject
+Thu, 06 May 2021 09:11:11 GMT
 
 #>
 function Start-PPDMprotection {
@@ -239,6 +240,7 @@ function Start-PPDMprotection {
         } )
     } | convertto-json -Depth 3
     write-verbose ($body | out-string)
+    Write-Verbose $PolicyID
     $Parameters = @{
       RequestMethod           = 'Rest'
       body                    = $body 
