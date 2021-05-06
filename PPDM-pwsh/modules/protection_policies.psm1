@@ -249,6 +249,7 @@ function Start-PPDMprotection {
       Verbose                 = $PSBoundParameters['Verbose'] -eq $true
       ResponseHeadersVariable = 'HeaderResponse'
     }
+    Write-Verbose ($Parameters | Out-String)
     if (!$noop.ispresent) {        
       try {
         $Response += Invoke-PPDMapirequest @Parameters
