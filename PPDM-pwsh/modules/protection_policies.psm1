@@ -110,7 +110,7 @@ function Get-PPDMprotection_policies {
     $apiver = "/api/v2",
     [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    $body    
+    $body = @{size = 200 }   
   )
   begin {
     $Response = @()
@@ -131,6 +131,7 @@ function Get-PPDMprotection_policies {
       }
     } 
     $Parameters = @{
+      RequestMethod    = 'REST'
       body             = $body 
       Uri              = $URI
       Method           = $Method
@@ -138,9 +139,10 @@ function Get-PPDMprotection_policies {
       apiver           = $apiver
       Verbose          = $PSBoundParameters['Verbose'] -eq $true
     }
-    if ($filter){
-      $parameters.Add('filter',$filter)
-    }           
+    if ($filter) {
+      $parameters.Add('filter', $filter)
+    }    
+    Write-Verbose ($Parameters | Out-String)       
     try {
       $Response += Invoke-PPDMapirequest @Parameters       
     }
@@ -157,11 +159,11 @@ function Get-PPDMprotection_policies {
           write-output ($response | convertfrom-json).content
         }
         else {
-          write-output $response | convertfrom-json
+          write-output $response
         }            
       }
       default {
-        write-output ($response | convertfrom-json).content
+        write-output $response.content
       } 
     }   
   }
@@ -183,13 +185,13 @@ function Start-PPDMprotection {
     [string][alias('stage')]$StageID,    
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'byIDS')]
     [ValidateSet("FULL",
-    "DIFFERENTIAL",
-    "LOG",
-    "INCREMENTAL",
-    "CUMULATIVE",
-    "AUTO_FULL",
-    "SYNTHETIC_FULL",
-    "GEN0")]
+      "DIFFERENTIAL",
+      "LOG",
+      "INCREMENTAL",
+      "CUMULATIVE",
+      "AUTO_FULL",
+      "SYNTHETIC_FULL",
+      "GEN0")]
     $BackupType = 'FULL',
     [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName = 'byPolicyObject')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'byIDS')]
@@ -219,25 +221,25 @@ function Start-PPDMprotection {
       default {
       }
       'byPolicyObject' {
-      $StageID = ($PolicyObject.stages | Where-Object type -eq PROTECTION).id
-      $BackupType = ($PolicyObject.stages | Where-Object type -eq PROTECTION).operations.backupType
-      $PolicyID = $Policy.id
-    }
+        $StageID = ($PolicyObject.stages | Where-Object type -eq PROTECTION).id
+        $BackupType = ($PolicyObject.stages | Where-Object type -eq PROTECTION).operations.backupType
+        $PolicyID = $Policy.id
+      }
 
     }    
     $Body = [ordered]@{
       'assetIds' = $AssetIDs
       'stages'   = @(
         @{
-        'id'         = $StageID  
-        'operation' = @{
-          'backupType' = $BackupType
-        }  
-        'retention'  = @{
-          'interval' = $RetentionInterval
-          'unit'     = $RetentionUnit
-        }
-      } )
+          'id'        = $StageID  
+          'operation' = @{
+            'backupType' = $BackupType
+          }  
+          'retention' = @{
+            'interval' = $RetentionInterval
+            'unit'     = $RetentionUnit
+          }
+        } )
     } | convertto-json -Depth 3
     write-verbose ($body | out-string)
     $Parameters = @{
