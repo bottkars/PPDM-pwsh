@@ -292,7 +292,8 @@ function Invoke-PPDMapirequest {
             }
             default {
                 if ($Body) {
-                    $Parameters.Add('body', "$body")
+                    $Parameters.Add('body', $body)
+                    Write-Verbose ($Body | Out-String)
                 }
                 if ($query) {
                     $Parameters.Add('body', $query)

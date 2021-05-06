@@ -56,38 +56,24 @@ _links                         : @{self=}
 
 .Example
 Use Filter to match a name
-Get-PPDMprotection_policies -filter 'name lk "%NOTOOLS%"'
+Get-PPDMprotection_policies -filter 'name lk "%NOTOOLS%"' | Select-Object id,name,assetType
 
-id                             : a374a075-4b9f-4ea8-bfc7-3700bea23314
-name                           : GOLD_SPBM_NOTOOLS
-description                    :
-assetType                      : VMWARE_VIRTUAL_MACHINE
-type                           : ACTIVE
-targetStorageProvisionStrategy : AUTO_PROVISION
-enabled                        : True
-passive                        : False
-forceFull                      : False
-priority                       : 1
-credentials                    :
-encrypted                      : False
-dataConsistency                : CRASH_CONSISTENT
-complianceInterval             :
-details                        : @{vm=}
-summary                        : @{numberOfAssets=1; totalAssetCapacity=8589934592;
-                                 totalAssetProtectionCapacity=2341732352; numberOfJobFailures=0;
-                                 numberOfSlaFailures=0; numberOfSlaSuccess=0; lastExecutionStatus=SUCCEEDED}
-stages                         : {@{id=2e07bd54-7fc1-7dea-0ec7-c827e41faec2; type=CDR; passive=False; retention=;
-                                 target=; sourceStageId=4dd98961-1e1b-29a2-8712-c37ce8c1ec69; attributes=;
-                                 operations=System.Object[]}, @{id=4dd98961-1e1b-29a2-8712-c37ce8c1ec69;
-                                 type=PROTECTION; passive=False; retention=; target=; attributes=;
-                                 operations=System.Object[]}}
-filterIds                      : {}
-createdAt                      : 08.02.2021 12:03:48
-updatedAt                      : 08.02.2021 12:17:50
-slaId                          :
-_links                         : @{self=}
+id                                   name              assetType
+--                                   ----              ---------
+a374a075-4b9f-4ea8-bfc7-3700bea23314 GOLD_SPBM_NOTOOLS VMWARE_VIRTUAL_MACHINE
 
+.Example
+Use Pagination to retrieve only 5 Results
+Get-PPDMprotection_policies  -body @{pageSize=5} -filter 'name lk "%GOLD%"'
 
+.Example
+Use Pagination and filter t retrieve 
+Get-PPDMprotection_policies  -body @{pageSize=2} -filter 'name lk "%GOLD%"' | Select-Object id,name,assetType
+
+id                                   name              assetType
+--                                   ----              ---------
+200fb9c7-22a8-406b-b495-b6d6457de034 GOLD_SPBM         VMWARE_VIRTUAL_MACHINE
+a374a075-4b9f-4ea8-bfc7-3700bea23314 GOLD_SPBM_NOTOOLS VMWARE_VIRTUAL_MACHINE
 
 
 #>
@@ -110,7 +96,7 @@ function Get-PPDMprotection_policies {
     $apiver = "/api/v2",
     [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    $body = @{size = 200 }   
+    $body = @{pageSize = 200 }   
   )
   begin {
     $Response = @()
@@ -171,6 +157,17 @@ function Get-PPDMprotection_policies {
 # /api/v2/protection-policies/{id}/asset-assignments
 
 # post/api/v2/protection-policies/{id}/protections
+<#
+.Synopsis
+New API Edpoint to start a Protection Plicy includig asset list
+.Description
+Starting a Policy requires Stage and Policy ID.
+CMDlet Supports the Input ov a Policy Obcect including. See Example
+.Example
+$PolicyObject = Get-PPDMprotection_policies  -body @{pageSize=1} -filter 'name eq "GOLD_SPBM_NOTOOLS"'
+
+
+#>
 function Start-PPDMprotection {
   [CmdletBinding()]
   param(
