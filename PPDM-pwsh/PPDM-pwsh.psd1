@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.19.7.14'
+ModuleVersion = '19.8.005'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -220,10 +220,14 @@ PrivateData = @{
          ProjectUri = 'https://github.com/bottkars/PPDM-pwsh'
 
         # A URL to an icon representing this module.
-        IconUri = 'https://dtb5pzswcit1e.cloudfront.net/assets/images/product_logos/icon_pivotalcontainerservice@2x.png'
+        IconUri = 'https://vectorified.com/images/dell-emc-icon-12.png'
 
         # ReleaseNotes of this module
         ReleaseNotes = '
+        2021-05-06:
+        - added Pre-Release for new 19.8
+        - adeed Protection Policy Managemnt Step 1
+        - Introduced Query and Pagination       
         2021-02-13:
         - added alert acknowledgement by id
         2020-11-01:
@@ -242,7 +246,7 @@ PrivateData = @{
         - added diconnect (removes Global Variables )
         - added force connect (removes Global Variables )
         '
-
+        Prerelease = 'Pre'
     } # End of PSData hashtable
 
 } # End of PrivateData hashtable
