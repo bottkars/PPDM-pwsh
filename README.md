@@ -21,10 +21,10 @@ Install-Module PPDM-pwsh -AllowPrerelease -MinimumVersion 19.8
 ```
 
 We need to initially load the Module and connect to the API Endpoint:
-### Loading the Module
+### Optionally: Loading the Module (if cloned from Github)
 ```Powershell
 ipmo .\PPDM-pwsh -Force
-Connect-PPDMapiEndpoint -PPDM_API_URI https://<your ppdm server> -user -trustCert -Verbose
+Connect-PPDMapiEndpoint -PPDM_API_URI https://<your ppdm server> -user -trustCert
 ```
 this uses a user password authentication. the token is saved as a Global Variable.
 You also can use a secure Credentials string to connect. Credentials will be stored in Session ofr easy reconnect
