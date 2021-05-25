@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.8.9'
+ModuleVersion = '19.8.10'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -83,7 +83,8 @@ NestedModules = @(
     './modules/monitoring',
     './modules/sdr',
     './modules/locations',
-    './modules/appliance-management'
+    './modules/appliance-management',
+    './modules/license'
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -184,7 +185,9 @@ FunctionsToExport = @(
     'New-PPDMSQLBackupPolicy',
     'New-PPDMExchangeBackupPolicy',
     'Set-PPDMcertificates',
-    'Start-PPDMprotection'    
+    'Start-PPDMprotection',
+    'Get-PPDMLicenses',
+    'Set-PPDMLicenses'    
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -224,6 +227,8 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
+        2021-05-25:
+        - added license feature for new 19.8        
         2021-05-06:
         - added Pre-Release for new 19.8
         - adeed Protection Policy Managemnt Step 1

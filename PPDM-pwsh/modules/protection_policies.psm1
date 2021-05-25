@@ -157,7 +157,7 @@ function Get-PPDMprotection_policies {
 
 <#
 .Synopsis
-New API Edpoint to start a Protection Plicy includig asset list
+New API Edpoint to start a Protection Policy includig asset list
 .Description
 Starting a Policy requires Stage and Policy ID.
 CMDlet Supports the Input ov a Policy Obcect including. See Example
