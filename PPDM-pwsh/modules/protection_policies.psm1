@@ -154,9 +154,7 @@ function Get-PPDMprotection_policies {
     }   
   }
 }
-# /api/v2/protection-policies/{id}/asset-assignments
 
-# post/api/v2/protection-policies/{id}/protections
 <#
 .Synopsis
 New API Edpoint to start a Protection Plicy includig asset list
@@ -164,10 +162,9 @@ New API Edpoint to start a Protection Plicy includig asset list
 Starting a Policy requires Stage and Policy ID.
 CMDlet Supports the Input ov a Policy Obcect including. See Example
 .Example
-$PolicyObject = Get-PPDMprotection_policies  -body @{pageSize=1} -filter 'name eq "GOLD_SPBM_NOTOOLS"'
-Start-PPDMprotection -PolicyObject $PolicyObject
+$Policy = Get-PPDMprotection_policies  -body @{pageSize=1} -filter 'name eq "GOLD_SPBM_NOTOOLS"'
+Start-PPDMprotection -PolicyObject $Policy
 Thu, 06 May 2021 09:11:11 GMT
-
 #>
 function Start-PPDMprotection {
   [CmdletBinding()]
@@ -275,77 +272,7 @@ function Start-PPDMprotection {
   }
 }
 
-<# {
-  "description": "Manual protection at the protection policy level.",
-  "properties": {
-    "assetIds": {
-      "description": "The list of asset IDs for manual backup.\nIf the asset ID list is not empty, the listed assets for manual backup come from the same protection policy (the one that is specified).\nIf the asset list is null or empty, the manual backup occurs for all assets in the specified protection policy.",
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "stages": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "operation": {
-            "description": "operation which include backup type info for adhoc protection",
-            "type": "object",
-            "properties": {
-              "backupType": {
-                "description": "Detailed backup type for adhoc protection",
-                "enum": [
-                  "FULL",
-                  "DIFFERENTIAL",
-                  "LOG",
-                  "INCREMENTAL",
-                  "CUMULATIVE",
-                  "AUTO_FULL",
-                  "SYNTHETIC_FULL",
-                  "GEN0"
-                ],
-                "type": "string"
-              }
-            }
-          },
-          "retention": {
-            "description": "Protection policy copy retention time.",
-            "required": [
-              "interval",
-              "unit"
-            ],
-            "type": "object",
-            "properties": {
-              "interval": {
-                "description": "Retention interval. Used with unit.",
-                "format": "int32",
-                "minimum": 1,
-                "type": "integer"
-              },
-              "unit": {
-                "description": "Retention interval unit. Valid values are the following:\n- DAY\n- WEEK\n- MONTH\n- YEAR",
-                "enum": [
-                  "YEAR",
-                  "MONTH",
-                  "WEEK",
-                  "DAY"
-                ],
-                "type": "string"
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  "type": "object"
-}
-#>
+
 function Start-PPDMprotection_policies {
   [CmdletBinding()]
   param(
