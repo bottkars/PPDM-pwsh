@@ -488,7 +488,7 @@ function Set-PPDMconfigurations {
         write-Host "Setting Timezone"
         $Configurations.timeZone = $Timezone
         $Configurations.ntpServers = $ntpservers 
-        write-verbose ($Configurations | convertto-json | out-string) 
+        write-verbose ($Configurations | convertto-json -depth 5| out-string) 
         $body = $configurations | convertto-json -depth 5 -compress 
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
