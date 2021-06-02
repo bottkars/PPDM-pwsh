@@ -24,7 +24,7 @@ We need to initially load the Module and connect to the API Endpoint:
 ### Optionally: Loading the Module (if cloned from Github)
 ```Powershell
 ipmo .\PPDM-pwsh -Force
-Connect-PPDMapiEndpoint -PPDM_API_URI https://<your ppdm server> -user -trustCert
+Connect-PPDMapiEndpoint -PPDM_API_URI https://<your ppdm server> -trustCert
 ```
 this uses a user password authentication. the token is saved as a Global Variable.
 You also can use a secure Credentials string to connect. Credentials will be stored in Session ofr easy reconnect
