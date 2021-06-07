@@ -1034,7 +1034,150 @@ function New-PPDMVMBackupPolicy {
     }   
   }
 }
+<#
+.Synopsis
+Creates a K8S Backup Policy
+.Description
+K8S Backup Policy is a Syntetic Full and Requires a copy only schedule ( hourly, daily, weekly or monthly )
 
+.Example
+This example Creates a K8S Protection Policy with an 2 - hourly schedule 
+$Storage_system=Get-PPDMstorage_systems | where type -match DATA_DOMAIN_SYSTEM
+$Schedule=New-PPDMBackupSchedule -hourly -CreateCopyIntervalHrs 2 -RetentionUnit DAY -RetentionInterval 7
+New-PPDMK8SBackupPolicy -Schedule $Schedule -StorageSystemID $Storage_system.id -enabled -encrypted -Name CI_K8S_CLI        
+
+
+ id                             : 99a57822-3ef1-4a36-a3c5-d9bab76c1c42
+name                           : CI_K8S_CLI
+description                    :
+assetType                      : KUBERNETES
+type                           : ACTIVE
+targetStorageProvisionStrategy : AUTO_PROVISION
+enabled                        : True
+passive                        : False
+forceFull                      : False
+priority                       : 1
+credentials                    :
+encrypted                      : True
+dataConsistency                : CRASH_CONSISTENT
+complianceInterval             :
+details                        :
+summary                        : @{numberOfAssets=0; totalAssetCapacity=0; totalAssetProtectionCapacity=0;
+                                 numberOfJobFailures=0; numberOfSlaFailures=0; numberOfSlaSuccess=0;
+                                 lastExecutionStatus=IDLE}
+stages                         : {@{id=a6ca8c5c-807e-4e15-8f08-f089fe87e28b; type=PROTECTION; passive=False;
+                                 retention=; target=; attributes=; operations=System.Object[]}}
+filterIds                      :
+createdAt                      : 07.06.2021 10:41:48
+updatedAt                      : 07.06.2021 10:41:48
+slaId                          :
+_links                         : @{self=}
+#>
+function New-PPDMK8SBackupPolicy {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [psobject]$Schedule,    
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [ValidateLength(1, 150)][string]$Name,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [ValidateLength(1, 150)][string]$StorageSystemID,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [string][ValidateSet('FSS', 'VSS')]$backupMode = 'VSS',
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [switch]$excludeSwapFiles,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [switch]$disableQuiescing,    
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [switch]$enabled,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [switch]$encrypted, 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [string]$Description = '' ,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    $apiver = "/api/v2",
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [switch]$noop           
+  )
+  begin {
+    $Response = @()
+    $METHOD = "POST"
+  }     
+  Process {
+
+    $URI = "/protection-policies"
+  
+    $operations = @()
+    $copyoperation = @{}
+    $copyoperation.Add('schedule', $Schedule.CopySchedule)
+    $copyoperation.Add('backupType', 'SYNTHETIC_FULL')         
+
+
+    $operations += $copyoperation 
+
+    $Body = [ordered]@{ 
+      'name'            = $Name
+      'assetType'       = 'KUBERNETES'
+      'type'            = 'ACTIVE'
+      'dataConsistency' = 'CRASH_CONSISTENT'
+      'enabled'         = $enabled.IsPresent
+      'description'     = $Description
+      'encrypted'       = $encrypted.IsPresent
+      'priority'        = 1
+      'passive'         = $false
+      'forceFull'       = $false
+      'details'         = @{
+        'vm' = @{
+          'protectionEngine' = 'VMDIRECT'
+        }
+      }
+      'stages'          = @(
+        @{
+          'id'         = (New-Guid).Guid   
+          'type'       = 'PROTECTION'
+          'passive'    = $false
+          'attributes' = @{}                     
+          'target'     = @{
+            'storageSystemId' = $StorageSystemID
+          }
+          'operations' = $operations
+          'retention'  = $Schedule.Retention
+        }
+      ) 
+    } | convertto-json -Depth 7
+
+
+        
+    write-verbose ($body | out-string)
+    $Parameters = @{
+      body             = $body 
+      Uri              = $URI
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    } 
+    if (!$noop.IsPresent) {      
+      try {
+        $Response += Invoke-PPDMapirequest @Parameters
+      }
+      catch {
+        Get-PPDMWebException  -ExceptionMessage $_
+        break
+      }
+      write-verbose ($response | Out-String)
+    } 
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      default {
+        write-output ($response | convertfrom-json)
+      } 
+    }   
+  }
+}
 
 
 
@@ -1177,6 +1320,8 @@ function New-PPDMFSBackupPolicy {
     }   
   }
 }
+
+
 
 
 

@@ -184,6 +184,7 @@ FunctionsToExport = @(
     'New-PPDMDatabaseBackupSchedule',
     'New-PPDMSQLBackupPolicy',
     'New-PPDMExchangeBackupPolicy',
+    'New-PPDMK8SBackupPolicy',    
     'Set-PPDMcertificates',
     'Start-PPDMprotection',
     'Get-PPDMLicenses',
