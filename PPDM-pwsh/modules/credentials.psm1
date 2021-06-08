@@ -105,7 +105,7 @@ $tokenfile="\\nasug.home.labbuildr.com\minio\aks\aksazs1\ppdmk8stoken-20210606.6
 $Securestring=ConvertTo-SecureString -AsPlainText -String "$(Get-Content $tokenfile -Encoding utf8)" -Force
 $username="limitedadmin"
 $Credentials = New-Object System.Management.Automation.PSCredential($username, $Securestring)
-New-PPDMcredentials -name aksazs1 -type KUBERNETES -authmethod TOKEN -credentials $Credentials
+$newcreds=New-PPDMcredentials -name aksazs1 -type KUBERNETES -authmethod TOKEN -credentials $Credentials
 #>
 function New-PPDMcredentials {
     [CmdletBinding()]

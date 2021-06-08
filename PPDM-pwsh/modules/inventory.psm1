@@ -49,7 +49,7 @@ function Get-PPDMinventory_sources {
 .Synopsis
 Adds Inventory Components
 .Description
-
+Adds Inventory Sources of Types 
 .Example
 Add Kubernetes Inventory
 
@@ -92,20 +92,12 @@ function Add-PPDMinventory_sources {
         [Parameter(Mandatory = $true, ParameterSetName = 'GENERIC_NAS', ValueFromPipelineByPropertyName = $true)]
         [string[]]$address,                    
         [Parameter(Mandatory = $true, ParameterSetName = 'Host', ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('DATADOMAINMANAGEMENTCENTER',
-            #        'SMISPROVIDER',
+        [ValidateSet(
+            # Inventory Type as on of 'DATADOMAINMANAGEMENTCENTER''DDSYSTEM''VCENTER''EXTERNALDATADOMAIN''KUBERNETES'
+            'DATADOMAINMANAGEMENTCENTER',
             'DDSYSTEM',
-            #        'VMAXSYSTEM',
-            #        'XTREMEIOMANAGEMENTSERVER',
-            #        'RECOVERPOINT',
-            #        'HOST_OS',        
-            #        'SQLGROUPS',
-            #        'ORACLEGROUP',
-            #        'DEFAULTAPPGROUP',
             'VCENTER',
             'EXTERNALDATADOMAIN',
-            #        'POWERPROTECTSYSTEM',
-            #        'CDR',
             'KUBERNETES'
         )]$Type, 
         [Parameter(Mandatory = $true, ParameterSetName = 'Host', ValueFromPipelineByPropertyName = $true)]
