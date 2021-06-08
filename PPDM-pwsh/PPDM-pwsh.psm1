@@ -440,7 +440,14 @@ function Get-PPDMprotection_engines {
     }
 }
 
-# /api/v2/asset-backups
+<#
+.Synopsis
+Starts a Backup of an Asset
+.Description
+Starts a Backup of an Asset giving Asset ID and Backup type
+.Example
+Start-PPDMasset_backups -AssetID $Asset.id -BackupType AUTO_FULL
+#>
 function Start-PPDMasset_backups {
     [CmdletBinding()]
     param(

@@ -160,7 +160,7 @@ function Get-PPDMprotection_policies {
 New API Edpoint to start a Protection Policy includig asset list
 .Description
 Starting a Policy requires Stage and Policy ID.
-CMDlet Supports the Input ov a Policy Obcect including. See Example
+CMDlet Supports the Input of a Policy Object including. See Example
 .Example
 $Policy = Get-PPDMprotection_policies  -body @{pageSize=1} -filter 'name eq "GOLD_SPBM_NOTOOLS"'
 Start-PPDMprotection -PolicyObject $Policy
@@ -271,6 +271,7 @@ function Start-PPDMprotection {
     }
   }
 }
+
 
 
 function Start-PPDMprotection_policies {
@@ -1048,6 +1049,10 @@ $Schedule=New-PPDMBackupSchedule -hourly -CreateCopyIntervalHrs 2 -RetentionUnit
 $Policy=New-PPDMK8SBackupPolicy -Schedule $Schedule -StorageSystemID $Storage_system.id -enabled -encrypted -Name CI_K8S_CLI
 $AssetID=(Get-PPDMassets | where { $_.name -match "mongo" -and $_.subtype -eq "K8S_NAMESPACE"}).id
 Add-PPDMProtection_policy_assignment -AssetID $AssetID -id $Policy.id
+Runthe Protection via policy:
+Start-PPDMprotection -PolicyObject $Policy -AssetIDs  $Asset.id
+
+or via asset backup (will be deprectaed)
 Start-PPDMasset_backups -AssetID $AssetID -BackupType AUTO_FULL
 #>
 function New-PPDMK8SBackupPolicy {
