@@ -99,7 +99,13 @@ type     : DATADOMAIN
 method   :
 secretId : 9397c905-5d46-4e2b-80ae-d782b4fb98ab
 internal : False
-
+.Example
+Create Kubernetes Credentials
+$tokenfile="\\nasug.home.labbuildr.com\minio\aks\aksazs1\ppdmk8stoken-20210606.653.18+UTC.json"
+$Securestring=ConvertTo-SecureString -AsPlainText -String "$(Get-Content $tokenfile -Encoding utf8)" -Force
+$username="limitedadmin"
+$Credentials = New-Object System.Management.Automation.PSCredential($username, $Securestring)
+New-PPDMcredentials -name aksazs1 -type KUBERNETES -authmethod TOKEN -credentials $Credentials
 #>
 function New-PPDMcredentials {
     [CmdletBinding()]

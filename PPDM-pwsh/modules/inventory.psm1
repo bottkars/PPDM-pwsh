@@ -45,9 +45,43 @@ function Get-PPDMinventory_sources {
 }
 
 
+<#
+.Synopsis
+Adds Inventory Components
+.Description
 
+.Example
+Add Kubernetes Inventory
 
-# /api/v2/inventory-sources
+Create Kubernetes Credentials
+$tokenfile="\\nasug.home.labbuildr.com\minio\aks\aksazs1\ppdmk8stoken-20210606.653.18+UTC.json"
+$Securestring=ConvertTo-SecureString -AsPlainText -String "$(Get-Content $tokenfile -Encoding utf8)" -Force
+$username="limitedadmin"
+$Credentials = New-Object System.Management.Automation.PSCredential($username, $Securestring)
+$newcreds=New-PPDMcredentials -name aksazs1 -type KUBERNETES -authmethod TOKEN -credentials $Credentials
+
+Add the Certificate
+$myHost="aksazs1.local.cloudapp.azurestack.external"
+Get-PPDMcertificates -newhost $myHost -Port 443 | Approve-PPDMcertificates
+
+Add the inventory
+Add-PPDMinventory_sources -Type KUBERNETES -Hostname $myHost -Name aksazs1 -ID $newcreds.id -port 443
+
+id                  : deacf2c9-9c15-4749-8fb3-619a76ce2bb1
+name                : aksazs1
+version             :
+type                : KUBERNETES
+lastDiscovered      :
+lastDiscoveryResult : @{status=UNKNOWN; summaries=System.Object[]}
+lastDiscoveryTaskId :
+address             : aksazs1.local.cloudapp.azurestack.external
+port                : 443
+credentials         : @{id=c9f25735-352a-4ff3-acbd-d16663804d99}
+details             :
+local               : False
+vendor              :
+_links              : @{self=; storageSystems=; credentials=}
+#>
 function Add-PPDMinventory_sources {
     [CmdletBinding()]
     param(
@@ -121,6 +155,7 @@ function Add-PPDMinventory_sources {
                     port        = $port
                     credentials = @{
                         id = $ID
+                 
                     }
                 }
                 $request.Add('body',$requestbody)
