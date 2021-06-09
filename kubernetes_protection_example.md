@@ -59,6 +59,10 @@ Get-PPDMcertificates -newhost $myHost -Port 443 | Approve-PPDMcertificates
 ```Powershell
 Add-PPDMinventory_sources -Type KUBERNETES -Hostname $myHost -Name aksazs1 -ID $newcreds.id -port 443
 ```
+oh, yes, we have a K8S Endpoint :-)
+```Powershell
+Get-PPDMkubernetes_clusters -Verbose
+```
 ### Create the Protection Policy
 ```Powershell
 get-help New-PPDMK8SBackupPolicy -Examples
