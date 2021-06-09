@@ -1,4 +1,91 @@
-# Example Backup with Kubernetes Protection Policies
+# Kubernetes Examples
+
+## Demo Walktrough for POPUP Sesssion
+### installing ppdm-pwsh
+
+```powershell
+install-module ppdm-pwsh -AllowPrerelease
+Import-Module PPDM-pwsh
+```
+see available Commands
+```Powershell
+Get-command -Module ppdm-pwsh
+```
+
+### connecting to API Endpoint
+```Powershell
+$PPDM_API_URI="https://ppdmazs1.local.cloudapp.azurestack.external"
+$API=Connect-PPDMapiEndpoint -PPDM_API_URI $PPDM_API_URI -trustCert
+```
+### Show some assets and Inventory Sources
+Move around some Basic Commands, explain Pipelining
+```
+Get-PPDMconfigurations
+Get-PPDMconfigurations | Get-PPDMconfigstatus
+Get-PPDMassets
+Get-PPDMinventory_sources
+```
+
+
+### creating a Kubernetes Protection Policy
+explaining inline Helps
+```Powershell
+get-help New-PPDMK8SBackupPolicy
+get-help New-PPDMK8SBackupPolicy -Examples
+get-help Add-PPDMinventory_sources -Examples
+```
+
+### Creating a new Credential from a service account token
+
+in k9s all, show  secret.
+Note, in my env, secrets rotate and get published top an S3 Bucket
+
+```Powershell
+$tokenfile="\\nasug.home.labbuildr.com\minio\aks\aksazs1\ppdmk8stoken-20210606.653.18+UTC.json"
+$Securestring=ConvertTo-SecureString -AsPlainText -String "$(Get-Content $tokenfile -Encoding utf8)" -Force
+$username="limitedadmin"
+$Credentials = New-Object System.Management.Automation.PSCredential($username, $Securestring)
+$newcreds=New-PPDMcredentials -name aksazs1 -type KUBERNETES -authmethod TOKEN -credentials $Credentials
+$newcreds
+```
+### Approve the Certifikates for the K8S Cluster
+
+```Powershell
+$myHost="aksazs1.local.cloudapp.azurestack.external"
+Get-PPDMcertificates -newhost $myHost -Port 443 | Approve-PPDMcertificates
+```
+
+### Add K8S Cluster as inventory Source
+```Powershell
+Add-PPDMinventory_sources -Type KUBERNETES -Hostname $myHost -Name aksazs1 -ID $newcreds.id -port 443
+```
+### Create the Protection Policy
+```Powershell
+get-help New-PPDMK8SBackupPolicy -Examples
+$Storage_system=Get-PPDMstorage_systems | where type -match DATA_DOMAIN_SYSTEM
+$Storage_system
+$Schedule=New-PPDMBackupSchedule -hourly -CreateCopyIntervalHrs 2 -RetentionUnit DAY -RetentionInterval 7
+$Schedule | Convertto-Json -Depth 6
+$Policy=New-PPDMK8SBackupPolicy -Schedule $Schedule -StorageSystemID $Storage_system.id -enabled -encrypted -Name CI_K8S_CLI
+```
+### Assign Assets to PLC
+
+```Powershell
+Get-PPDMassets | ft
+Get-PPDMassets | where { $_.name -match "wordpress" }
+$AssetID=(Get-PPDMassets | where { $_.name -match "wordpress" -and $_.subtype -eq "K8S_NAMESPACE"}).id
+$AssetID
+Add-PPDMProtection_policy_assignment -AssetID $AssetID -id $Policy.id
+```
+### Start the Protection of an asset
+```Powershell
+get-help Start-PPDMprotection
+Start-PPDMprotection -PolicyObject $Policy -AssetIDs  $Asset.id
+```
+
+Happy ? Happy !!!
+
+## Example Backup with Kubernetes Protection Policies
 ![image](https://user-images.githubusercontent.com/8255007/97606694-5ef75b00-1a10-11eb-87fd-4926dd327082.png)
 
 In this Use Case, we have one Protection Policy for Kubernetes.
@@ -30,7 +117,7 @@ Get-PPDMactivities -PredefinedFilter QUEUED
 
 ![image](https://user-images.githubusercontent.com/8255007/97600368-446db380-1a09-11eb-9c1a-a7055ada9e19.png)
 
-With the ID from Aboye, you could also query the activity:
+With the ID from Above, you could also query the activity:
 ```Powershell
 Get-PPDMactivities -id 2ce49319-0cf5-49e9-a20f-5c50f4d4ed89
 ```
