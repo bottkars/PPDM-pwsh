@@ -85,6 +85,7 @@ Add-PPDMProtection_policy_assignment -AssetID $AssetID -id $Policy.id
 ```Powershell
 get-help Start-PPDMprotection
 Start-PPDMprotection -PolicyObject $Policy -AssetIDs  $Asset.id
+Get-PPDMactivities -PredefinedFilter QUEUED
 ```
 
 Happy ? Happy !!!
@@ -101,7 +102,7 @@ Get-PPDMprotection_policies | where assetType -eq Kubernetes
 
 
 
-you could ALSO scope the where-obcext to the name Parameter, in my Case i match to find *Kube Backup Platform Services*
+you could ALSO scope the where-object to the name Parameter, in my Case i match to find *Kube Backup Platform Services*
 
 
 ```Powershell
@@ -114,6 +115,11 @@ As the modules support Pipelining based on Pareameters, we can simply  start the
 ```Powershell
 Get-PPDMprotection_policies | where name -Match "Platform Services" | Start-PPDMprotection_policies
 ```
+Or, symply start non-empty K8S Policies:
+```Powershell
+Get-PPDMprotection_policies | where { $_.assetType -eq "Kubernetes" -and $_.summary.numberOfAssets -gt 0 } | Start-PPDMprotection_policies
+```
+
 The Protection Policy will then fist be Queued. We can check with the command:
 ```Powershell
 Get-PPDMactivities -PredefinedFilter QUEUED
