@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.8.11'
+ModuleVersion = '19.8.12'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -231,6 +231,10 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
+        2021-06-10 (v19.8.12):
+        - added Kubernetes Policy Creation
+        - added Kubernetes Restore Workflow
+        - uupdated more cmdlets for pagination and filters
         2021-05-25:
         - added license feature for new 19.8        
         2021-05-06:

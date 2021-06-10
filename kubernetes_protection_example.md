@@ -91,7 +91,7 @@ Get-PPDMactivities -PredefinedFilter QUEUED
 
 Happy ? Happy !!!
 
-## Lets do a Restore !!!
+### Lets do a Restore !!!
 We have multiple ways to restore a k8s Application / Namespace
 In the First Example, we restore to a new , Vanilla AKS Cluster
 Make sure that you have installed you CSI Drivers and Storage Classes Set up
@@ -130,7 +130,7 @@ Restore-PPDMK8Scopies -CopyObject $copy -includeClusterResources -TO_ALTERNATE -
 
 
 
-## Example Backup with Kubernetes Protection Policies
+## Example Backup with Kubernetes Protection Policies, backig up a Tanzu Kubernetes Grid Integrated edition
 ![image](https://user-images.githubusercontent.com/8255007/97606694-5ef75b00-1a10-11eb-87fd-4926dd327082.png)
 
 In this Use Case, we have one Protection Policy for Kubernetes.
