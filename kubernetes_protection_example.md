@@ -198,7 +198,7 @@ Get-PPDMactivities -PredefinedFilter RUNNING
 ![image](https://user-images.githubusercontent.com/8255007/97603502-ca3f2e00-1a0c-11eb-8c85-f4f85eb43deb.png)
 
 
-i can now scope the activities "finder" to find the First Object on teh Succeded Policies and veryfy it is the same
+i can now scope the activities "finder" to find the First Object on the Succeded Policies and verify it is the same
 
 ```Powershell
 Get-PPDMactivities -PredefinedFilter PROTECT_OK -days 1 | Select-Object -First 1
