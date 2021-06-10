@@ -1,11 +1,35 @@
-# /api/v2/assets
+
+<#
+.Synopsis
+Retrieves all assets that PowerProtect Data Manager manages
+.Description
+Retrieve information about protected assets. 
+Supports Pagination and PPDM Filetr Queries
+
+.Example
+Get assets using a PPDM Filter Expression
+Get-PPDMassets -body @{pageSize=20} -filter 'name lk "%PRESS%"' | ft
+.Example
+Get all Assets using Pagination
+Get-PPDMassets -body @{pageSize=10;page=2}
+#>
 function Get-PPDMassets {
     [CmdletBinding()]
     param(
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2",
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $id,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $id
+        $filter,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2",
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $body = @{pageSize = 200 }  
     )
     begin {
         $Response = @()
@@ -22,9 +46,21 @@ function Get-PPDMassets {
             default {
                 $URI = "/$myself"
             }
-        }        
+        }   
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+          }
+          if ($filter) {
+            $parameters.Add('filter', $filter)
+          }      
         try {
-            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body" -Verbose:($PSBoundParameters['Verbose'] -eq $true)
+            $Response += Invoke-PPDMapirequest @Parameters
         }
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
@@ -35,10 +71,10 @@ function Get-PPDMassets {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response | convertfrom-json
+                write-output $response 
             }
             default {
-                write-output ($response | convertfrom-json).content
+                write-output $response.content
             } 
         }   
     }
@@ -51,7 +87,7 @@ function Get-PPDMcopy_map {
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2",
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $id
+        [Alias('AssetID')]$id
     )
     begin {
         $Response = @()
@@ -91,6 +127,80 @@ function Get-PPDMcopy_map {
     }
 }
 
+<#
+.Synopsis
+Get all Copies for an Asset
+.Description
+Retrieve Asset Copie. Supports PPDM Filters and Pagination
+.Example
+Get-PPDMassetcopies -AssetID $AssetID -body @{pageSize=1;page=1}
+
+.Example
+Filter using PPDM Filters, not older than 2 Hours
+$myDate=(get-date).AddHours(-2)
+$usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
+$filter= 'endTime ge "'+$usedate+'"'
+Get-PPDMassetcopies -AssetID $AssetID -filter $filter
+
+#>
+function Get-PPDMassetcopies {
+    [CmdletBinding()]
+    param(
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Alias('AssetID')]$id,
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $filter,
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2",
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $body = @{pageSize = 200 }        
+    )
+    begin {
+        $Response = @()
+        $METHOD = "GET"
+        
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+
+            default {
+                $URI = "/assets/$id/copies"
+            }
+        } 
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+          }
+          if ($filter) {
+            $parameters.Add('filter', $filter)
+          }         
+        try {
+            $Response += Invoke-PPDMapirequest @parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                write-output $response.content
+            } 
+        }   
+    }
+}
 
 # /api/v2/assets
 function Get-PPDMprotection_rules {
@@ -137,6 +247,8 @@ function Get-PPDMprotection_rules {
         }   
     }
 }
+
+
 
 # PUT /api/v2/protection-rules/{id}
 

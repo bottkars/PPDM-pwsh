@@ -41,23 +41,24 @@ in k9s all, show  secret.
 Note, in my env, secrets rotate and get published top an S3 Bucket
 
 ```Powershell
-$tokenfile="\\nasug.home.labbuildr.com\minio\aks\aksazs1\ppdmk8stoken-20210606.653.18+UTC.json"
+$aks_cluster="aksazs1"
+$tokenfile=(Get-Item \\nasug.home.labbuildr.com\minio\aks\$aks_cluster\ppdmk8stoken* | Sort-Object -Descending -Property LastWriteTime  | Select-Object -First 1).FullName
 $Securestring=ConvertTo-SecureString -AsPlainText -String "$(Get-Content $tokenfile -Encoding utf8)" -Force
 $username="limitedadmin"
 $Credentials = New-Object System.Management.Automation.PSCredential($username, $Securestring)
-$newcreds=New-PPDMcredentials -name aksazs1 -type KUBERNETES -authmethod TOKEN -credentials $Credentials
+$newcreds=New-PPDMcredentials -name $aks_cluster -type KUBERNETES -authmethod TOKEN -credentials $Credentials
 $newcreds
 ```
 ### Approve the Certifikates for the K8S Cluster
 
 ```Powershell
-$myHost="aksazs1.local.cloudapp.azurestack.external"
+$myHost="$aks_cluster.local.cloudapp.azurestack.external"
 Get-PPDMcertificates -newhost $myHost -Port 443 | Approve-PPDMcertificates
 ```
 
 ### Add K8S Cluster as inventory Source
 ```Powershell
-Add-PPDMinventory_sources -Type KUBERNETES -Hostname $myHost -Name aksazs1 -ID $newcreds.id -port 443
+Add-PPDMinventory_sources -Type KUBERNETES -Hostname $myHost -Name $aks_cluster -ID $newcreds.id -port 443
 ```
 oh, yes, we have a K8S Endpoint :-)
 ```Powershell
@@ -89,6 +90,37 @@ Get-PPDMactivities -PredefinedFilter QUEUED
 ```
 
 Happy ? Happy !!!
+
+## Lets do a Restore !!!
+We have multiple ways to restore a k8s Application / Namespace
+In the First Example, we restore to a new , Vanilla AKS Cluster
+
+we use 
+```Powershell
+$aks_cluster="aksazs2"
+```
+and start the registration from above
+
+once the cluster is registerd, prepare you restore
+
+```Powershell
+$targetInventorySourceID=(Get-PPDMkubernetes_clusters | where name -Match $aks_cluster).id
+$myDate=(get-date).AddHours(-2)
+$usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
+$filter= 'endTime ge "'+$usedate+'"'
+$Asset=(Get-PPDMassets | where { $_.name -eq "wordpress" -and $_.subtype -eq "K8S_NAMESPACE"})
+$copy=Get-PPDMassetcopies -AssetID $Asset.id -filter $filter | Select-Object -First 1
+```
+That should give you a valid copy
+Restore to the New Cluster:
+```Powershell
+Restore-PPDMK8Scopies -CopyObject $copy -includeClusterResources -TO_ALTERNATE -namespace wordpress -targetInventorySourceId $targetInventorySourceID 
+```
+
+
+
+
+
 
 ## Example Backup with Kubernetes Protection Policies
 ![image](https://user-images.githubusercontent.com/8255007/97606694-5ef75b00-1a10-11eb-87fd-4926dd327082.png)
