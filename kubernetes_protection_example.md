@@ -94,6 +94,14 @@ Happy ? Happy !!!
 ## Lets do a Restore !!!
 We have multiple ways to restore a k8s Application / Namespace
 In the First Example, we restore to a new , Vanilla AKS Cluster
+Make sure that you have installed you CSI Drivers and Storage Classes Set up
+```kubectl
+kubectl get storageclasses
+NAME                PROVISIONER                RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
+default (default)   disk.csi.azure.com         Delete          Immediate           true                   22m
+managed-premium     kubernetes.io/azure-disk   Delete          Immediate           false                  60m
+managed-standard    kubernetes.io/azure-disk   Delete          Immediate           false                  60m
+```
 
 we use 
 ```Powershell
