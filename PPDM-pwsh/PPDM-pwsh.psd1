@@ -259,7 +259,7 @@ PrivateData = @{
         - added diconnect (removes Global Variables )
         - added force connect (removes Global Variables )
         '
-        Prerelease = 'Pre'
+        # Prerelease = 'Pre'
     } # End of PSData hashtable
 
 } # End of PrivateData hashtable
