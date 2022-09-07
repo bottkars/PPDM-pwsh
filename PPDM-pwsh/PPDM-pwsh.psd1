@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.8.12'
+ModuleVersion = '19.11.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -27,7 +27,7 @@ Author = 'karsten.bott@dell.com'
 CompanyName = 'Private build by individual'
 
 # Copyright statement for this module
-Copyright = '(c) 2021 karsten.bott@dell.com. All rights reserved.'
+Copyright = '(c) 2022 karsten.bott@dell.com. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Powershell Module to interact with the PowerProdect Data Manager (PPDM) API'
@@ -85,7 +85,10 @@ NestedModules = @(
     './modules/locations',
     './modules/appliance-management',
     './modules/license',
-    './modules/restored-copies'
+    './modules/restored-copies',
+    './modules/upgrade-packages',
+    './modules/discoveries',
+    './modules/protection-engines'
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -94,6 +97,7 @@ FunctionsToExport = @(
     'Connect-PPDMapiEndpoint',
     'Disconnect-PPDMsession',
     'Get-PPDMassets',
+    'Get-PPDMhosts',
     'Get-PPDMactivities',
     'Restart-PPDMactivities',
     'New-PPDMUsers',
@@ -102,17 +106,25 @@ FunctionsToExport = @(
     'Invoke-PPDMapirequest',
     'Start-PPDMasset_backups',
     'Get-PPDMprotection_engines',
+    'Get-PPDMprotectionEngineProxies',
+    'New-PPDMProtectionEngineProxy'
+    'Remove-PPDMProtectionEngineProxy',
+    'Disable-PPDMProtectionEngineProxy',
     'Get-PPDMprotection_policies',
     'New-PPDMprotection_policies',
     'Get-PPDMdiscoveries',
+    'Set-PPDMdiscoveries',
     'Start-PPDMprotection_policies',
     'Start-PPDMdiscoveries',
     'Update-PPDMtoken',
     'Get-PPDMcommon_settings',
     'Get-PPDMinventory_sources',  
+    'Set-PPDMinventory_sources',
+    'Get-PPDMvcenterDatastores',  
     'Add-PPDMinventory_sources',
     'Remove-PPDMinventory_sources',   
     'Get-PPDMcomponents',
+    'Get-PPDMdatacomponents',
     'Get-PPDMconfigurations',
     'Set-PPDMconfigurations',
     'Get-PPDMconfigStatus',
@@ -120,11 +132,14 @@ FunctionsToExport = @(
     'Set-PPDMnodes',    
     'Get-PPDMDisks',
     'Get-PPDMcloud_dr_accounts',
+    'Set-PPDMcloud_dr_accounts',
     'Set-PPDMcomponents',
+    'Remove-PPDMcomponents',    
     'Get-PPDMdata_targets',
     'Get-PPDMdatadomain_mtrees',
     'Get-PPDMstorage_systems',
     'Set-PPDMstorage_systems',
+    'Remove-PPDMstorage_systems',
     'Get-PPDMcloud_dr_server_deployment',
     'Get-PPDMcloud_dr_server_version',
     'Get-PPDMTELEMETRY_SETTING',
@@ -140,6 +155,7 @@ FunctionsToExport = @(
     'Get-PPDMcredentials',
     'New-PPDMcredentials',
     'Remove-PPDMcredentials',
+    'Update-PPDMcredentials',
     'Get-PPDMagents_list',
     'Get-PPDMagent_registration_status',
     'Get-PPDMalerts',
@@ -149,9 +165,10 @@ FunctionsToExport = @(
     'Approve-PPDMEula',
     'Get-PPDMCertificates',
     'Update-PPDMCertificates',
-    'Approve-PPDMCertificates',,
+    'Approve-PPDMCertificates',
     'Remove-PPDMCertificates',
     'Get-PPDMCopies',
+    'Remove-PPDMCopies',
     'Get-PPDMUser_groups',
     'Get-PPDMUsers',
     'Get-PPDMroles',
@@ -191,7 +208,14 @@ FunctionsToExport = @(
     'Get-PPDMLicenses',
     'Set-PPDMLicenses',
     'Get-PPDMassetcopies',
-    'Restore-PPDMK8Scopies'    
+    'Restore-PPDMK8Scopies',
+    'Get-PPDMupgrade_packages',
+    'Stop-PPDMupgrade',
+    'Get-PPDMPasswordPolicies',
+    'Set-PPDMPasswordPolicies',
+    'Remove-PPDMcdrs',
+    'Remove-PPDMupgrade',
+    'Stop-PPDMupgradePrecheck'   
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -201,7 +225,17 @@ CmdletsToExport = @()
 VariablesToExport = '*'
 
 # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
-AliasesToExport = @()
+AliasesToExport = @(
+    'Get-PPDMVPE',
+    'New-PPDMProxy',
+    'Get-PPDMProxy',
+    'Remove-PPDMProxy',
+    'Disable-PPDMProxy',
+    'Get-PPDMAssetSource'
+    'Set-PPDMAssetSource'
+    'New-PPDMAssetSource'
+    'Remove-PPDMAssetSource'
+)
 
 # DSC resources to export from this module
 # DscResourcesToExport = @()
@@ -231,6 +265,10 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
+        2022-09-07 (v19.11.0)
+        - added support for Tanzu Guest Clusters
+        - added Module Aliases
+        - added support for ProtectionEngineProxies
         2021-06-10 (v19.8.12):
         - added Kubernetes Policy Creation
         - added Kubernetes Restore Workflow
