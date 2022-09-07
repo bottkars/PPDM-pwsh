@@ -114,6 +114,71 @@ function Get-PPDMcloud_dr_server_deployment {
     }
 }
 
+function Set-PPDMcloud_dr_accounts {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [string]$id,
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [string]$secretKey,
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [string]$userKey,                
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2"
+
+    )
+    begin {
+        $Response = @()
+        $METHOD = "PUT"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                $URI = "/$myself/$id"
+                $Body = @{
+                    'userKey'   = $UserKey #ä$($Credentials.GetNetworkCredential()).username
+                    'secretKey' = $secretKey #$($Credentials.GetNetworkCredential()).password
+                } | ConvertTo-Json
+            }
+            default {
+                $URI = "/$myself"
+            }
+        }  
+        $Parameters = @{
+            body             = $body 
+            Uri              = $Uri
+            Method           = $Method
+            RequestMethod    = 'Rest'
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }      
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                write-output $response 
+            }
+            default {
+                write-output $response.content 
+            } 
+        }   
+    }
+}
+
+
+
 function Get-PPDMcloud_dr_accounts {
     [CmdletBinding()]
     param(
@@ -168,7 +233,6 @@ function Get-PPDMcloud_dr_accounts {
         }   
     }
 }
-
 
 ###
 #
@@ -458,3 +522,55 @@ function Get-PPDMcloud_dr_vcenters {
         }   
     }
 }
+
+
+function Remove-PPDMcdrs {
+    [CmdletBinding()]
+    param(
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/rest/v2"
+
+    )
+    begin {
+        $Response = @()
+        $METHOD = "DELETE"
+        $Myself = "cloud-operations/cdrs"
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                $URI = "/$myself"
+            }
+        } 
+#        $body = @{
+ #           operation = "start"
+#        } | convertto-json 
+        $Parameters = @{
+#            body             = $body 
+            Uri              = $Uri
+            Method           = $Method
+            RequestMethod    = 'Rest'
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }      
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                write-output $response 
+            }
+        }   
+    }
+}
+

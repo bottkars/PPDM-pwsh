@@ -46,6 +46,56 @@ function Get-PPDMcopies {
 
 
 
+function Remove-PPDMcopies {
+    [CmdletBinding()]
+    param(
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2",
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'removeConfigurationOnly', ValueFromPipelineByPropertyName = $true)]
+        $id,
+        [Parameter(Mandatory = $true, ParameterSetName = 'removeConfigurationOnly')]
+        [switch]$removeConfigurationOnly
+    )
+    begin {
+        $Response = @()
+        $METHOD = "Delete"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                $URI = "/$myself/$id"
+            }
+            'removeConfigurationOnly' {
+                $URI = "/$myself/$id"
+                $body= @{removeConfigurationOnly = "true" }  
+            }
+        }        
+        try {
+            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body" -Verbose:($PSBoundParameters['Verbose'] -eq $true)
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                write-output $response | convertfrom-json
+            }
+            default {
+                write-output ($response | convertfrom-json).content
+            } 
+        }   
+    }
+}
+
+
 
 
 function Get-PPDMlatest_copies {
