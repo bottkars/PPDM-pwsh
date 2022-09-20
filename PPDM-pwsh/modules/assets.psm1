@@ -529,7 +529,7 @@ function Get-PPDMhosts {
           if ($filter) {
             write-verbose $filter
             $parameters.Add('filter', $filter)
-          }      
+        }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
         }

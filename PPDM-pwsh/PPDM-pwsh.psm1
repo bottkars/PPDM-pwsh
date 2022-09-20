@@ -218,7 +218,6 @@ function Update-PPDMToken {
         $Global:PPDM_API_Headers = @{
             'Authorization' = "Bearer $($Response.access_token)"
         }
-        $Global:PPDM_Refresh_token = $Response.Refresh_token
         $Global:PPDM_Scope = $Response.Scope
         Write-Host "Connected to $PPDM_API_BASEURI with $($Response.Scope)"
         Write-Output $Response
@@ -237,30 +236,39 @@ function Invoke-PPDMapirequest {
     (
         [Parameter(Mandatory = $true, ParameterSetName = 'default')]
         [Parameter(Mandatory = $true, ParameterSetName = 'infile')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'outfile')]
         $uri,
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'outfile')]
         [Parameter(Mandatory = $true, ParameterSetName = 'infile')]
         [ValidateSet('Get', 'Delete', 'Put', 'Post', 'Patch')]
         $Method,
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'outfile')]
         [Parameter(Mandatory = $true, ParameterSetName = 'infile')]
         $Query,
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'outfile')]
         [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
         $ContentType = 'application/json', 
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'outfile')]
         [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
         $ResponseHeadersVariable,     
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'outfile')]
         [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
         $apiver = "/api/v2",
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'outfile')]
         [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
         $apiport = "$($Global:PPDM_API_PORT)",        
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'outfile')]
         [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
         $PPDM_API_BaseUri = $($Global:PPDM_API_BaseUri),
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'outfile')]
         [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
         [ValidateSet('Rest', 'Web')]$RequestMethod,        
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
@@ -268,7 +276,9 @@ function Invoke-PPDMapirequest {
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
         $Filter,
         [Parameter(Mandatory = $true, ParameterSetName = 'infile')]
-        $InFile
+        $InFile,
+        [Parameter(Mandatory = $true, ParameterSetName = 'outfile')]
+        $OutFile        
     )
     $apiver = $apiver.trimstart('/')
     $apiver = $apiver.trimend('/')
@@ -285,11 +295,17 @@ function Invoke-PPDMapirequest {
             Method          = $Method
             Headers         = $Headers
             ContentType     = $ContentType
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }
+        write-verbose ($PsCmdlet.ParameterSetName)
         switch ($PsCmdlet.ParameterSetName) {    
             'infile' {
                 $Parameters.Add('InFile', $InFile) 
             }
+            'outfile' {
+                write-verbose "Adding outfile $outfile"
+                $Parameters.Add('OutFile', $outfile) 
+            }            
             default {
                 if ($Body) {
                     $Parameters.Add('body', $body)
