@@ -1,4 +1,4 @@
-# /api/v2/inventory-sources
+
 function Get-PPDMcopies {
     [CmdletBinding()]
     param(
@@ -39,6 +39,68 @@ function Get-PPDMcopies {
             }
             default {
                 write-output ($response | convertfrom-json).content
+            } 
+        }   
+    }
+}
+
+
+function Get-PPDMlatest_copies {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [string[]]$assetID,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $filter,
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2"
+    )
+    begin {
+        $Response = @()
+        $METHOD = "GET"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                $URI = "/$myself"
+            }
+        }
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+        if ($filter){
+            $filter = 'assetId in ("' + ($assetID -join '","') + '")' + $filter 
+            }
+            else {
+                $filter = 'assetId in ("' + ($assetID -join '","') + '")'
+            }
+          if ($filter) {
+            write-verbose $filter
+            $parameters.Add('filter', $filter)
+        }         
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+
+            default {
+                write-output $response.content
             } 
         }   
     }
@@ -98,7 +160,7 @@ function Remove-PPDMcopies {
 
 
 
-function Get-PPDMlatest_copies {
+function Get-PPDMlatest_copies_old {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $true)]

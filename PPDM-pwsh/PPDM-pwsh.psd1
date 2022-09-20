@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.11.0'
+ModuleVersion = '19.11.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -76,7 +76,7 @@ NestedModules = @(
     './modules/assets',
     './modules/activity',
     './modules/protection_policies',
-    './modules/secrets',
+    './modules/certificates',
     './modules/inventory',
     './modules/copies',
     './modules/user',
@@ -163,6 +163,7 @@ FunctionsToExport = @(
     'Get-PPDMcopy_map',
     'Get-PPDMactivity_metrics',
     'Approve-PPDMEula',
+    'Add-PPDMCertificates',
     'Get-PPDMCertificates',
     'Update-PPDMCertificates',
     'Approve-PPDMCertificates',
@@ -187,6 +188,10 @@ FunctionsToExport = @(
     'Get-PPDMLocations',
     'New-PPDMLocations',
     'Remove-PPDMLocations',
+    'Get-PPDMProtection_rules',
+    'New-PPDMProtection_rules',
+    'Remove-PPDMProtection_rules',
+    'Set-PPDMProtection_rules',
     'Get-PPDMsmtp',
     'New-PPDMsmtp',
     'Set-PPDMsmtp',
@@ -215,7 +220,9 @@ FunctionsToExport = @(
     'Set-PPDMPasswordPolicies',
     'Remove-PPDMcdrs',
     'Remove-PPDMupgrade',
-    'Stop-PPDMupgradePrecheck'   
+    'Stop-PPDMupgradePrecheck',
+    'Request-PPDMActivityLog',  
+    'Save-PPDMActivityLog'
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -231,10 +238,15 @@ AliasesToExport = @(
     'Get-PPDMProxy',
     'Remove-PPDMProxy',
     'Disable-PPDMProxy',
-    'Get-PPDMAssetSource'
-    'Set-PPDMAssetSource'
-    'New-PPDMAssetSource'
-    'Remove-PPDMAssetSource'
+    'Get-PPDMAssetSource',
+    'Set-PPDMAssetSource',
+    'New-PPDMAssetSource',
+    'Add-PPDMAssetSource',
+    'Remove-PPDMAssetSource',
+    'Get-PPDMJob',
+    'Request-PPDMJobLog',
+    'Save-PPDMJobLog'
+
 )
 
 # DSC resources to export from this module
