@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.11.1'
+ModuleVersion = '19.11.2'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -279,6 +279,8 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
+        2022-10-05 (v19.11.2)
+        - added asset modifications     
         2022-09-07 (v19.11.0)
         - added support for Tanzu Guest Clusters
         - added Module Aliases

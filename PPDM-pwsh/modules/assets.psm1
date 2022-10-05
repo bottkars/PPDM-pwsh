@@ -551,6 +551,27 @@ function Get-PPDMhosts {
     }
 }
 
+<#
+.Synopsis
+Patch Asset Properties by Patching Configuration Object
+.Description
+Modify Asset related Settings, e.g. Disk Exclusions etc base on Config Object retrived via Get-Assets
+.Example
+# Modify all Assets of type VMWARE_VIRTUAL_MACHINE with PROTECTED status that have 4+ Hard Disks 
+$Assets = Get-PPDMassets -filter 'type eq "VMWARE_VIRTUAL_MACHINE" and details.vm.disks.label lk "Hard disk 4" and protectionStatus eq "PROTECTED"'
+foreach ($asset in $Assets) {
+    $disks = $asset.details.vm.disks | Sort-Object label
+    write-host "We have $($disks.count)"
+    for ($i = 3; $i -lt $disks.count ; $i++) { 
+        write-host " Excluding  $($disks[$i].label)"
+        $disks[$i].excluded = "True" 
+    }
+    $asset.details.vm.disks = $disks
+    write-host "sending Patch request"
+    Set-PPDMasset -id $($asset.id) -configobject $asset
+}
+
+#>
 function Set-PPDMassets {
     [CmdletBinding()]
     [Alias('Set-PPDMAsset')]
