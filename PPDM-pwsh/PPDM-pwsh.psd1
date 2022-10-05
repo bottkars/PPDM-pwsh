@@ -97,6 +97,7 @@ FunctionsToExport = @(
     'Connect-PPDMapiEndpoint',
     'Disconnect-PPDMsession',
     'Get-PPDMassets',
+    'Set-PPDMassets',
     'Get-PPDMhosts',
     'Get-PPDMactivities',
     'Restart-PPDMactivities',
@@ -245,7 +246,8 @@ AliasesToExport = @(
     'Remove-PPDMAssetSource',
     'Get-PPDMJob',
     'Request-PPDMJobLog',
-    'Save-PPDMJobLog'
+    'Save-PPDMJobLog',
+    'Set-PPDMasset'
 
 )
 

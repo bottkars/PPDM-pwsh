@@ -55,10 +55,10 @@ function Get-PPDMassets {
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
-          }
-          if ($filter) {
+        }
+        if ($filter) {
             $parameters.Add('filter', $filter)
-          }      
+        }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
         }
@@ -180,10 +180,10 @@ function Get-PPDMassetcopies {
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
-          }
-          if ($filter) {
+        }
+        if ($filter) {
             $parameters.Add('filter', $filter)
-          }         
+        }         
         try {
             $Response += Invoke-PPDMapirequest @parameters
         }
@@ -272,7 +272,8 @@ function Set-PPDMprotection_rules {
         $body = $Protection_rule | convertto-json -Depth 10
         switch ($PsCmdlet.ParameterSetName) {
             default {
-                $URI = "/$myself/$($Protection_rule.id)"            }
+                $URI = "/$myself/$($Protection_rule.id)"            
+            }
         }
         write-verbose ($body | Out-String)  
         $Parameters = @{
@@ -282,7 +283,7 @@ function Set-PPDMprotection_rules {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
-            ContentType     = "application/json"
+            ContentType      = "application/json"
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
@@ -310,7 +311,7 @@ function Remove-PPDMprotection_rules {
     param(
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2",
-        [Parameter(Mandatory = $true,  ValueFromPipeline = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         $id
     )
     begin {
@@ -373,7 +374,7 @@ function Get-PPDMvm_backup_setting {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
-            ContentType     = "application/json"
+            ContentType      = "application/json"
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
@@ -418,7 +419,7 @@ function Set-PPDMvm_backup_setting {
                 $URI = "/$myself"
             }
         }
-        $body=$vm_backup_setting | ConvertTo-Json -Depth 10        
+        $body = $vm_backup_setting | ConvertTo-Json -Depth 10        
         $Parameters = @{
             body             = $body 
             Uri              = $Uri
@@ -426,7 +427,7 @@ function Set-PPDMvm_backup_setting {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
-            ContentType     = "application/json"
+            ContentType      = "application/json"
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
@@ -514,19 +515,18 @@ function Get-PPDMhosts {
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
-          }
-          if ($type) {
-            if ($filter){
-            $filter = 'type eq "' + $type + '" and ' + $filter 
+        }
+        if ($type) {
+            if ($filter) {
+                $filter = 'type eq "' + $type + '" and ' + $filter 
             }
             else {
                 $filter = 'type eq "' + $type + '"'
             }
-            $filterispresent = $true
-          }
+        }
 
 
-          if ($filter) {
+        if ($filter) {
             write-verbose $filter
             $parameters.Add('filter', $filter)
         }      
@@ -546,6 +546,60 @@ function Get-PPDMhosts {
             }
             default {
                 write-output $response.content
+            } 
+        }   
+    }
+}
+
+function Set-PPDMassets {
+    [CmdletBinding()]
+    [Alias('Set-PPDMAsset')]
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        $id,
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        $configobject,        
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2"
+
+    )
+    begin {
+        $Response = @()
+        $METHOD = "PATCH"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                $URI = "/$myself/$id"
+            }
+        }
+        $body = $configobject | ConvertTo-json -Depth 7 
+        write-verbose ($body | out-string)
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }   
+            
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                write-output ($response)
             } 
         }   
     }
