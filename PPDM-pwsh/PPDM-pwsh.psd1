@@ -223,7 +223,8 @@ FunctionsToExport = @(
     'Remove-PPDMupgrade',
     'Stop-PPDMupgradePrecheck',
     'Request-PPDMActivityLog',  
-    'Save-PPDMActivityLog'
+    'Save-PPDMActivityLog',
+    'Restore-PPDMVMcopies'
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -247,8 +248,8 @@ AliasesToExport = @(
     'Get-PPDMJob',
     'Request-PPDMJobLog',
     'Save-PPDMJobLog',
-    'Set-PPDMasset'
-
+    'Set-PPDMasset',
+    'Restore-PPDMVMasset'
 )
 
 # DSC resources to export from this module

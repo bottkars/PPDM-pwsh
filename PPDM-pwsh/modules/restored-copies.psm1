@@ -708,3 +708,119 @@ function Restore-PPDMK8Scopies {
     }
 }
   
+
+
+function Restore-PPDMVMcopies {
+  [CmdletBinding()]
+  [Alias('Restore-PPDMVMAsset')]
+  param(
+      [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'byCopyObjecttoProduction')]
+#      [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'byCopyObjecttoExisting')]  
+#      [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'byCopyObjecttoAlternate')]
+      [psobject]$CopyObject, 
+#      [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoProduction')]
+ #     [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoExisting')]  
+#      [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoAlternate')]
+#      [string]$targetInventorySourceId,
+      [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoProduction')]
+#      [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoAlternate')]
+#      [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoExisting')]
+      [switch]$recoverConfig,
+#      [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoAlternate')]
+#      [switch]$TO_ALTERNATE,  
+#      [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoExisting')]
+#      [switch]$TO_EXISTING,
+      [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoProduction')]
+      [switch]$TO_PRODUCTION, 
+#      [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoExisting')]         
+#      [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $false, ParameterSetName = 'byCopyObjecttoAlternate')]
+#     $namespace,
+      [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoProduction')]
+#      [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoExisting')]
+#      [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoAlternate')]
+      [switch]$enableCompressedRestore,        
+#      [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoProduction')]
+#      [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoExisting')]
+#      [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoAlternate')]
+#      [switch]$skipNamespaceResources,
+      [string]$Description,
+      $apiver = "/api/v2",
+      [switch]$noop
+
+  )
+  begin {
+      $Response = @()
+      $METHOD = "POST"
+ 
+  }     
+  Process {
+      switch ($PsCmdlet.ParameterSetName) {
+          default {
+              $Asset =  Get-PPDMassets -id $CopyObject.assetId 
+          }
+
+      }    
+      $Body = [ordered]@{
+          'copyIds'               = @( $CopyObject.id )
+          'options'               = @{
+              'enableCompressedRestore' = $enableCompressedRestore.IsPresent
+          }
+          'restoredCopiesDetails' = @{
+              'targetVmInfo' = @{
+                  'tagRestoreDirective' = "OFF"
+                  'spbmRestoreDirective'         = "FROM_COPY"
+                  'recoverConfig'        = $recoverConfig.isPresent
+              }
+          }
+      }
+      switch ($PsCmdlet.ParameterSetName) {
+          'byCopyObjecttoExisting' {
+              $body.Add('restoreType', "TO_EXISTING")
+              $body.Add('description', "Restore Namespace to existing $description")
+          }
+          'byCopyObjecttoAlternate' {
+              $body.Add('restoreType', "TO_ALTERNATE")
+              $body.Add('description', "Restore Namespace to new $description")
+          }
+          'byCopyObjecttoProduction' {
+              $body.Add('restoreType', "TO_PRODUCTION")
+              $body.Add('description', "Restore VM $($Asset.Name) with ID $($copyobject.id) from $($copyobject.createTime) to original production storage $description")
+          }            
+      }
+      
+      
+      $body = $body | convertto-json -Depth 5
+      write-verbose ($body | out-string)
+      $Parameters = @{
+          RequestMethod           = 'Rest'
+          body                    = $body 
+          Uri                     = "/restored-copies/"
+          Method                  = $Method
+          PPDM_API_BaseUri        = $PPDM_API_BaseUri
+          apiver                  = $apiver
+          Verbose                 = $PSBoundParameters['Verbose'] -eq $true
+          ResponseHeadersVariable = 'HeaderResponse'
+      }
+      Write-Verbose ($Parameters | Out-String)
+      if (!$noop.ispresent) {        
+          try {
+              $Response += Invoke-PPDMapirequest @Parameters
+          }
+          catch {
+              Get-PPDMWebException  -ExceptionMessage $_
+              break
+          }
+          write-verbose ($response | Out-String)
+      }
+  } 
+  end {  
+      if (!$noop.IsPresent) {
+
+          switch ($PsCmdlet.ParameterSetName) {
+              default {
+                  write-output $response.Date
+              } 
+          }   
+      }
+  }
+}
