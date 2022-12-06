@@ -218,7 +218,7 @@ function Start-PPDMprotection {
       'byPolicyObject' {
         $StageID = ($PolicyObject.stages | Where-Object type -eq PROTECTION).id
         $BackupType = ($PolicyObject.stages | Where-Object type -eq PROTECTION).operations.backupType
-        $PolicyID = $Policy.id
+        $PolicyID = $PolicyObject.id
       }
 
     }    
