@@ -12,6 +12,10 @@ Get-PPDMassets -body @{pageSize=20} -filter 'name lk "%PRESS%"' | ft
 .Example
 Get all Assets using Pagination
 Get-PPDMassets -body @{pageSize=10;page=2}
+.Example
+Filter PVC´s based on storageClassName
+Get-PPDMassets -filter 'subtype eq "K8S_PERSISTENT_VOLUME_CLAIM" and details.k8s.persistentVolumeClaim.storageClassName eq "thin-csi-immediate" and details.k8s.persistentVolumeClaim.excluded eq "FALSE"'
+
 #>
 function Get-PPDMassets {
     [CmdletBinding()]
@@ -104,9 +108,20 @@ function Get-PPDMcopy_map {
             default {
                 $URI = "/assets/$id/$myself"
             }
-        }        
+        } 
+        
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
         try {
-            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body"  -Verbose:($PSBoundParameters['Verbose'] -eq $true)
+            $Response += Invoke-PPDMapirequest @Parameters
+            # $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body"  -Verbose:($PSBoundParameters['Verbose'] -eq $true)
 
         }
         catch {
@@ -118,7 +133,7 @@ function Get-PPDMcopy_map {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response | convertfrom-json
+                write-output $response  #.content | convertfrom-json
             }
             default {
                 write-output ($response | convertfrom-json).content
@@ -134,7 +149,6 @@ Get all Copies for an Asset
 Retrieve Asset Copie. Supports PPDM Filters and Pagination
 .Example
 Get-PPDMassetcopies -AssetID $AssetID -body @{pageSize=1;page=1}
-
 .Example
 Filter using PPDM Filters, not older than 2 Hours
 $myDate=(get-date).AddHours(-2)

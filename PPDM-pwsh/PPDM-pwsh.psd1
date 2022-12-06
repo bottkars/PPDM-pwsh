@@ -251,7 +251,9 @@ AliasesToExport = @(
     'Request-PPDMJobLog',
     'Save-PPDMJobLog',
     'Set-PPDMasset',
-    'Restore-PPDMVMasset'
+    'Restore-PPDMVMasset',
+    'Get-PPDMk8sclusters',
+    'Get-PPDMk8spvcmappings'
 )
 
 # DSC resources to export from this module

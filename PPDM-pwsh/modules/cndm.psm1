@@ -1,11 +1,10 @@
 #/api/v2/kubernetes-clusters 
 #
 #
-function Get-PPDMkubernetes_clusters  {
+function Get-PPDMkubernetes_clusters {
     [CmdletBinding()]
+    [Alias('Get-PPDMk8sclusters')]
     param(
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [string]$ID,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
 
@@ -19,9 +18,6 @@ function Get-PPDMkubernetes_clusters  {
     }     
     Process {
         switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                $URI = "/$myself/$ID"
-            }
             default {
                 $URI = "/$myself"
             }
@@ -46,9 +42,6 @@ function Get-PPDMkubernetes_clusters  {
     } 
     end {    
         switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response 
-            }
             default {
                 write-output $response.content
             } 
@@ -56,13 +49,28 @@ function Get-PPDMkubernetes_clusters  {
     }
 }
 
-#/api/v2/kubernetes-clusters/<cluster-id>/pvc-storage-class-mappings
-#
-function Get-PPDMpvc_storage_class_mappings  {
+<#
+.Synopsis
+Get PVC Mappings vor a Volume
+.Description
+Retrieve PVC Mappings for a PVC Copy
+.Example
+$Cluster = Get-PPDMk8sclusters | where name -match ocs1
+$COPY=Get-PPDMassets -filter 'type eq "KUBERNETES" and name eq "openshift-image-registry" and protectionStatus eq "PROTECTED"'  | Get-PPDMassetcopies | Select-Object -First 1
+Get-PPDMk8spvcmappings -ID $Cluster.id -copyID $COPY.id
+
+pvcName                storageClasses
+-------                --------------
+image-registry-storage {thin-csi, thin-csi-immediate}
+#>
+function Get-PPDMpvc_storage_class_mappings {
     [CmdletBinding()]
+    [Alias('Get-PPDMk8spvcmappings')]
     param(
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [string]$ID,
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [string]$copyID,        
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
 
@@ -74,11 +82,11 @@ function Get-PPDMpvc_storage_class_mappings  {
     }     
     Process {
         switch ($PsCmdlet.ParameterSetName) {
-
             default {
-                $URI = "/kubernetes-cluster/$id/$myself"
+                $URI = "/kubernetes-clusters/$id/$Myself"
             }
-        }  
+        }
+        $Body = @{copyId=$copyId } # | convertto-json
         $Parameters = @{
             body             = $body 
             Uri              = $Uri
@@ -110,4 +118,4 @@ function Get-PPDMpvc_storage_class_mappings  {
 }
 
 #/api/v2/kubernetes-clusters/<cluster-id>/pvc-storage-class-mappings?copyId={copyId}
-#
+#https://ppdm.home.labbuildr.com/passthrough/api/v2/kubernetes-clusters/041115e8-b2b2-47cc-9b9d-df2362975978/pvc-storage-class-mappings?copyId=2d443c1c-ed3e-5572-b588-c054146c17c8

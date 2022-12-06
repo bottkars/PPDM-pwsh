@@ -142,7 +142,7 @@ function Get-PPDMprotection_policies {
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
         if ( $asset_assignments.IsPresent ) {
-          write-output ($response | convertfrom-json).content
+          write-output $response.content
         }
         else {
           write-output $response
