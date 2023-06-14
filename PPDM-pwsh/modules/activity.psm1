@@ -3,12 +3,12 @@ function Get-PPDMactivities {
     [CmdletBinding(ConfirmImpact = 'Low',
         HelpUri = 'https://developer.dellemc.com/data-protection/powerprotect/data-manager/tutorials/monitor-activities')]
     param(
- #       [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]        
-        $query,
-        [Parameter(Mandatory = $true, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
-        $Filter,  
+#       [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
+#        [Parameter(Mandatory = $false, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
+#        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]        
+#        
+#        [Parameter(Mandatory = $true, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
+#        $Filter,  
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
         $days = 1,
         [Parameter(Mandatory = $true, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
@@ -17,9 +17,21 @@ function Get-PPDMactivities {
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [alias('taskid')]$id,
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-        $apiver = "/api/v2"
+        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+
+        $body = @{pageSize = 200},
+        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+        $filter,
+        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+        $query,
+        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+            $apiver = "/api/v2"
     )
     begin {
         $Response = @()
@@ -49,6 +61,7 @@ function Get-PPDMactivities {
                     'CLOUD_PROTECT_OK' {
                         $filterstring = 'startTime ge "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_PROTECT") and result.status eq "OK"'
                     }
+
                     'CLOUD_PROTECT_FAILED' {
                         $filterstring = 'startTime ge "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_PROTECT") and result.status eq "FAILED"'
                     }
@@ -59,38 +72,42 @@ function Get-PPDMactivities {
                         $filterstring = 'createTime gt "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT") and state eq "RUNNING"'
                     }
                 }
-                $filterstring = [System.Web.HTTPUtility]::UrlEncode($filterstring)
-                $filterstring = "filter=$filterstring"
-                
-                if ($query) {
-                    $query = "q=$query" 
-                    $URI = "/$($myself)?pageSize=25&page=1&orderby=createTime%20DESC&$filterstring&$query"         
+                if ($filter) {
+                    $filter = "$filterstring $filter"
+                    }
+                else 
+                    {
+                    $filter = $filterstring
+                    }  
+                $URI = "/$myself"
                 }
-                else {
-                    $URI = "/$($myself)?pageSize=25&page=1&orderby=createTime%20DESC&$filterstring"
-                }    
-            }
-            'query' {
-                $filterstring = [System.Web.HTTPUtility]::UrlEncode($Filter)
-                $filterstring = "filter=$filterstring"
-                if ($query) {
-                    $query = "q=$query" 
-                    $URI = "/$($myself)?pageSize=25&page=1&orderby=startTime%20DESC&$filterstring&$query"
-                }
-                else {
-                    $URI = "/$($myself)?$filterstring"
-                }    
-            }
-            'byID' {
+
+                'byID' {
                 $URI = "/$myself/$id"
             }
             default {
                 $URI = "/$myself"
             }
-        }        
-        try {
-            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD  -apiver $apiver -PPDM_API_BaseUri $PPDM_API_BaseUri -Verbose:($PSBoundParameters['Verbose'] -eq $true)
         }
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body 
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+          }
+          if ($filter) {
+            $parameters.Add('filter', $filter)
+          }
+          if ($query) {
+            $Parameters.Add('q', $query)}    
+          Write-Verbose ($Parameters | Out-String)       
+          try {
+            $Response += Invoke-PPDMapirequest @Parameters       
+          }                
+
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
             break
@@ -100,10 +117,10 @@ function Get-PPDMactivities {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response | convertfrom-json
+                write-output $response 
             }
             default {
-                write-output ($response | convertfrom-json).content
+                write-output $response.content
             } 
         }   
     }
@@ -158,6 +175,51 @@ function Get-PPDMactivity_metrics {
         }   
     }
 }
+
+
+#/api/v2/activities/{id}/cancel
+function Stop-PPDMactivities {
+    [CmdletBinding(ConfirmImpact = 'Low',
+        HelpUri = 'https://developer.dellemc.com/data-protection/powerprotect/data-manager/api/monitoring/getallactivitymetrics')]
+    param(
+        [Parameter(Mandatory = $True, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
+        $Id,
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2"
+
+    )
+    begin {
+        $Response = @()
+        $METHOD = "POST"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(9) -replace "_", "-").ToLower()
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                $URI = "/$myself/$id/cancel"
+            }
+        }        
+        try {
+            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD  -apiver $apiver -PPDM_API_BaseUri $PPDM_API_BaseUri -Verbose:($PSBoundParameters['Verbose'] -eq $true)
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+    
+            default {
+                write-output $response.content 
+            } 
+        }   
+    }
+}
+
+
 
 
 #/api/v2/activities/{id}/retry

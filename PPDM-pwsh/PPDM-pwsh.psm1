@@ -1,25 +1,14 @@
 function Unblock-PPDMSSLCerts {
-
     Add-Type -TypeDefinition @"
-
 	    using System.Net;
-
 	    using System.Security.Cryptography.X509Certificates;
-
 	    public class TrustAllCertsPolicy : ICertificatePolicy {
-
 	        public bool CheckValidationResult(
-
 	            ServicePoint srvPoint, X509Certificate certificate,
-
 	            WebRequest request, int certificateProblem) {
-
 	            return true;
-
 	        }
-
 	    }
-
 "@ -ErrorAction SilentlyContinue
 
     [System.Net.ServicePointManager]::CertificatePolicy = New-Object -TypeName TrustAllCertsPolicy -ErrorAction SilentlyContinue
@@ -262,6 +251,14 @@ function Invoke-PPDMapirequest {
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
         [Parameter(Mandatory = $false, ParameterSetName = 'outfile')]
         [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
+        [int]$retries = 0,
+        [Parameter(Mandatory = $false, ParameterSetName = 'default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'outfile')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
+        [int]$timeout = 0,        
+        [Parameter(Mandatory = $false, ParameterSetName = 'default')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'outfile')]
+        [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
         $apiport = "$($Global:PPDM_API_PORT)",        
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
         [Parameter(Mandatory = $false, ParameterSetName = 'outfile')]
@@ -332,6 +329,9 @@ function Invoke-PPDMapirequest {
             $Parameters.Add('SkipCertificateCheck', $True)
         }
         Write-Verbose ( $Parameters | Out-String )    
+        do
+        {
+        $has_error=0    
         try {
             switch ($RequestMethod) {
                 'Web' {
@@ -345,13 +345,21 @@ function Invoke-PPDMapirequest {
                     $Result = Invoke-WebRequest @Parameters
                 }
             }
-            
-        }
+       }
         catch {
             # Write-Warning $_.Exception.Message
             Get-PPDMWebException -ExceptionMessage $_
-            Break
+            $has_error = 1
+            $retries--
+            write-Warning "Retries $Retries timout $Timeout"
+            if ($retries -gt 0) { sleep $timeout }   
+            else {
+              Break  
+            }
+            
+        }            
         }
+        while (($retries -ge 0) -and ($has_error -gt 0))
     }
     else {
         Write-Warning "PPDM_API_Headers are not present. Did you connect to PPDM_API  using connect-PPDMAPIendpoint ? "

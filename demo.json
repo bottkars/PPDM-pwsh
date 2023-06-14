@@ -1,0 +1,155 @@
+{
+  "name": null,
+  "description": "",
+  "assetType": "VMWARE_VIRTUAL_MACHINE",
+  "type": "ACTIVE",
+  "encrypted": false,
+  "enabled": true,
+  "priority": 1,
+  "dataConsistency": "CRASH_CONSISTENT",
+  "passive": false,
+  "forceFull": false,
+  "details": {
+    "vm": {
+      "protectionEngine": "VMDIRECT"
+    }
+  },
+  "stages": [
+    {
+      "id": null,
+      "type": "PROTECTION",
+      "passive": false,
+      "attributes": {
+        "vm": {
+          "excludeSwapFiles": false,
+          "disableQuiescing": true
+        },
+        "protection": {
+          "backupMode": "FSS"
+        }
+      },
+      "target": {
+        "storageSystemId": null,
+        "dataTargetId": null,
+        "preferredInterface": null,
+        "preferredInterfaceId": null
+      },
+      "slaId": null,
+      "sourceStageId": null,
+      "operations": [
+        {
+          "id": null,
+          "backupType": "SYNTHETIC_FULL",
+          "schedule": {
+            "frequency": "DAILY",
+            "startTime": "2023-03-26T22:30:00.000Z",
+            "duration": "PT6H30M",
+            "interval": null
+          }
+        },
+        {
+          "id": null,
+          "backupType": "SYNTHETIC_FULL",
+          "schedule": {
+            "frequency": "WEEKLY",
+            "startTime": "2023-03-26T22:30:00.000Z",
+            "duration": "PT6H30M",
+            "interval": null,
+            "weekDays": [
+              "SATURDAY"
+            ]
+          }
+        }
+      ],
+      "retention": {
+        "unit": "DAY",
+        "storageSystemRetentionLock": false,
+        "interval": 14
+      },
+      "extendedRetentions": [
+        {
+          "selector": {
+            "operationId": null,
+            "backupType": "SYNTHETIC_FULL"
+          },
+          "retention": {
+            "storageSystemRetentionLock": false,
+            "unit": "DAY",
+            "interval": 14
+          }
+        },
+        {
+          "selector": {
+            "operationId": null,
+            "backupType": "SYNTHETIC_FULL"
+          },
+          "retention": {
+            "storageSystemRetentionLock": false,
+            "unit": "WEEK",
+            "interval": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": null,
+      "type": "REPLICATION",
+      "passive": false,
+      "attributes": {},
+      "target": {
+        "storageSystemId": null,
+        "dataTargetId": null,
+        "preferredInterface": null,
+        "preferredInterfaceId": null
+      },
+      "slaId": null,
+      "sourceStageId": null,
+      "operations": [
+        {
+          "id": null,
+          "backupType": "SYNTHETIC_FULL",
+          "schedule": {
+            "frequency": "DAILY",
+            "startTime": "2023-03-27T05:30:00.000Z",
+            "duration": "PT12H",
+            "interval": null
+          }
+        }
+      ],
+      "retention": {
+        "unit": "DAY",
+        "storageSystemRetentionLock": false,
+        "interval": 14
+      },
+      "extendedRetentions": [
+        {
+          "selector": {
+            "backupType": "FULL",
+            "tags": [ ""
+            ]
+          },
+          "retention": {
+            "storageSystemRetentionLock": false,
+            "unit": "DAY",
+            "interval": 14
+          }
+        },
+        {
+          "selector": {
+            "backupType": "FULL",
+            "tags": [ ""
+            ]
+          },
+          "retention": {
+            "storageSystemRetentionLock": false,
+            "unit": "WEEK",
+            "interval": 4
+          }
+        }
+      ]
+    }
+  ],
+  "filterIds": [],
+  "credentials": null,
+  "slaId": ""
+}

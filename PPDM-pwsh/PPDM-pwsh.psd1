@@ -88,7 +88,10 @@ NestedModules = @(
     './modules/restored-copies',
     './modules/upgrade-packages',
     './modules/discoveries',
-    './modules/protection-engines'
+    './modules/protection-engines',
+    './modules/restore-plans',
+    './modules/rules',
+    './modules/flr'
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -101,6 +104,7 @@ FunctionsToExport = @(
     'Get-PPDMhosts',
     'Get-PPDMactivities',
     'Restart-PPDMactivities',
+    'Stop-PPDMactivities',
     'New-PPDMUsers',
     'Unblock-PPDMSSLCerts',
     'Update-PPDMAccessToken',
@@ -226,7 +230,14 @@ FunctionsToExport = @(
     'Save-PPDMActivityLog',
     'Restore-PPDMVMcopies',
     'Get-PPDMAudit_logs',
-    'Update-PPDMAudit_logs'   
+    'Update-PPDMAudit_logs',
+    'Get-PPDMrestore_plans',
+    'Get-PPDMrules',
+    'Start-PPDMflr_sessions',
+    'Get-PPDMflr_sessions',
+    'Set-PPDMflr_sessions',    
+    'Remove-PPDMflr_sessions',
+    'Restore-PPDMflr_sessions'        
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -252,6 +263,7 @@ AliasesToExport = @(
     'Save-PPDMJobLog',
     'Set-PPDMasset',
     'Restore-PPDMVMasset',
+    'Restore-PPDMFLR',
     'Get-PPDMk8sclusters',
     'Get-PPDMk8spvcmappings'
 )

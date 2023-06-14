@@ -20,8 +20,8 @@ Get-PPDMassets -filter 'subtype eq "K8S_PERSISTENT_VOLUME_CLAIM" and details.k8s
 function Get-PPDMassets {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $id,
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true, ValueFromPipeline = $true)]
+        [alias('assetIds')]$id,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $filter,
