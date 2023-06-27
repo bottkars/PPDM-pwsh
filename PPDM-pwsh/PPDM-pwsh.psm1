@@ -310,7 +310,7 @@ function Invoke-PPDMapirequest {
                 }
                 if ($query) {
                     $Parameters.Add('body', $query)
-                    Write-Verbose $Query | Out-String
+                    Write-Verbose ($Query | Out-String)
                 }
                 if ($filter) {
                     $filterstring = [System.Web.HTTPUtility]::UrlEncode($filter)

@@ -46,6 +46,8 @@ function Get-PPDMassets {
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
                 $URI = "/$myself/$id"
+                $body = @{}  
+
             }
             default {
                 $URI = "/$myself"

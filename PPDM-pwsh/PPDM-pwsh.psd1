@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.01'
+ModuleVersion = '19.14.03'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -236,7 +236,6 @@ FunctionsToExport = @(
     'Start-PPDMflr_sessions',
     'Get-PPDMflr_sessions',
     'Get-PPDMflr_filelisting',
-
     'Set-PPDMflr_sessions',    
     'Remove-PPDMflr_sessions',
     'Restore-PPDMflr_sessions',

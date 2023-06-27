@@ -3,26 +3,26 @@ function Get-PPDMactivities {
     [CmdletBinding(ConfirmImpact = 'Low',
         HelpUri = 'https://developer.dellemc.com/data-protection/powerprotect/data-manager/tutorials/monitor-activities')]
     param(
-#       [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-#        [Parameter(Mandatory = $false, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
-#        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]        
-#        
-#        [Parameter(Mandatory = $true, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
-#        $Filter,  
+        #       [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
+        #        [Parameter(Mandatory = $false, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
+        #        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]        
+        #        
+        #        [Parameter(Mandatory = $true, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
+        #        $Filter,  
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
         $days = 1,
         [Parameter(Mandatory = $true, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('RUNNING','QUEUED','PROTECT_OK', 'PROTECT_FAILED', 'SYSTEM_FAILED', 'SYSTEM_OK', 'CLOUD_PROTECT_OK', 'CLOUD_PROTECT_FAILED')]
+        [ValidateSet('RUNNING', 'QUEUED', 'PROTECT_OK', 'PROTECT_FAILED', 'SYSTEM_FAILED', 'SYSTEM_OK', 'CLOUD_PROTECT_OK', 'CLOUD_PROTECT_FAILED')]
         $PredefinedFilter,                         
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [alias('taskid')]$id,
+        [alias('taskid', 'id')]$activityId,
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
 
-        $body = @{pageSize = 200},
+        $body = @{pageSize = 200 },
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
         $filter,
@@ -31,7 +31,7 @@ function Get-PPDMactivities {
         $query,
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
-            $apiver = "/api/v2"
+        $apiver = "/api/v2"
     )
     begin {
         $Response = @()
@@ -74,16 +74,15 @@ function Get-PPDMactivities {
                 }
                 if ($filter) {
                     $filter = "$filterstring $filter"
-                    }
-                else 
-                    {
-                    $filter = $filterstring
-                    }  
-                $URI = "/$myself"
                 }
+                else {
+                    $filter = $filterstring
+                }  
+                $URI = "/$myself"
+            }
 
-                'byID' {
-                $URI = "/$myself/$id"
+            'byID' {
+                $URI = "/$myself/$activityId"
             }
             default {
                 $URI = "/$myself"
@@ -97,16 +96,17 @@ function Get-PPDMactivities {
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
-          }
-          if ($filter) {
+        }
+        if ($filter) {
             $parameters.Add('filter', $filter)
-          }
-          if ($query) {
-            $Parameters.Add('q', $query)}    
-          Write-Verbose ($Parameters | Out-String)       
-          try {
+        }
+        if ($query) {
+            $Parameters.Add('q', $query)
+        }    
+        Write-Verbose ($Parameters | Out-String)       
+        try {
             $Response += Invoke-PPDMapirequest @Parameters       
-          }                
+        }                
 
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
@@ -117,7 +117,10 @@ function Get-PPDMactivities {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response 
+
+                write-output $response
+
+                 
             }
             default {
                 write-output $response.content
@@ -290,7 +293,7 @@ function Request-PPDMActivityLog {
             }
         }
         $body = @{
-            filterType = "ACTIVITY_ID"
+            filterType  = "ACTIVITY_ID"
             filterValue = $ID
         } | ConvertTo-Json
         write-verbose ($body | Out-String)  
@@ -301,7 +304,7 @@ function Request-PPDMActivityLog {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
-            ContentType     = "application/json"
+            ContentType      = "application/json"
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
@@ -409,8 +412,8 @@ function Save-PPDMActivityLog {
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
             OutFile          = $Filename   
-          }
-          write-verbose ($Parameters | Out-String)  
+        }
+        write-verbose ($Parameters | Out-String)  
     
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -422,7 +425,7 @@ function Save-PPDMActivityLog {
         write-verbose ($response | Out-String)
     } 
     end {    
-                write-output $response 
+        write-output $response 
 
-        }   
+    }   
 }
