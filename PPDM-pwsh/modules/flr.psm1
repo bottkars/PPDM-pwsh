@@ -115,10 +115,7 @@ function Remove-PPDMflr_sessions {
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
             retries          = $retries
-        }
-        if ($filter) {
-            $parameters.Add('filter', $filter)
-        }      
+        }    
         try {
             $Response += Invoke-PPDMapirequest @Parameters
         }
@@ -180,10 +177,7 @@ function Get-PPDMflr_sessions {
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
             retries          = $retries
             timeout          = $timeout
-        }
-        if ($filter) {
-            $parameters.Add('filter', $filter)
-        }      
+        }     
         try {
             $Response += Invoke-PPDMapirequest @Parameters
         }
@@ -204,13 +198,74 @@ function Get-PPDMflr_sessions {
     }   
 }
 
-function Set-PPDMflr_sessions {
+
+function Get-PPDMflr_filelisting {
     [CmdletBinding()]
+    [Alias('Get-PPDMFLRfiles')]
+
     param(
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [alias('flrSessionId')]$id,
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $filter,
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2",      
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $body = @{pageSize = 200 }  
+    )
+    begin {
+        $Response = @()
+        $METHOD = "GET"
+        $Myself = "flr-sessions"
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                $URI = "/$myself/$id/files"
+            }
+            default {
+                $URI = "/$myself/$id/files"
+            }
+        } 
+        if ($files.IsPresent) {
+            $URI = "$URI/files"
+        } 
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+   
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+
+        write-output $response.content
+
+    }   
+}
+
+
+function Set-PPDMflr_sessions {
+    [CmdletBinding()]
+    [Alias('Set-PPDMFLRbrowsescope')]
+
+    param(
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [alias('flrSessionId')]$id,
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]

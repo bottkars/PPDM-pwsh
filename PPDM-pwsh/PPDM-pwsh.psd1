@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.12.1'
+ModuleVersion = '19.14.01'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -235,9 +235,15 @@ FunctionsToExport = @(
     'Get-PPDMrules',
     'Start-PPDMflr_sessions',
     'Get-PPDMflr_sessions',
+    'Get-PPDMflr_filelisting',
+
     'Set-PPDMflr_sessions',    
     'Remove-PPDMflr_sessions',
-    'Restore-PPDMflr_sessions'        
+    'Restore-PPDMflr_sessions',
+    'Get-PPDMRestored_copies',
+    'New-PPDMRestored_copies',
+    'Get-PPDMFSAgentFLRBrowselist',
+    'Restore-PPDMFileFLR_copies'        
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -265,7 +271,9 @@ AliasesToExport = @(
     'Restore-PPDMVMasset',
     'Restore-PPDMFLR',
     'Get-PPDMk8sclusters',
-    'Get-PPDMk8spvcmappings'
+    'Get-PPDMk8spvcmappings',
+    'Get-PPDMFLRfiles',
+    'Set-PPDMFLRbrowsescope'
 )
 
 # DSC resources to export from this module
@@ -330,7 +338,7 @@ PrivateData = @{
         - added diconnect (removes Global Variables )
         - added force connect (removes Global Variables )
         '
-        # Prerelease = 'Pre'
+    Prerelease = 'Pre'
     } # End of PSData hashtable
 
 } # End of PrivateData hashtable
