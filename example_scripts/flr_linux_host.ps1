@@ -25,7 +25,11 @@ $RestoreAssets = Get-PPDMAssets -Filter $RestoreAssetFilter
 
 
 write-host "Selecting Asset-copy for $RestoreFromHost"
-$RestoreAssetCopy = $RestoreAssets | Get-PPDMassetcopies -filter 'state eq "IDLE"' | Select-Object -First 1
+$myDate=(get-date).AddDays(-1)
+$usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
+$RANGE_FILTER='startTime ge "'+$usedate+'"state eq "IDLE"'
+$RestoreAssets | Get-PPDMassetcopies -filter $RANGE_FILTER
+$RestoreAssetCopy = $RestoreAssets | Get-PPDMassetcopies -filter $RANGE_FILTER| Select-Object -First 1
 $RestoredCopy = New-PPDMRestored_copies -ids $RestoreAssetCopy.id -assetName $RestoreAssetCopy.assetName -Hostid $RestoreToHost.id
 
 do {
