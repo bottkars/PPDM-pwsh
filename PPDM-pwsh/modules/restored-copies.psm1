@@ -1068,6 +1068,114 @@ function Restore-PPDMFileFLR_copies {
 }
 
 
+function Restore-PPDMMSSQL_copies {
+  [CmdletBinding()]
+  [Alias('Restore-PPDMDDB_MSSQL')]
+  param(
+    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [string]$HostID,
+    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [string]$appServerID,    
+    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Alias('copyIds', 'Id')][string[]]$ids,
+    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Alias('name')]$assetName,
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [switch]$enableDebug,  
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [switch]$performTailLogBackup,  
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [switch]$enableCompressedRestore,   
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [switch]$disconnectDatabaseUsers,         
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [ValidateSet('TO_ALTERNATE')][string]$restoreType = "TO_ALTERNATE",
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [string]$CustomDescription,      
+    #  [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    #  [Alias('sources','FileList')][string[]]$RestoreSources,     
+    
+
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"           
+  )
+  begin {
+    $Response = @()
+    $METHOD = "POST"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(12) -replace "_", "-").ToLower()
+    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+ 
+  }     
+  Process {
+    switch ($PsCmdlet.ParameterSetName) {
+
+      default {
+        $URI = "/restored-copies/"
+      }
+    } 
+    $body = @{}
+    if ($CustomDescription) {
+      $body.Add('description', "Restore to original database $AssetName, $CustomDescription")  
+    }
+    else {
+      $body.Add('description', "Restore to original database $AssetName")
+    }
+    $body.Add('copyIds', $IDs)
+    $body.Add('restoreType', $restoreType)
+
+    $body.Add('restoredCopiesDetails', @{})
+    $body.restoredCopiesDetails.Add('targetDatabaseInfo', @{})
+    $body.restoredCopiesDetails.targetDatabaseInfo.Add('applicationSystemId', $appServerID)
+    $body.restoredCopiesDetails.targetDatabaseInfo.Add('hostId', "$HostID")
+    $body.restoredCopiesDetails.targetDatabaseInfo.Add('assetName', $assetName)
+    $body.Add('options', @{})
+    $body.options.Add('forceDatabaseOverwrite', $true)
+    $body.options.Add('enableDebug', $enableDebug.IsPresent) 
+    $body.options.Add('recoveryState', "RECOVERY") 
+    $body.options.Add('performTailLogBackup', $performTailLogBackup.isPresent) 
+    $body.options.Add('enableCompressedRestore', $enableCompressedRestore.IsPresent) 
+    $body.options.Add('disconnectDatabaseUsers', $disconnectDatabaseUsers.IsPresent) 
+    $body.options.Add('fileRelocationOptions', @{})
+    $body.options.fileRelocationOptions.Add('type', "ORIGINAL_LOCATION")
+
+
+    $body = $body | ConvertTo-Json -Depth 7
+    write-verbose ($body | out-string )
+
+
+    $Parameters = @{
+      RequestMethod    = 'REST'
+      body             = $body
+      Uri              = $URI
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }
+
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
+
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response 
+      }
+      default {
+        write-output $response 
+      } 
+    }   
+  }
+}
+
+
 function Get-PPDMFSAgentFLRBrowselist {
   [CmdletBinding()]
   param(

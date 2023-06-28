@@ -242,7 +242,8 @@ FunctionsToExport = @(
     'Get-PPDMRestored_copies',
     'New-PPDMRestored_copies',
     'Get-PPDMFSAgentFLRBrowselist',
-    'Restore-PPDMFileFLR_copies'        
+    'Restore-PPDMFileFLR_copies',
+    'Restore-PPDMMSSQL_copies'        
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -272,7 +273,8 @@ AliasesToExport = @(
     'Get-PPDMk8sclusters',
     'Get-PPDMk8spvcmappings',
     'Get-PPDMFLRfiles',
-    'Set-PPDMFLRbrowsescope'
+    'Set-PPDMFLRbrowsescope',
+    'Restore-PPDMDDB_MSSQL'
 )
 
 # DSC resources to export from this module

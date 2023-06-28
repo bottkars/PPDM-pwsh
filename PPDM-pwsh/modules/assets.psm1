@@ -518,6 +518,7 @@ function Get-PPDMhosts {
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
                 $URI = "/$myself/$id"
+                $body = @{}  
             }
             default {
                 $URI = "/$myself"
