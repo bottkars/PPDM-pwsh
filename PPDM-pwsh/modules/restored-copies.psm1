@@ -968,25 +968,27 @@ function Restore-PPDMFileFLR_copies {
   [CmdletBinding()]
   [Alias('Restore-PPDMFromFFileAgent')]
   param(
-    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $true, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
+    [alias('assetObject')][psobject]$copyobject,
+    [Parameter(Mandatory = $true, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [string]$HostID,
-    [Parameter(Mandatory = $True, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    $BackupTransactionID,
-    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    [Alias('copyIds', 'Id')][string[]]$ids,
+    #[Parameter(Mandatory = $True, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    #$BackupTransactionID,
+    #[Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    #[Alias('copyIds', 'Id')][string[]]$ids,
     [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $true)]
     $RestoreAssetHostname,   
-    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    [Alias('name')]$assetName,
-    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    #[Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+   # [Alias('name')]$assetName,
+    [Parameter(Mandatory = $true, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [Alias('location')]$RestoreLocation,    
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [switch]$RetainFolderHierachy,  
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [ValidateSet('TO_ALTERNATE', 'OVERWRITE')][string]$conflictStrategy = "TO_ALTERNATE",
-    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $true, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [string[]]$RestoreSources, 
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [string]$CustomDescription,      
     #  [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     #  [Alias('sources','FileList')][string[]]$RestoreSources,     
@@ -1000,13 +1002,17 @@ function Restore-PPDMFileFLR_copies {
     $METHOD = "POST"
     $Myself = ($MyInvocation.MyCommand.Name.Substring(12) -replace "_", "-").ToLower()
     # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
- 
+    $URI = "/restored-copies/"
   }     
   Process {
     switch ($PsCmdlet.ParameterSetName) {
-
+      'byCopyObjecttoProduction'{
+        $AssetName =$copyobject.assetName
+        [string[]]$ids=$copyobject.id
+        $BackupTransactionID=$copyobject.backupTransactionId
+      }
       default {
-        $URI = "/restored-copies/"
+        
       }
     } 
     $body = @{}

@@ -25,11 +25,11 @@ $RestoreAssets = Get-PPDMAssets -Filter $RestoreAssetFilter
 
 
 write-host "Selecting Asset-copy for $RestoreFromHost"
-$myDate=(get-date).AddDays(-1)
-$usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
-$RANGE_FILTER='startTime ge "'+$usedate+'"state eq "IDLE"'
+$myDate = (get-date).AddDays(-1)
+$usedate = get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
+$RANGE_FILTER = 'startTime ge "' + $usedate + '"state eq "IDLE"'
 $RestoreAssets | Get-PPDMassetcopies -filter $RANGE_FILTER
-$RestoreAssetCopy = $RestoreAssets | Get-PPDMassetcopies -filter $RANGE_FILTER| Select-Object -First 1
+$RestoreAssetCopy = $RestoreAssets | Get-PPDMassetcopies -filter $RANGE_FILTER | Select-Object -First 1
 $RestoredCopy = New-PPDMRestored_copies -ids $RestoreAssetCopy.id -assetName $RestoreAssetCopy.assetName -Hostid $RestoreToHost.id
 
 do {
@@ -48,16 +48,14 @@ $Parameters = @{
 $Browselist = Get-PPDMFSAgentFLRBrowselist @Parameters
 $Browselist.files
 
-Restore-PPDMFileFLR_copies -HostID  $RestoreToHost.id -BackupTransactionID $RestoreAssetCopy.backupTransactionId -ids $RestoreAssetCopy.id -RestoreAssetHostname $RestoreFromHost -assetName $RestoreAssetCopy.assetName -RestoreLocation /tmp -RetainFolderHierachy -conflictStrategy TO_ALTERNATE -RestoreSources /home/bottk -
-
-Restore-PPDMFileFLR_copies -HostID  $RestoreToHost.id -BackupTransactionID $RestoreAssetCopy.backupTransactionId -ids $RestoreAssetCopy.id -RestoreAssetHostname $RestoreFromHost -assetName $RestoreAssetCopy.assetName -RestoreLocation /tmp -RetainFolderHierachy -conflictStrategy TO_ALTERNATE -RestoreSources /home/bottk, /root -CustomDescription "Restore from Powershell"
 
 $Parameters = @{
+  CopyObject           = $RestoreAssetCopy
   HostID               = $RestoreToHost.id 
-  BackupTransactionID  = $RestoreAssetCopy.backupTransactionId
-  ids                  = $RestoreAssetCopy.id
+  #BackupTransactionID  = $RestoreAssetCopy.backupTransactionId
+  #ids                  = $RestoreAssetCopy.id
   RestoreAssetHostname = $RestoreFromHost
-  assetName            = $RestoreAssetCopy.assetName
+  #assetName            = $RestoreAssetCopy.assetName
   RestoreLocation      = "/tmp"
   RetainFolderHierachy = $true
   conflictStrategy     = "TO_ALTERNATE" 
