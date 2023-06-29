@@ -709,7 +709,25 @@ function Restore-PPDMK8Scopies {
 }
   
 
+<#
+.SYNOPSIS
 
+Adds a file name extension to a supplied name.
+
+.DESCRIPTION
+
+Restores a VMware VM From Copy back to Production
+.EXAMPLE 
+# Restore a VM to Production.
+$RestoreVM = "server2022_3"
+$Asset = Get-PPDMassets -filter 'type eq "VMWARE_VIRTUAL_MACHINE" and protectionStatus eq "PROTECTED" and name eq "server2022_3"'
+$copyobject = $asset | Get-PPDMassetcopies | select-object -first 1
+# Restore the VM
+Restore-PPDMVMAsset -CopyObject $copyobject -recoverConfig -TO_PRODUCTION -Description "Restore from Powershell" 
+.PARAMETER CopyObject
+Specifies the restored_copies object
+
+#>
 function Restore-PPDMVMcopies {
   [CmdletBinding()]
   [Alias('Restore-PPDMVMAsset')]
@@ -717,7 +735,7 @@ function Restore-PPDMVMcopies {
     [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'byCopyObjecttoProduction')]
     #      [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'byCopyObjecttoExisting')]  
     #      [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'byCopyObjecttoAlternate')]
-    [psobject]$CopyObject, 
+    [psobject]$CopyObject,
     #      [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoProduction')]
     #     [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoExisting')]  
     #      [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byCopyObjecttoAlternate')]
@@ -825,7 +843,18 @@ function Restore-PPDMVMcopies {
   }
 }
 
-
+<#
+.Synopsis
+Gets Information about a retored_copies object
+.Description
+Centralized Restore generate restore_copies objects with an activity and restore / mount status
+.Example
+Get all restored Copies
+Get-PPDMRestored_copies
+.Example
+Get Restored Copy Status of a Restore
+$Restore | Get-PPDMRestored_copies
+#>
 function Get-PPDMRestored_copies {
   [CmdletBinding()]
   param(
@@ -838,7 +867,6 @@ function Get-PPDMRestored_copies {
     $Response = @()
     $METHOD = "GET"
     $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
   }     
   Process {
@@ -879,13 +907,12 @@ function New-PPDMRestored_copies {
   [CmdletBinding()]
   [Alias('Mount-PPDMFLRCopy')]
   param(
-
     [Parameter(Mandatory = $true, ParameterSetName = 'SameHost', ValueFromPipelineByPropertyName = $true)]
-    [Parameter(Mandatory = $true, ParameterSetName = 'TargetHost', ValueFromPipelineByPropertyName = $true)]
-    [Alias('copyIds', 'Id')][string[]]$ids,
-    [Parameter(Mandatory = $true, ParameterSetName = 'SameHost', ValueFromPipelineByPropertyName = $true)]
-    [Parameter(Mandatory = $true, ParameterSetName = 'TargetHost', ValueFromPipelineByPropertyName = $true)]
-    [Alias('name')]$assetName,
+    [Parameter(Mandatory = $true, ParameterSetName = 'TargetHost', ValueFromPipelineByPropertyName = $true)]    
+    [alias('assetObject')][psobject]$copyobject,
+    #    [Parameter(Mandatory = $true, ParameterSetName = 'SameHost', ValueFromPipelineByPropertyName = $true)]
+    #    [Parameter(Mandatory = $true, ParameterSetName = 'TargetHost', ValueFromPipelineByPropertyName = $true)]
+    #    [Alias('name')]$assetName,
     [Parameter(Mandatory = $true, ParameterSetName = 'TargetHost', ValueFromPipelineByPropertyName = $true)]
     [Alias('TargetHost')]$hostID,
     [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
@@ -898,13 +925,13 @@ function New-PPDMRestored_copies {
     $METHOD = "POST"
     $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
     # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
- 
+    $URI = "/$myself"
   }     
   Process {
     switch ($PsCmdlet.ParameterSetName) {
-
       default {
-        $URI = "/$myself"
+        $AssetName = $copyobject.assetName
+        [string[]]$ids = $copyobject.id        
       }
     } 
     $body = @{}
@@ -962,8 +989,61 @@ function New-PPDMRestored_copies {
   }
 }
 
+<#
+.Synopsis
+Restores fsagent based Backups
+.Description
+Centralized Restore of FSagent Backups to Same or different Host
+.Example
+Restore to Production
+### Get all linux Hosts with FLR Agent
+## We do this with Specifying a Filter
+$linuxfilter = 'attributes.appHost.appServerTypes eq "FS" and not (lastDiscoveryStatus eq "DELETED") and details.appHost.os lk "linux" and details.appHost.phase eq "NONE"'
+### Read our Restore Host
+$RestoreHostFilter = 'attributes.appHost.appServerTypes eq "FS" and not (lastDiscoveryStatus eq "DELETED") and details.appHost.os lk "linux" and details.appHost.phase eq "NONE"and hostname eq "' + $RestoreToHost_Name + '"'
+$RestoreToHost = Get-PPDMhosts -filter $RestoreHostFilter
+$RestoreToHost
+### Read the Asset to restore to identify the Asset Copies
+$RestoreAssetFilter = 'type eq "FILE_SYSTEM" and protectionStatus eq "PROTECTED" and details.fileSystem.hostName eq  "' + $RestoreFromHost + '"'
+$RestoreAssets = Get-PPDMAssets -Filter $RestoreAssetFilter
+$RestoreAssets
+$RestoreAssets | Get-PPDMcopy_map
+### Selecting and mounting the Asset Copy to Restore 
+$RestoreAssetCopy = $RestoreAssets | Get-PPDMassetcopies -filter 'state eq "IDLE"' | Select-Object -First 1
+$RestoredCopy = New-PPDMRestored_copies -Copyobject $RestoreAssetCopy -Hostid $RestoreToHost.id -CustomDescription "Mount from Powershell"
+do {
+  Start-Sleep -Seconds 10    
+  $MountedCopy = $RestoredCopy | Get-PPDMRestored_copies
+}
+until ($MountedCopy.status -eq "SUCCESS") 
 
+# Optionally, do a Browsing
 
+$Parameters = @{
+  HostID               = $RestoreToHost.id
+  BackupTransactionID  = $RestoreAssetCopy.backupTransactionId
+  Hostpath             = "/home/bottk"
+  mountURL             = $MountedCopy.restoredCopiesDetails.targetFileSystemInfo.mountUrl
+  RestoreAssetHostname = $RestoreFromHost
+}
+$Browselist = Get-PPDMFSAgentFLRBrowselist @Parameters
+$Browselist.files
+## Run the Restore
+$Parameters = @{
+  CopyObject           = $RestoreAssetCopy
+  HostID               = $RestoreToHost.id 
+  RestoreAssetHostname = $RestoreFromHost
+  RestoreLocation      = "/tmp"
+  RetainFolderHierachy = $true
+  conflictStrategy     = "TO_ALTERNATE" 
+  RestoreSources       = "/home/bottk, /root"
+  CustomDescription    = "Restore from Powershell"
+  Verbose              = $false
+}
+$Restore = Restore-PPDMFileFLR_copies @Parameters
+$Restore | Get-PPDMActivities
+$Restore | Get-PPDMRestored_copies
+#>
 function Restore-PPDMFileFLR_copies {
   [CmdletBinding()]
   [Alias('Restore-PPDMFromFFileAgent')]
@@ -979,7 +1059,7 @@ function Restore-PPDMFileFLR_copies {
     [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $true)]
     $RestoreAssetHostname,   
     #[Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-   # [Alias('name')]$assetName,
+    # [Alias('name')]$assetName,
     [Parameter(Mandatory = $true, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [Alias('location')]$RestoreLocation,    
     [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
@@ -1000,16 +1080,14 @@ function Restore-PPDMFileFLR_copies {
   begin {
     $Response = @()
     $METHOD = "POST"
-    $Myself = ($MyInvocation.MyCommand.Name.Substring(12) -replace "_", "-").ToLower()
-    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
     $URI = "/restored-copies/"
   }     
   Process {
     switch ($PsCmdlet.ParameterSetName) {
-      'byCopyObjecttoProduction'{
-        $AssetName =$copyobject.assetName
-        [string[]]$ids=$copyobject.id
-        $BackupTransactionID=$copyobject.backupTransactionId
+      'byCopyObjecttoProduction' {
+        $AssetName = $copyobject.assetName
+        [string[]]$ids = $copyobject.id
+        $BackupTransactionID = $copyobject.backupTransactionId
       }
       default {
         
@@ -1078,25 +1156,27 @@ function Restore-PPDMMSSQL_copies {
   [CmdletBinding()]
   [Alias('Restore-PPDMDDB_MSSQL')]
   param(
-    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $true, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
+    [alias('assetObject')][psobject]$copyobject,    
+    [Parameter(Mandatory = $true, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [string]$HostID,
-    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $true, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [string]$appServerID,    
-    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    [Alias('copyIds', 'Id')][string[]]$ids,
-    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    [Alias('name')]$assetName,
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    # [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    # [Alias('copyIds', 'Id')][string[]]$ids,
+    # [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    # [Alias('name')]$assetName,
+    [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [switch]$enableDebug,  
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [switch]$performTailLogBackup,  
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [switch]$enableCompressedRestore,   
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [switch]$disconnectDatabaseUsers,         
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [ValidateSet('TO_ALTERNATE')][string]$restoreType = "TO_ALTERNATE",
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [string]$CustomDescription,      
     #  [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     #  [Alias('sources','FileList')][string[]]$RestoreSources,     
@@ -1108,17 +1188,19 @@ function Restore-PPDMMSSQL_copies {
   begin {
     $Response = @()
     $METHOD = "POST"
-    $Myself = ($MyInvocation.MyCommand.Name.Substring(12) -replace "_", "-").ToLower()
     # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
- 
+    $URI = "/restored-copies/"
   }     
   Process {
     switch ($PsCmdlet.ParameterSetName) {
-
-      default {
-        $URI = "/restored-copies/"
+      'byCopyObjecttoProduction' {
+        $AssetName = $copyobject.assetName
+        [string[]]$ids = $copyobject.id
       }
-    } 
+      default {
+        
+      }
+    }  
     $body = @{}
     if ($CustomDescription) {
       $body.Add('description', "Restore to original database $AssetName, $CustomDescription")  
@@ -1203,12 +1285,12 @@ function Get-PPDMFSAgentFLRBrowselist {
     $METHOD = "POST"
     $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
     # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
- 
+    $URI = "/adm/browse-path"
+
   }     
   Process {
     switch ($PsCmdlet.ParameterSetName) {
       default {
-        $URI = "/adm/browse-path"
       }
     }
 

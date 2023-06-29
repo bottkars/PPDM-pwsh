@@ -1,5 +1,4 @@
-#    /api/v2/certificates
-# /api/v2/certificates?host=<host>&port=<port>&type=Host
+
 function Get-PPDMcertificates {
     [CmdletBinding()]
     param(
@@ -19,7 +18,6 @@ function Get-PPDMcertificates {
         $Response = @()
         $METHOD = "GET"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
