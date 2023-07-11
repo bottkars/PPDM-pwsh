@@ -178,21 +178,24 @@ function Update-PPDMToken {
         $Body = @{
             'grant_type'    = "refresh_token"
             'refresh_token' = "$($Global:PPDM_Refresh_token)"
-            'scope'         = $Global:PPDM_Scope
+            'scope'         = $($Global:PPDM_Scope)
         } | convertto-json
     }
     process {
         $Parameters = @{
             UseBasicParsing = $true 
+            body    = $body 
+            Headers = $($Global:PPDM_API_Headers)
             Uri             = "$($Global:PPDM_API_BaseUri):$($Global:PPDM_API_PORT)$apiver/token"
-            Method          = $Method
-            Headers         = $Global:PPDM_API_Headers
+            Method  = $Method
+            Verbose = $PSBoundParameters['Verbose'] -eq $true
             ContentType     = "application/json"
-            Body            = $Body
-        }           
-        if ($Global:SkipCertificateCheck) { 
-            $Parameters.Add('SkipCertificateCheck', $true) 
-        }   
+        }
+        if ($Global:SkipCertificateCheck) {
+            $Parameters.Add('SkipCertificateCheck', $True)
+        }
+        Write-Verbose ($Body | Out-String)
+        Write-Verbose ($Parameters | Out-String)           
         try {     
             $Response = Invoke-RestMethod @Parameters
 
@@ -203,11 +206,11 @@ function Update-PPDMToken {
         }
     } 
     End {
-
         $Global:PPDM_API_Headers = @{
             'Authorization' = "Bearer $($Response.access_token)"
         }
         $Global:PPDM_Scope = $Response.Scope
+        #  $Global:PPDM_Refresh_token = $Response.Refresh_token
         Write-Host "Connected to $PPDM_API_BASEURI with $($Response.Scope)"
         Write-Output $Response
     }
@@ -292,7 +295,7 @@ function Invoke-PPDMapirequest {
             Method          = $Method
             Headers         = $Headers
             ContentType     = $ContentType
-            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+            Verbose         = $PSBoundParameters['Verbose'] -eq $true
         }
         write-verbose ($PsCmdlet.ParameterSetName)
         switch ($PsCmdlet.ParameterSetName) {    
@@ -329,35 +332,34 @@ function Invoke-PPDMapirequest {
             $Parameters.Add('SkipCertificateCheck', $True)
         }
         Write-Verbose ( $Parameters | Out-String )    
-        do
-        {
-        $has_error=0    
-        try {
-            switch ($RequestMethod) {
-                'Web' {
-                    $Result = Invoke-WebRequest @Parameters
-                }
-                'Rest' {
+        do {
+            $has_error = 0    
+            try {
+                switch ($RequestMethod) {
+                    'Web' {
+                        $Result = Invoke-WebRequest @Parameters
+                    }
+                    'Rest' {
                     
-                    $Result = Invoke-RestMethod @Parameters
-                }
-                default {
-                    $Result = Invoke-WebRequest @Parameters
+                        $Result = Invoke-RestMethod @Parameters
+                    }
+                    default {
+                        $Result = Invoke-WebRequest @Parameters
+                    }
                 }
             }
-       }
-        catch {
-            # Write-Warning $_.Exception.Message
-            Get-PPDMWebException -ExceptionMessage $_
-            $has_error = 1
-            $retries--
-            write-Warning "Retries $Retries timout $Timeout"
-            if ($retries -gt 0) { sleep $timeout }   
-            else {
-              Break  
-            }
+            catch {
+                # Write-Warning $_.Exception.Message
+                Get-PPDMWebException -ExceptionMessage $_
+                $has_error = 1
+                $retries--
+                write-Warning "Retries $Retries timout $Timeout"
+                if ($retries -gt 0) { sleep $timeout }   
+                else {
+                    Break  
+                }
             
-        }            
+            }            
         }
         while (($retries -ge 0) -and ($has_error -gt 0))
     }
@@ -365,8 +367,7 @@ function Invoke-PPDMapirequest {
         Write-Warning "PPDM_API_Headers are not present. Did you connect to PPDM_API  using connect-PPDMAPIendpoint ? "
         break
     }
-    if ($ResponseHeadersVariable)
-    {
+    if ($ResponseHeadersVariable) {
         Write-Output $HeadersResponse 
     }
     Write-Output $Result

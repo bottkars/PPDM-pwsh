@@ -397,10 +397,22 @@ function Remove-PPDMprotection_policies {
   }
 }
 
-
+<#
+.Synopsis
+Remove Asset(s) from a Protection Policy
+.Description
+Unassign assets from a Policy
+.Example
+Remove all Assets from a Specific vCenter from a specific Protection Policy
+$Policy = Get-PPDMprotection_policies -filter { assetType eq "VMWARE_VIRTUAL_MACHINE" and name eq "<your policy name>" }
+# List the Asset Assignments:
+$Policy | Get-PPDMprotection_policies -asset_assignments -filter {details.vm.inventorySourceName eq "<your vcenter name>"}
+$Policy | Get-PPDMprotection_policies -asset_assignments -filter {details.vm.inventorySourceName eq "<your vcenter name>"} | Remove-PPDMProtection_policy_assignment
+#>
 
 function Remove-PPDMProtection_policy_assignment {
   [CmdletBinding()]
+  [Alias('Unregister-PPDMAssetFromPoliy')]
   param(
     [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
     [alias('id')][string[]]$AssetID, 

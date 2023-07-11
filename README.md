@@ -4,7 +4,7 @@
 ## :heart: Powershell Modules for DellEMC PowerProtect DataManager API :heart:
 
 
-:sunrise: This is a Pre-Release Version :sunrise:
+:sunrise: This is the 19.14 Vesrion :sunrise:
 
 
 
@@ -12,12 +12,12 @@
 
 the module should be installed from [PSgallery](https://www.powershellgallery.com/packages/PPDM-pwsh/)
 ```Powershell
-Install-Module -Name PPDM-pwsh	
+Install-Module -Name PPDM-pwsh	-MinimumVersion 19.14.0.20
 ```
 
 :stuck_out_tongue: Install the Pre-Release Version:
 ```Powershell
-Install-Module PPDM-pwsh -AllowPrerelease -MinimumVersion 19.8
+Install-Module PPDM-pwsh -AllowPrerelease -MinimumVersion 19.14
 ```
 
 We need to initially load the Module and connect to the API Endpoint:

@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.05'
+ModuleVersion = '19.14.0.20'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -274,7 +274,8 @@ AliasesToExport = @(
     'Get-PPDMk8spvcmappings',
     'Get-PPDMFLRfiles',
     'Set-PPDMFLRbrowsescope',
-    'Restore-PPDMDDB_MSSQL'
+    'Restore-PPDMDDB_MSSQL',
+    'Unregister-PPDMAssetFromPoliy'
 )
 
 # DSC resources to export from this module
@@ -305,6 +306,10 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
+        2023-07-11 (v19.14.20)
+        - added FLR Usecases for Agent Backup
+        - Further Implementation of Filters
+        - implementation of restore groups
         2022-10-05 (v19.11.2)
         - added asset modifications     
         2022-09-07 (v19.11.0)
@@ -339,7 +344,7 @@ PrivateData = @{
         - added diconnect (removes Global Variables )
         - added force connect (removes Global Variables )
         '
-    Prerelease = 'Pre'
+    # Prerelease = 'Pre'
     } # End of PSData hashtable
 
 } # End of PrivateData hashtable
