@@ -87,7 +87,7 @@ function Remove-PPDMflr_sessions {
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $apiver = "/api/v2",
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $body = @{pageSize = 200 }  
+       [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
         $Response = @()
@@ -146,7 +146,7 @@ function Get-PPDMflr_sessions {
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [switch]$files,        
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $body = @{pageSize = 200 }  
+       [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
         $Response = @()
@@ -211,7 +211,7 @@ function Get-PPDMflr_filelisting {
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $apiver = "/api/v2",      
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $body = @{pageSize = 200 }  
+       [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
         $Response = @()
@@ -275,7 +275,7 @@ function Set-PPDMflr_sessions {
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [string]$directory,                 
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $body = @{pageSize = 200 }  
+       [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
         $Response = @()
@@ -353,7 +353,7 @@ function Restore-PPDMflr_sessions {
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [string]$targetdirectory = "/tmp",                 
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $body = @{pageSize = 200 }  
+       [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
         $Response = @()

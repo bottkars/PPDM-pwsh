@@ -243,7 +243,8 @@ FunctionsToExport = @(
     'New-PPDMRestored_copies',
     'Get-PPDMFSAgentFLRBrowselist',
     'Restore-PPDMFileFLR_copies',
-    'Restore-PPDMMSSQL_copies'        
+    'Restore-PPDMMSSQL_copies',
+    'Get-PPDMstorage_system_metrics'        
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -278,7 +279,8 @@ AliasesToExport = @(
     'Unregister-PPDMAssetFromPoliy',
     'Start-PPDMPLC',
     'Start-PPDMPLCStage',
-    'Start-PPDMProtectionStage'
+    'Start-PPDMProtectionStage',
+    'Get-PPDMStorageMetrics'
 )
 
 # DSC resources to export from this module

@@ -33,7 +33,7 @@ function Get-PPDMassets {
         $apiver = "/api/v2",
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $body = @{pageSize = 200 }  
+       [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
         $Response = @()
@@ -172,7 +172,7 @@ function Get-PPDMassetcopies {
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $apiver = "/api/v2",
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $body = @{pageSize = 200 }        
+       [hashtable]$body = @{pageSize = 200 }        
     )
     begin {
         $Response = @()
@@ -505,7 +505,7 @@ function Get-PPDMhosts {
         $apiver = "/api/v2",
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $body = @{pageSize = 200 }  
+       [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
         $Response = @()

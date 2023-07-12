@@ -19,3 +19,7 @@ Get-PPDMactivities -PredefinedFilter PROTECT_FAILED -days 1 | where { $_.actions
 ```Powershell
 Get-PPDMactivities -PredefinedFilter PROTECT_FAILED -days 1 | where { $_.actions.retryable -eq $True } | Restart-PPDMactivities
 ```
+## Restart Failed Kubernetes Activities
+```Powershell
+Get-PPDMactivities -days 11 -PredefinedFilter PROTECT_FAILED -query Kubernetes   | where { $_.actions.retryable -eq $True } | Restart-PPDMactivities
+```

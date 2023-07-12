@@ -65,7 +65,7 @@ function Get-PPDMactivities {
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
 
-        $body = @{pageSize = 200 },
+        [hashtable]$body = @{pageSize = 200 },
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
         $filter,
@@ -144,7 +144,7 @@ function Get-PPDMactivities {
             $parameters.Add('filter', $filter)
         }
         if ($query) {
-            $Parameters.Add('q', $query)
+            $Parameters.body.Add('q', $query)
         }    
         Write-Verbose ($Parameters | Out-String)       
         try {
@@ -162,8 +162,6 @@ function Get-PPDMactivities {
             'byID' {
 
                 write-output $response
-
-                 
             }
             default {
                 write-output $response.content

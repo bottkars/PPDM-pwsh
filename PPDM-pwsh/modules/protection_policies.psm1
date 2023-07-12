@@ -157,7 +157,7 @@ function Get-PPDMprotection_policies {
     [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    $body = @{pageSize = 200 }   
+   [hashtable]$body = @{pageSize = 200 }   
   )
   begin {
     $Response = @()

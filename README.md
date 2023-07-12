@@ -1,7 +1,6 @@
 ﻿# PPDM-pwsh
-![ppdm19 6](https://user-images.githubusercontent.com/8255007/97328230-186df900-1876-11eb-8ad4-4feed5dac316.gif)
 
-## :heart: Powershell Modules for Dell PowerProtect DataManager API :heart:
+## :heart: THE Powershell Modules for Dell PowerProtect DataManager API :heart:
 
 
 :sunrise: This is the 19.14 Vesrion :sunrise:
@@ -49,6 +48,9 @@ Examples for Managing Agent Based Protection and Policies
 [Create Centralized MSSQL Protection Policy](./Demos/07.%20Create%20Centralized_SQL.md)  
 [Create Self Service MSSQL Policy](./Demos/08.%20Create_SelfService_SQL.md)
 
+
+# Mamnagement Examples
+
 ## Asset Managemnt
 Examples for managing Assets  
 [Asset Management](./Demos/04.%20Asset%20Management.md)
@@ -58,7 +60,8 @@ Examples for managing Assets
 
 # Inventory Examples
 ## Managing / Adding Protection Storage
-[Example Script adding a DataDomain](./example_scripts/connect-ddve.ps1)
+[Example Script adding a DataDomain](./example_scripts/connect-ddve.ps1)  
+[Examles for Managing Storage and Capacity](./Demos/10.%20storage.md)  
 
 ## Managing vProxies
 [Add a Kubernetes Proxy](./example_scripts/k8s_proxy.ps1)  

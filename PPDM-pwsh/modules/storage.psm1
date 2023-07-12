@@ -56,6 +56,81 @@ function Get-PPDMdata_targets {
 }
 # Storage Targets
 # /api/v2/storage-systems
+<#
+.SYNOPSIS
+Get Information on Connected Storage Systems
+.EXAMPLE
+get-ppdmstorage_systems -Type DATA_DOMAIN_SYSTEM -Filter {name eq "ddve.home.labbuildr.com"}
+
+id                        : aa0b484c-8f1e-4749-99c1-91f3611ab3b1
+name                      : ddve.home.labbuildr.com
+description               :
+type                      : DATA_DOMAIN_SYSTEM
+local                     : False
+locationId                :
+ddLocationId              :
+capacityUtilization       : 42,9608800444966
+lastDiscoveryStatus       : DETECTED
+lastDiscovered            : 12/07/2023 15:07:21
+readiness                 : READY
+replicationEncryptionMode : DISABLED
+retentionLockModes        : {COMPLIANCE, GOVERNANCE}
+parentId                  :
+details                   : @{vmax=; xio=; dataDomain=}
+unsupportedFeatures       :
+createdAt                 : 15/06/2022 12:41:10
+updatedAt                 : 12/07/2023 15:07:29
+_embedded                 : @{inventorySource=}
+lastDiscoveryAt           : 12/07/2023 15:07:29
+lastDiscoveryResult       : @{messageID=ADS0005; status=OK; error=com.emc.brs.common.exceptions.DiscoveryActorException: Unauthorized: Unable to process the authentication request for PowerProtect DD Management Console
+                            ddve.home.labbuildr.com. Error: Unauthorized: Unable to process the authentication request for PowerProtect DD Management Console ddve.home.labbuildr.com. HTTP response: HTTP/1.1 401
+                            Unauthorized..; remediation=Check the connection between PowerProtect Data Manager and the protection storage system. Verify that the provided credentials are valid. Start a manual discovery to
+                            discover the protection storage system, or wait for PowerProtect Data Manager to perform the next scheduled discovery. If the issue persists, contact Dell Customer Support.;
+                            summaries=System.Object[]}
+lastDiscoveryTaskId       : bc907269-a59b-4ae3-9752-2a4b902be69a
+operatingSystem           :
+purpose                   :
+_links                    : @{self=; inventorySource=}
+.EXAMPLE
+get-ppdmstorage_systems -ID aa0b484c-8f1e-4749-99c1-91f3611ab3b1 -Livecapacities
+
+type                : COMBINED
+totalPhysicalUsed   : 590489321472
+totalPhysicalSize   : 1374327668736
+compressionFactor   : 39,0808009544374
+totalLogicalUsed    : 23076795638168
+totalLogicalSize    : 53709826068047
+percentUsed         : 42,9656867794189
+reductionPercentage : 97,4411988097023
+capacityStatus      : GOOD
+totalLicensedSize   : 48000000000000
+licensedUtilization : 1,2301860864
+
+type                : CLOUD
+totalPhysicalUsed   : 0
+totalPhysicalSize   : 0
+compressionFactor   : 0
+totalLogicalUsed    : 0
+totalLogicalSize    : 0
+percentUsed         : 0
+reductionPercentage : 0
+capacityStatus      : GOOD
+totalLicensedSize   : 32000000000000
+licensedUtilization : 0
+
+type                : ACTIVE
+totalPhysicalUsed   : 590489321472
+totalPhysicalSize   : 1374327668736
+compressionFactor   : 39,0808009544374
+totalLogicalUsed    : 23076795638168
+totalLogicalSize    : 53709826068047
+percentUsed         : 42,9656867794189
+reductionPercentage : 97,4411988097023
+capacityStatus      : GOOD
+totalLicensedSize   : 16000000000000
+licensedUtilization : 3,6905582592
+
+#>
 function Get-PPDMstorage_systems {
   [CmdletBinding()]
   param(
@@ -70,8 +145,10 @@ function Get-PPDMstorage_systems {
       'DATA_DOMAIN_APPLIANCE_POOL',
       'POWER_SCALE_APPLIANCE'
     )]$Type, 
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     [string]$ID,
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [switch]$Livecapacities,    
     [string]$Filter,
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     $apiver = "/api/v2"
@@ -88,6 +165,7 @@ function Get-PPDMstorage_systems {
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
         $URI = "/$myself/$ID"
+        if ($Livecapacities.IsPresent){$URI = "/$myself/$ID/capacities"}
       }
       default {
         $URI = "/$myself"
@@ -130,7 +208,14 @@ function Get-PPDMstorage_systems {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
-        write-output $response 
+        if ($Livecapacities.IsPresent){
+          write-output $response.capacities
+        }
+        else {
+          write-output $response
+        }
+
+         
       }
       default {
         write-output $response.content 
@@ -139,6 +224,67 @@ function Get-PPDMstorage_systems {
   }
 }
 
+
+function Get-PPDMstorage_system_metrics {
+  [CmdletBinding()]
+  [Alias('Get-PPDMStorageMetrics')]
+  param(
+    [string]$Filter,
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
+
+  )
+  begin {
+    $Response = @()
+    $METHOD = "GET"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+  }     
+  Process {
+    switch ($PsCmdlet.ParameterSetName) {
+
+      default {
+        $URI = "/$myself"
+      }
+
+      
+    }  
+    $Parameters = @{
+      body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Rest'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }   
+
+
+    if ($filter) {
+      write-verbose $filter
+      $parameters.Add('filter', $filter)   
+    }
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response 
+      }
+      default {
+        write-output $response.capacityStatusSummary
+      } 
+    }   
+  }
+}
 function Remove-PPDMstorage_systems {
   [CmdletBinding()]
   param(

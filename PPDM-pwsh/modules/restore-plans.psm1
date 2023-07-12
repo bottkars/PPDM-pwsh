@@ -14,7 +14,7 @@ function Get-PPDMrestore_plans {
         $apiver = "/api/v2",
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $body = @{pageSize = 200 }  
+       [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
         $Response = @()

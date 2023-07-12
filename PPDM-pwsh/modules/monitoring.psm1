@@ -75,7 +75,7 @@ function Get-PPDMalerts {
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $id,
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-        $body = @{pageSize = 200 },
+       [hashtable]$body = @{pageSize = 200 },
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         $filter,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
@@ -214,7 +214,7 @@ function Get-PPDMaudit_logs {
         $pageSize, 
         [Parameter(Mandatory = $false,ValueFromPipelineByPropertyName = $true)]
         $page,              
-        $body = @{orderby='createdAt DESC'},
+       [hashtable]$body = @{orderby='createdAt DESC'},
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
 
