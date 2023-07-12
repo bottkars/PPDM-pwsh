@@ -244,7 +244,8 @@ FunctionsToExport = @(
     'Get-PPDMFSAgentFLRBrowselist',
     'Restore-PPDMFileFLR_copies',
     'Restore-PPDMMSSQL_copies',
-    'Get-PPDMstorage_system_metrics'        
+    'Get-PPDMstorage_system_metrics',
+    'Get-PPDMasset_protection_metrics'        
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
