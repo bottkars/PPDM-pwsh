@@ -29,6 +29,30 @@ Connect-PPDMapiEndpoint -PPDM_API_URI https://<your ppdm server> -trustCert
 this uses a user password authentication. the token is saved as a Global Variable.
 You also can use a secure Credentials string to connect. Credentials will be stored in Session ofr easy reconnect
 
+# Workload Examples
+
+This section gives Some Examples for Workloads. Most of the Examples are also available from the Inline Help, e.g. 
+```Pwsh
+Get-Help 
+```
+## VMware Protection
+
+## Kubernetes Protection
+
+## Agent Protection
+
+## Asset Managemnt
+Examples for managing Assets  
+[Asset Management]./Demos/04. Asset Management.md
+
+
+
+
+
+
+
+
+
 ## :stuck_out_tongue: Backups ! :stuck_out_tongue:
 
 ### Get configured Protection Policies

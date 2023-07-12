@@ -1,14 +1,57 @@
+<#
+.SYNOPSIS
+Activity Monitoring
+.DESCRIPTION
+
+.EXAMPLE
+## Get all Failed Activitis
+Get-PPDMactivities -PredefinedFilter PROTECT_FAILED
+.EXAMPLE
+## Get All Failed Activities last Day
+Get-PPDMactivities -PredefinedFilter PROTECT_FAILED -days 1 
+.EXAMPLE
+## Get All Failed Activities last Day that are retryable
+Get-PPDMactivities -PredefinedFilter PROTECT_FAILED -days 1 | where { $_.actions.retryable -eq $True }
+.EXAMPLE
+## Restart  All Failed Activities last Day taht are Restartable
+Get-PPDMactivities -PredefinedFilter PROTECT_FAILED -days 1 | where { $_.actions.retryable -eq $True } | Restart-PPDMactivities
+.EXAMPLE
+# all protection Jobs last week
+# get a date stamp from -1 week ( Adjust to you duration)
+$myDate=(get-date).AddDays(-7)
+$usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
+$FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT")'
+Get-PPDMactivities -Filter $FILTER  | Select-Object * -ExpandProperty result | ft 
+.EXAMPLE
+# all failed last week
+# get a date stamp from -1 week ( Adjust to you duration)
+$myDate=(get-date).AddDays(-7)
+$usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
+FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT") and result.status eq "FAILED"'
+Get-PPDMactivities -Filter $FILTER  | Select-Object * -ExpandProperty result | ft 
+.EXAMPLE
+# Protect SUCCEEDED
+# get a date stamp from -1 week ( Adjust to you duration)
+$myDate=(get-date).AddDays(-7)
+$usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ$FILTER='result.status in  ("OK","OK_WITH_ERRORS") and startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("PROTECT")'
+Get-PPDMactivities -Filter $FILTER  | Select-Object * -ExpandProperty result | ft 
+.EXAMPLE
+# filter for failed system jobs
+# get a date stamp from -1 week ( Adjust to you duration)
+$myDate=(get-date).AddDays(-7)
+$usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
+$FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "FAILED"'
+.EXAMPLE
+# filter for Successfull system:
+# get a date stamp from -1 week ( Adjust to you duration)
+$myDate=(get-date).AddDays(-7)
+$usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ$FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "OK"'
+#>
 
 function Get-PPDMactivities {
     [CmdletBinding(ConfirmImpact = 'Low',
-        HelpUri = 'https://developer.dellemc.com/data-protection/powerprotect/data-manager/tutorials/monitor-activities')]
+        HelpUri = 'https://developer.dell.com/apis/4378/versions/19.13.0/docs/tasks/monitor-activities.md')]
     param(
-        #       [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-        #        [Parameter(Mandatory = $false, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
-        #        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]        
-        #        
-        #        [Parameter(Mandatory = $true, ParameterSetName = 'query', ValueFromPipelineByPropertyName = $true)]
-        #        $Filter,  
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
         $days = 1,
         [Parameter(Mandatory = $true, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
