@@ -275,7 +275,10 @@ AliasesToExport = @(
     'Get-PPDMFLRfiles',
     'Set-PPDMFLRbrowsescope',
     'Restore-PPDMDDB_MSSQL',
-    'Unregister-PPDMAssetFromPoliy'
+    'Unregister-PPDMAssetFromPoliy',
+    'Start-PPDMPLC',
+    'Start-PPDMPLCStage',
+    'Start-PPDMProtectionStage'
 )
 
 # DSC resources to export from this module

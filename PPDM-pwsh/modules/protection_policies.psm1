@@ -139,8 +139,8 @@ function Get-PPDMprotection_policies {
     
     [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     $id,
-    [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $true)]
-    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+#    [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $true)]
+#    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     [switch]$asset_assignments,
     [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
@@ -221,7 +221,7 @@ function Get-PPDMprotection_policies {
 
 <#
 .Synopsis
-New API Edpoint to start a Protection Policy includig asset list
+New API Edpoint to start an Asset Protion by Policy 
 .Description
 Starting a Policy requires Stage and Policy ID.
 CMDlet Supports the Input of a Policy Object including. See Example
@@ -229,9 +229,14 @@ CMDlet Supports the Input of a Policy Object including. See Example
 $Policy = Get-PPDMprotection_policies  -body @{pageSize=1} -filter 'name eq "GOLD_SPBM_NOTOOLS"'
 Start-PPDMprotection -PolicyObject $Policy
 Thu, 06 May 2021 09:11:11 GMT
+.EXAMPLE
+$Asset=Get-PPDMassets -filter {details.k8s.inventorySourceName eq "api.ocs1.home.labbuildr.com" and name eq "mysql-rh" and protectionStatus eq "PROTECTED"}
+$Policy=Get-PPDMprotection_policies -id $Asset.protectionPolicyId
+Start-PPDMprotection -PolicyObject $Policy -AssetIDs $Asset.id
 #>
 function Start-PPDMprotection {
   [CmdletBinding()]
+  [Alias('Start-PPDMPLCStage','Start-PPDMProtectionStage')]
   param(
     [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'byPolicyObject')]
     [psobject]$PolicyObject,
@@ -337,14 +342,28 @@ function Start-PPDMprotection {
 }
 
 
-
+<#
+.SYNOPSIS
+Starts a Protection Policy by ID
+.EXAMPLE
+# Start a Policy by ID for Specific Asset(s)
+$Asset=Get-PPDMassets -filter {details.k8s.inventorySourceName eq "api.ocs1.home.labbuildr.com" and name eq "mysql-rh" and protectionStatus eq "PROTECTED"}
+$Policy=Get-PPDMprotection_policies -id $Asset.protectionPolicyId
+$Policy | Start-PPDMprotection_policies -Assets $Assets.id
+.EXAMPLE
+$Policy=Get-PPDMprotection_policies -filter {name eq "K8S_GOLD" and assetType eq "Kubernetes"}
+$Policy | Start-PPDMprotection_policies
+#>
 function Start-PPDMprotection_policies {
   [CmdletBinding()]
+  [Alias('Start-PPDMPLC')]
   param(
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     $apiver = "/api/v2",
     [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
     [string][alias('id')]$PolicyID,
+    [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+    [string[]][alias('Assets')]$AssetIDs,  
     [Parameter(Mandatory = $false, ValueFromPipeline = $false)]
     [ValidateSet('FULL', 'GEN0', 'DIFFERENTIAL', 'LOG', 'INCREMENTAL', 'CUMULATIVE', 'AUTO_FULL')]
     $BackupType = 'FULL',
@@ -1131,8 +1150,6 @@ Add-PPDMProtection_policy_assignment -AssetID $AssetID -id $Policy.id
 Runthe Protection via policy:
 Start-PPDMprotection -PolicyObject $Policy -AssetIDs  $Asset.id
 
-or via asset backup (will be deprectaed)
-Start-PPDMasset_backups -AssetID $AssetID -BackupType AUTO_FULL
 #>
 function New-PPDMK8SBackupPolicy {
   [CmdletBinding()]

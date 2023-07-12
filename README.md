@@ -32,7 +32,7 @@ Get-Help
 ## VMware Protection
 
 ## Kubernetes Protection
-Examples for Kubernetes Onboarding, Protection and restores
+Examples for Kubernetes Onboarding, Protection and restores  
 [Kubernetes Protection](./Demos/05.%20kubernetes_protection_example.md)
 ## Agent Protection
 Examples for Managing Agent Based Protection and Restores  
