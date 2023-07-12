@@ -43,7 +43,7 @@ Get-Help
 
 ## Asset Managemnt
 Examples for managing Assets  
-[Asset Management]./Demos/04. Asset Management.md
+[Asset Management](Demos/04. Asset Management.md)
 
 
 
