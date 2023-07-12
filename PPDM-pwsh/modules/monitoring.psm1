@@ -59,15 +59,15 @@ function Get-PPDMprotection_details {
 Gets PPDM Alerts
 
 .Description
-Retrieve PPDM Alerts, IDś, State as 
+Retrieve PPDM Alerts, IDs, States 
 
 .Example
 
-Get-PPDMalerts | where acknowledgement -match UNACKNOWLEDGED | Set-PPDMalerts_acknowledgement -acknowledgeState ACKNOWLEDGED
+Get-PPDMalerts -filter {acknowledgement.acknowledgeState eq "UNACKNOWLEDGED"}| Set-PPDMalerts_acknowledgement -acknowledgeState ACKNOWLEDGED
 .EXAMPLE
-Get-PPDMalerts -filter {acknowledgement.acknowledgeState eq "UNACKNOWLEDGED"} -body {pagesize=1000}
+Get-PPDMalerts -filter {acknowledgement.acknowledgeState eq "UNACKNOWLEDGED"} -body {pagesize=100}
 .EXAMPLE
-Get-PPDMalerts -filter {acknowledgement.acknowledgeState eq "UNACKNOWLEDGED"} -body {pagesize=1000}| Set-PPDMalerts_acknowledgement -acknowledgeState ACKNOWLEDGED
+Get-PPDMalerts -filter {acknowledgement.acknowledgeState eq "UNACKNOWLEDGED"} -body {pagesize=100}| Set-PPDMalerts_acknowledgement -acknowledgeState ACKNOWLEDGED
 #>
 function Get-PPDMalerts {
     [CmdletBinding()]

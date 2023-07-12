@@ -27,20 +27,43 @@ The token is saved as a Global Variable.
 
 This section gives Some Examples for Workloads. Most of the Examples are also available from the Inline Help, e.g. 
 ```Pwsh
-Get-Help 
+get-help New-PPDMProtectionEngineProxy -Examples 
 ```
 ## VMware Protection
+[VM Restore from CLI](./Demos/01.%20VM%20Restore%20from%20CLI.md)    
+[VM Instant Access Restore LINUX VM](./example_scripts/flr_linux_vm_ia.ps1)  
+[Example Script Custom Restore Text](./example_scripts/restore_custom.ps1)  
+[Example script to exclude Disks from VM Asset](./example_scripts/modify_assets_disks.ps1)
 
 ## Kubernetes Protection
 Examples for Kubernetes Onboarding, Protection and restores  
-[Kubernetes Protection](./Demos/05.%20kubernetes_protection_example.md)
+[Kubernetes Protection](./Demos/05.%20kubernetes_protection_example.md)  
+[Example script to exclude PVC with Storage certain Classes](./example_scripts/modify_pvc_exludes_by_storageclass.ps1)  
+
 ## Agent Protection
 Examples for Managing Agent Based Protection and Restores  
 [FSAgent Agent](./Demos/02.1%20Asset%20Restore%20FLR%20client%20Side.md)  
 [MSSQL Agent](./Demos/03.%20Asset%20Restore%20MSSQL%20Powershell.md)  
+
 ## Asset Managemnt
 Examples for managing Assets  
 [Asset Management](./Demos/04.%20Asset%20Management.md)
+
+## Restore Plans
+[Example Script getting Assets protected in restore Plan](./example_scripts/get_assets_protected_in_restore_plan.ps1)  
+
+# Inventory Examples
+## Managing / Adding Protection Storage
+[Example Script adding a DataDomain](./example_scripts/connect-ddve.ps1)
+
+## Managing vProxies
+[Add a Kubernetes Proxy](./example_scripts/k8s_proxy.ps1)  
+[Add a vSphereProxy with NBD](./example_scripts/vproxy_nbd.ps1)  
+
+# PPDM Deployment
+[Example Script to wait for Appliance Fresh Install State](./example_scripts/wait_ppdm_fresh.ps1)  
+[Example Script to start PPDM Initial Configuration](./example_scripts/configure_ppdm.ps1)  
+[Example Script to wait for Appliance Configured](./example_scripts/wait_for_config_ready.ps1)   
 
 
 # Missing and API ? No worries, keep Prototyping

@@ -1,6 +1,6 @@
 connect-pPDMapiEndpoint -trustCert -PPDM_API_BaseURI ppdm-daily.home.labbuildr.com
 $RestoreClient = "openhab2"
-$username = Read-Host -Prompt "Please ENter Restore Clients Username"
+$username = Read-Host -Prompt "Please Enter Restore Clients Username"
 $SecurePassword = Read-Host -Prompt "Enter Password for user $username" -AsSecureString
 $Credentials = New-Object System.Management.Automation.PSCredential($username, $Securepassword)
 
