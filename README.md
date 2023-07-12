@@ -30,10 +30,12 @@ This section gives Some Examples for Workloads. Most of the Examples are also av
 get-help New-PPDMProtectionEngineProxy -Examples 
 ```
 ## VMware Protection
+Example for vMware Based Protections, Policies
 [VM Restore from CLI](./Demos/01.%20VM%20Restore%20from%20CLI.md)    
 [VM Instant Access Restore LINUX VM](./example_scripts/flr_linux_vm_ia.ps1)  
 [Example Script Custom Restore Text](./example_scripts/restore_custom.ps1)  
 [Example script to exclude Disks from VM Asset](./example_scripts/modify_assets_disks.ps1)
+[Create AppAware MSSQL Protection using Transparent Snapshots](./Demos/06.%20Create%20APP_AWARE%20SQL.md)  
 
 ## Kubernetes Protection
 Examples for Kubernetes Onboarding, Protection and restores  
@@ -41,9 +43,11 @@ Examples for Kubernetes Onboarding, Protection and restores
 [Example script to exclude PVC with Storage certain Classes](./example_scripts/modify_pvc_exludes_by_storageclass.ps1)  
 
 ## Agent Protection
-Examples for Managing Agent Based Protection and Restores  
+Examples for Managing Agent Based Protection and Policies
 [FSAgent Agent](./Demos/02.1%20Asset%20Restore%20FLR%20client%20Side.md)  
-[MSSQL Agent](./Demos/03.%20Asset%20Restore%20MSSQL%20Powershell.md)  
+[MSSQL Agent](./Demos/03.%20Asset%20Restore%20MSSQL%20Powershell.md)   
+[Create Centralized MSSQL Protection Policy](./Demos/07.%20Create%20Centralized_SQL.md)  
+[Create Self Service MSSQL Policy](./Demos/08.%20Create_SelfService_SQL.md)
 
 ## Asset Managemnt
 Examples for managing Assets  

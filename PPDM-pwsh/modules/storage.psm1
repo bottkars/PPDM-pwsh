@@ -2,167 +2,195 @@
 # /api/v2/data-targets
 
 function Get-PPDMdata_targets {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [string]$ID,
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2"
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [string]$ID,
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
 
-    )
-    begin {
-        $Response = @()
-        $METHOD = "GET"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+  )
+  begin {
+    $Response = @()
+    $METHOD = "GET"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
    
-    }     
-    Process {
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                $URI = "/$myself/$ID"
-            }
-            default {
-                $URI = "/$myself"
-            }
-        }  
-        $Parameters = @{
-            body             = $body 
-            Uri              = $Uri
-            Method           = $Method
-            RequestMethod    = 'Rest'
-            PPDM_API_BaseUri = $PPDM_API_BaseUri
-            apiver           = $apiver
-            Verbose          = $PSBoundParameters['Verbose'] -eq $true
-        }      
-        try {
-            $Response += Invoke-PPDMapirequest @Parameters
-        }
-        catch {
-            Get-PPDMWebException  -ExceptionMessage $_
-            break
-        }
-        write-verbose ($response | Out-String)
-    } 
-    end {    
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response 
-            }
-            default {
-                write-output $response.content 
-            } 
-        }   
+  }     
+  Process {
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        $URI = "/$myself/$ID"
+      }
+      default {
+        $URI = "/$myself"
+      }
+    }  
+    $Parameters = @{
+      body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Rest'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }      
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
     }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response 
+      }
+      default {
+        write-output $response.content 
+      } 
+    }   
+  }
 }
 # Storage Targets
 # /api/v2/storage-systems
 function Get-PPDMstorage_systems {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [string]$ID,
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2"
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true, ParameterSetName = 'Type', ValueFromPipelineByPropertyName = $true)]
+    [ValidateSet(
+      'VMAX_STORAGE_SYSTEM',
+      'DATA_DOMAIN_SYSTEM',
+      'CDR_REGION_SYSTEM',
+      'GENERIC_NAS_APPLIANCE',
+      'POWER_STORE_APPLIANCE',
+      'UNITY_APPLIANCE',
+      'DATA_DOMAIN_APPLIANCE_POOL',
+      'POWER_SCALE_APPLIANCE'
+    )]$Type, 
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [string]$ID,
+    [string]$Filter,
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
 
-    )
-    begin {
-        $Response = @()
-        $METHOD = "GET"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+  )
+  begin {
+    $Response = @()
+    $METHOD = "GET"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
-    }     
-    Process {
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                $URI = "/$myself/$ID"
-            }
-            default {
-                $URI = "/$myself"
-            }
-        }  
-        $Parameters = @{
-            body             = $body 
-            Uri              = $Uri
-            Method           = $Method
-            RequestMethod    = 'Rest'
-            PPDM_API_BaseUri = $PPDM_API_BaseUri
-            apiver           = $apiver
-            Verbose          = $PSBoundParameters['Verbose'] -eq $true
-        }      
-        try {
-            $Response += Invoke-PPDMapirequest @Parameters
+  }     
+  Process {
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        $URI = "/$myself/$ID"
+      }
+      default {
+        $URI = "/$myself"
+      }
+      'TYPE' {
+        $URI = "/$myself"
+        if ($filter) {
+          $filter = 'type eq "' + $type + '" and ' + $filter 
         }
-        catch {
-            Get-PPDMWebException  -ExceptionMessage $_
-            break
+        else {
+          $filter = 'type eq "' + $type + '"'
         }
-        write-verbose ($response | Out-String)
-    } 
-    end {    
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response 
-            }
-            default {
-                write-output $response.content 
-            } 
-        }   
+      }
+      
+    }  
+    $Parameters = @{
+      body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Rest'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }   
+
+
+    if ($filter) {
+      write-verbose $filter
+      $parameters.Add('filter', $filter)   
     }
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response 
+      }
+      default {
+        write-output $response.content 
+      } 
+    }   
+  }
 }
 
 function Remove-PPDMstorage_systems {
   [CmdletBinding()]
   param(
-      [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-      [string]$ID,
-      $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-      $apiver = "/api/v2"
+    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [string]$ID,
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
 
   )
   begin {
-      $Response = @()
-      $METHOD = "DELETE"
-      $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
-      # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+    $Response = @()
+    $METHOD = "DELETE"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
+    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
  
   }     
   Process {
-      switch ($PsCmdlet.ParameterSetName) {
-          'byID' {
-              $URI = "/$myself/$ID"
-          }
-          default {
-              $URI = "/$myself"
-          }
-      }  
-      $Parameters = @{
-          body             = $body 
-          Uri              = $Uri
-          Method           = $Method
-          RequestMethod    = 'Rest'
-          PPDM_API_BaseUri = $PPDM_API_BaseUri
-          apiver           = $apiver
-          Verbose          = $PSBoundParameters['Verbose'] -eq $true
-      }      
-      try {
-          $Response += Invoke-PPDMapirequest @Parameters
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        $URI = "/$myself/$ID"
       }
-      catch {
-          Get-PPDMWebException  -ExceptionMessage $_
-          break
+      default {
+        $URI = "/$myself"
       }
-      write-verbose ($response | Out-String)
+    }  
+    $Parameters = @{
+      body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Rest'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }      
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
   } 
   end {    
-      switch ($PsCmdlet.ParameterSetName) {
-          'byID' {
-              write-output $response 
-          }
-          default {
-              write-output $response.content 
-          } 
-      }   
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response 
+      }
+      default {
+        write-output $response.content 
+      } 
+    }   
   }
 }
 
@@ -171,58 +199,59 @@ function Remove-PPDMstorage_systems {
 # Storage Targets
 # /api/v2/storage-systems
 function Set-PPDMstorage_systems {
-    [CmdletBinding()]
-    param(
+  [CmdletBinding()]
+  param(
 
-        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [Array]$Storage_Configuration,        
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2"
+    [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+    [Array]$Storage_Configuration,        
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
 
-    )
-    begin {
-        $Response = @()
-        $METHOD = "PUT"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+  )
+  begin {
+    $Response = @()
+    $METHOD = "PUT"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
-    }     
-    Process {
-        $body = $Storage_Configuration | convertto-json -Depth 10
-        switch ($PsCmdlet.ParameterSetName) {
-            default {
-                $URI = "/$myself/$($Storage_Configuration.id)"            }
-        }
-        write-verbose ($body | Out-String)  
-        $Parameters = @{
-            body             = $body 
-            Uri              = $Uri
-            Method           = $Method
-            RequestMethod    = 'Rest'
-            PPDM_API_BaseUri = $PPDM_API_BaseUri
-            apiver           = $apiver
-            ContentType     = "application/json"
-            Verbose          = $PSBoundParameters['Verbose'] -eq $true
-        }      
-        try {
-            $Response += Invoke-PPDMapirequest @Parameters
-        }
-        catch {
-            Get-PPDMWebException  -ExceptionMessage $_
-            break
-        }
-        write-verbose ($response | Out-String)
-    } 
-    end {    
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response 
-            }
-            default {
-                write-output $response
-            } 
-        }   
+  }     
+  Process {
+    $body = $Storage_Configuration | convertto-json -Depth 10
+    switch ($PsCmdlet.ParameterSetName) {
+      default {
+        $URI = "/$myself/$($Storage_Configuration.id)"            
+      }
     }
+    write-verbose ($body | Out-String)  
+    $Parameters = @{
+      body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Rest'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      ContentType      = "application/json"
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }      
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response 
+      }
+      default {
+        write-output $response
+      } 
+    }   
+  }
 }
 
 
@@ -660,6 +689,7 @@ function Set-PPDMstorage_systems {
         "CDR_REGION_SYSTEM",
         "POWER_PROTECT_SYSTEM",
         "GENERICNASAPPLIANCE"
+        
       ],
       "type": "string",
       "x-ppdm-filter": true,
@@ -685,58 +715,58 @@ function Set-PPDMstorage_systems {
 # /api/v2/datadomain-mtrees
 
 function Get-PPDMdatadomain_mtrees {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [string]$ID,
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2"
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [string]$ID,
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
 
-    )
-    begin {
-        $Response = @()
-        $METHOD = "GET"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+  )
+  begin {
+    $Response = @()
+    $METHOD = "GET"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
-    }     
-    Process {
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                $URI = "/$myself/$ID"
-            }
-            default {
-                $URI = "/$myself"
-            }
-        }  
-        $Parameters = @{
-            body             = $body 
-            Uri              = $Uri
-            Method           = $Method
-            RequestMethod    = 'Rest'
-            PPDM_API_BaseUri = $PPDM_API_BaseUri
-            apiver           = $apiver
-            Verbose          = $PSBoundParameters['Verbose'] -eq $true
-        }      
-        try {
-            $Response += Invoke-PPDMapirequest @Parameters
-        }
-        catch {
-            Get-PPDMWebException  -ExceptionMessage $_
-            break
-        }
-        write-verbose ($response | Out-String)
-    } 
-    end {    
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response 
-            }
-            default {
-                write-output $response.content 
-            } 
-        }   
+  }     
+  Process {
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        $URI = "/$myself/$ID"
+      }
+      default {
+        $URI = "/$myself"
+      }
+    }  
+    $Parameters = @{
+      body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Rest'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }      
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
     }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response 
+      }
+      default {
+        write-output $response.content 
+      } 
+    }   
+  }
 }
 
 
@@ -746,112 +776,112 @@ function Get-PPDMdatadomain_mtrees {
 
 
 function Get-PPDMdatadomain_cloud_units {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-        [alias('Id')][string]$storageSystemId,
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2"
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+    [alias('Id')][string]$storageSystemId,
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
 
-    )
-    begin {
-        $Response = @()
-        $METHOD = "GET"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+  )
+  begin {
+    $Response = @()
+    $METHOD = "GET"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
-    }     
-    Process {
-        switch ($PsCmdlet.ParameterSetName) {
+  }     
+  Process {
+    switch ($PsCmdlet.ParameterSetName) {
 
-            default {
-                $URI = "/$myself/$storageSystemId"
-            }
-        }  
-        $Parameters = @{
-            body             = $body 
-            Uri              = $Uri
-            Method           = $Method
-            RequestMethod    = 'Rest'
-            PPDM_API_BaseUri = $PPDM_API_BaseUri
-            apiver           = $apiver
-            Verbose          = $PSBoundParameters['Verbose'] -eq $true
-        }      
-        try {
-            $Response += Invoke-PPDMapirequest @Parameters
-        }
-        catch {
-            Get-PPDMWebException  -ExceptionMessage $_
-            break
-        }
-        write-verbose ($response | Out-String)
-    } 
-    end {    
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response 
-            }
-            default {
-                write-output $response.content 
-            } 
-        }   
+      default {
+        $URI = "/$myself/$storageSystemId"
+      }
+    }  
+    $Parameters = @{
+      body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Rest'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }      
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
     }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response 
+      }
+      default {
+        write-output $response.content 
+      } 
+    }   
+  }
 }
 
 ###### 
 # api/v2/datadomain-ddboost-encryption-settings
 function Get-PPDMdatadomain_ddboost_encryption_settings {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [string]$ID,
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2"
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [string]$ID,
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
 
-    )
-    begin {
-        $Response = @()
-        $METHOD = "GET"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+  )
+  begin {
+    $Response = @()
+    $METHOD = "GET"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
    
-    }     
-    Process {
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                $URI = "/$myself/$ID"
-            }
-            default {
-                $URI = "/$myself"
-            }
-        }  
-        $Parameters = @{
-            body             = $body 
-            Uri              = $Uri
-            Method           = $Method
-            RequestMethod    = 'Rest'
-            PPDM_API_BaseUri = $PPDM_API_BaseUri
-            apiver           = $apiver
-            Verbose          = $PSBoundParameters['Verbose'] -eq $true
-        }      
-        try {
-            $Response += Invoke-PPDMapirequest @Parameters
-        }
-        catch {
-            Get-PPDMWebException  -ExceptionMessage $_
-            break
-        }
-        write-verbose ($response | Out-String)
-    } 
-    end {    
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response 
-            }
-            default {
-                write-output $response.content 
-            } 
-        }   
+  }     
+  Process {
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        $URI = "/$myself/$ID"
+      }
+      default {
+        $URI = "/$myself"
+      }
+    }  
+    $Parameters = @{
+      body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Rest'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }      
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
     }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response 
+      }
+      default {
+        write-output $response.content 
+      } 
+    }   
+  }
 }
 
 
@@ -860,53 +890,53 @@ function Get-PPDMdatadomain_ddboost_encryption_settings {
 function Get-PPDMprotection_storage_metrics {
   [CmdletBinding()]
   param(
-      [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-      [string]$ID,
-      $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-      $apiver = "/api/v2"
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [string]$ID,
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
 
   )
   begin {
-      $Response = @()
-      $METHOD = "GET"
-      $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+    $Response = @()
+    $METHOD = "GET"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
  
   }     
   Process {
-      switch ($PsCmdlet.ParameterSetName) {
-          'byID' {
-              $URI = "/$myself/$ID"
-          }
-          default {
-              $URI = "/$myself"
-          }
-      }  
-      $Parameters = @{
-          body             = $body 
-          Uri              = $Uri
-          Method           = $Method
-          RequestMethod    = 'Rest'
-          PPDM_API_BaseUri = $PPDM_API_BaseUri
-          apiver           = $apiver
-          Verbose          = $PSBoundParameters['Verbose'] -eq $true
-      }      
-      try {
-          $Response += Invoke-PPDMapirequest @Parameters
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        $URI = "/$myself/$ID"
       }
-      catch {
-          Get-PPDMWebException  -ExceptionMessage $_
-          break
+      default {
+        $URI = "/$myself"
       }
-      write-verbose ($response | Out-String)
+    }  
+    $Parameters = @{
+      body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Rest'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }      
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
   } 
   end {    
-      switch ($PsCmdlet.ParameterSetName) {
-          'byID' {
-              write-output $response 
-          }
-          default {
-              write-output $response.systemsBySpaceUtilization
-          } 
-      }   
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response 
+      }
+      default {
+        write-output $response.systemsBySpaceUtilization
+      } 
+    }   
   }
 }

@@ -139,8 +139,8 @@ function Get-PPDMprotection_policies {
     
     [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     $id,
-#    [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $true)]
-#    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+    #    [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $true)]
+    #    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     [switch]$asset_assignments,
     [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
@@ -236,7 +236,7 @@ Start-PPDMprotection -PolicyObject $Policy -AssetIDs $Asset.id
 #>
 function Start-PPDMprotection {
   [CmdletBinding()]
-  [Alias('Start-PPDMPLCStage','Start-PPDMProtectionStage')]
+  [Alias('Start-PPDMPLCStage', 'Start-PPDMProtectionStage')]
   param(
     [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'byPolicyObject')]
     [psobject]$PolicyObject,
@@ -1402,37 +1402,82 @@ function New-PPDMFSBackupPolicy {
 
 
 
+<#
+.SYNOPSIS
 
+.EXAMPLE
+# Create a new AppAware MSSQL Policy using TSDM
+$Credentials=New-PPDMcredentials -type OS -name sqldemoaccount -authmethod BASIC
+$StorageSystem=Get-PPDMstorage_systems -Type DATA_DOMAIN_SYSTEM -Filter {name eq "ddve.home.labbuildr.com"}
+$BackupSchedule=New-PPDMDatabaseBackupSchedule -daily -LogBackupUnit HOURLY -LogBackupInterval 1 -RetentionUnit DAY -RetentionInterval 3
+New-PPDMSQLBackupPolicy -Schedule $BackupSchedule -Name MMSSQL_APPAWARE -AppAware -dbcredentialsID $credentials.id -StorageSystemID $StorageSystem.id -DataMover SDM -SizeSegmentation FSS
+
+.EXAMPLE
+# Create a New SelfServicee MSSQL Policy
+```Powershell
+$Credentials=New-PPDMcredentials -type OS -name sqldemoaccount -authmethod BASIC
+$StorageSystem=Get-PPDMstorage_systems -Type DATA_DOMAIN_SYSTEM -Filter {name eq "ddve.home.labbuildr.com"}
+$BackupSchedule=New-PPDMDatabaseBackupSchedule -daily -LogBackupUnit HOURLY -LogBackupInterval 1 -RetentionUnit DAY -RetentionInterval 3
+New-PPDMSQLBackupPolicy  -Name MSSQL_SELF -RetentionUnit DAY -RetentionInterval 1 -StorageSystemID $StorageSystem.id
+.EXAMPLE
+# Create a new Centralized MSSQL Policy
+$Credentials=New-PPDMcredentials -type OS -name sqldemoaccount -authmethod BASIC
+$StorageSystem=Get-PPDMstorage_systems -Type DATA_DOMAIN_SYSTEM -Filter {name eq "ddve.home.labbuildr.com"}
+$BackupSchedule=New-PPDMDatabaseBackupSchedule -daily -LogBackupUnit HOURLY -LogBackupInterval 1 -RetentionUnit DAY -RetentionInterval 3
+New-PPDMSQLBackupPolicy -Schedule $BackupSchedule -Name MSSQL_CENTRAL  -dbcredentialsID $credentials.id -StorageSystemID $StorageSystem.id
+
+#>
 function New-PPDMSQLBackupPolicy {
   [CmdletBinding()]
   param(
+    [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
+    [switch]$AppAware, 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
+    [ValidateSet('VADP', 'SDM')]
+    [string]$DataMover = "SDM",
+    [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
+    [ValidateSet('VSS', 'FSS')]
+    [string]$SizeSegmentation = "FSS",    
+    [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
+    [switch]$ExcludeSwapfiles,          
+    [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [psobject]$Schedule,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [string]$dbcredentialsID,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [ValidateLength(1, 150)][string]$Name,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [ValidateLength(1, 150)][string]$StorageSystemID,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [switch]$enabled,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [switch]$encrypted, 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [string]$Description = '' ,  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     $apiver = "/api/v2",
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [switch]$TroubleshootingDebug,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [switch]$excludeSystemDatabase,
     [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'selfservice')]
@@ -1444,6 +1489,7 @@ function New-PPDMSQLBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName = 'selfservice')]
     [ValidateRange(1, 2555)][int]$RetentionInterval,    
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [switch]$noop                  
   )
@@ -1456,36 +1502,39 @@ function New-PPDMSQLBackupPolicy {
     $URI = "/protection-policies"
   
     switch ($pscmdlet.ParameterSetName ) {
-      'centralized' { 
+      { $_ -eq 'centralized' -or $_ -eq 'appaware' } { 
         $operations = @()
-
         $copyoperation = @{}
         $copyoperation.Add('schedule', $Schedule.CopySchedule)
         $copyoperation.Add('backupType', 'FULL')         
-
-
-     
-          
         $operations += $copyoperation 
-        $mssql_options = @{
-          'troubleShootingOption' = "debugEnabled=$($TroubleshootingDebug.IsPresent)"
-          'excludeSystemDatabase' = $excludeSystemDatabase.IsPresent
-        }
         $mssql_credentials = @{
           'id'   = $dbcredentialsID
           'type' = 'OS'
         }
         if ($schedule.differentialSchedule) {
           $operations += $schedule.differentialSchedule   
-
         }
-
         if ($schedule.logSchedule) {
           $operations += $schedule.logSchedule   
         }
-
         [switch]$passive = $false
-
+        $Stages = @{}
+        $stages.Add('id', (New-Guid).Guid) 
+        $stages.Add('type', 'PROTECTION')
+        $stages.Add('passive', $passive.IsPresent)
+        $stages.Add('attributes', @{})
+        $Stages.attributes.Add('vm', @{})
+        $stages.attributes.vm.Add('appConsistentProtection', $false)
+        $stages.attributes.vm.Add('dataMoverType', $DataMover)
+        $stages.attributes.vm.Add('disableQuiescing', $false)
+        $stages.attributes.vm.Add('excludeSwapFiles', $false)
+        $Stages.attributes.Add('protection', @{})
+        $Stages.attributes.protection.Add('backupMode', $SizeSegmentation)
+        $Stages.Add('target', @{})
+        $Stages.Target.Add('storageSystemId', $StorageSystemID)
+        $Stages.Add('operations' , $operations)
+        $Stages.Add('retention'  , $Schedule.Retention)
       }
       Default {
         [switch]$passive = $true
@@ -1494,26 +1543,7 @@ function New-PPDMSQLBackupPolicy {
         $schedule.add('Retention', @{})
         $schedule.Retention.add('interval', $RetentionInterval)
         $schedule.Retention.add('unit', $RetentionUnit)
-
-      }
-    }
-
-    $Body = [ordered]@{ 
-      'name'            = $Name
-      'assetType'       = 'MICROSOFT_SQL_DATABASE'
-      'credentials'     = $mssql_credentials
-      'type'            = 'ACTIVE'
-      'dataConsistency' = 'APPLICATION_CONSISTENT'
-      'enabled'         = $enabled.IsPresent
-      'description'     = $Description
-      'encrypted'       = $encrypted.IsPresent
-      'filterIds'       = @()
-      'priority'        = 1
-      'passive'         = $passive.IsPresent
-      'forceFull'       = $false
-      'details'         = $details
-      'stages'          = @(
-        @{
+        $stages = @{
           'id'         = (New-Guid).Guid   
           'type'       = 'PROTECTION'
           'passive'    = $passive.IsPresent
@@ -1530,8 +1560,39 @@ function New-PPDMSQLBackupPolicy {
           }
           'retention'  = $Schedule.Retention
         }
-      ) 
-    } | convertto-json -Depth 7
+      }
+    }
+    if ($AppAware.IsPresent) {
+      $AssetType = 'VMWARE_VIRTUAL_MACHINE'
+      $details = @{}
+      $details.Add('vm', @{}) 
+      $details.vm.Add('protectionEngine', 'VMDIRECT')
+
+    }
+    else {
+      $AssetType = 'MICROSOFT_SQL_DATABASE'
+    }
+    $Body = [ordered]@{
+      'assetType'       = $AssetType
+      'name'            = $Name
+      'credentials'     = $mssql_credentials
+      'type'            = 'ACTIVE'
+      'dataConsistency' = 'APPLICATION_CONSISTENT'
+      'enabled'         = $enabled.IsPresent
+      'description'     = $Description
+      'encrypted'       = $encrypted.IsPresent
+      'filterIds'       = @()
+      'priority'        = 1
+      'passive'         = $passive.IsPresent
+      'forceFull'       = $false
+      'details'         = $details
+      'stages'          = @($stages)
+       
+    } 
+    if ($DataMover -eq "TransparentSnapshots") {
+      $Body.stages[0].vm.Add('protectionEngine', 'VMDIRECT')
+    }
+    $Body = $Body  | convertto-json -Depth 7
 
 
         
@@ -1571,8 +1632,8 @@ Parametersets are Used to define Centralized or Self-Service Policies
 For Centralized Backups, a Schedule Object creted with  must be Provided
 
 .Example
-PS /home/bottk/workspace/PPDM-pwsh> schedule=New-PPDMBackupSchedule -hourly_w_full_weekly -CreateCopyIntervalHrs 2 -CreateFull_Every_DayofWeek SUNDAY -RetentionUnit DAY -RetentionInterval 7 
-PS /home/bottk/workspace/PPDM-pwsh> New-PPDMExchangeBackupPolicy -Schedule $sched -StorageSystemID ed9a3cd6-7e69-4332-a299-aaf258e23328 -consistencyCheck LOGS_ONLY -enabled -encrypted -Name CI_EX_CLI_CENTRAL2         
+schedule=New-PPDMBackupSchedule -hourly_w_full_weekly -CreateCopyIntervalHrs 2 -CreateFull_Every_DayofWeek SUNDAY -RetentionUnit DAY -RetentionInterval 7 
+New-PPDMExchangeBackupPolicy -Schedule $sched -StorageSystemID ed9a3cd6-7e69-4332-a299-aaf258e23328 -consistencyCheck LOGS_ONLY -enabled -encrypted -Name CI_EX_CLI_CENTRAL2         
                                                                                                                                                                  id                             : 3e709bac-a575-4660-b4a0-80b61bc3c832                                                                                            name                           : CI_EX_CLI_CENTRAL2                                                                                                              description                    :                                                                                                                                 
 assetType                      : MICROSOFT_EXCHANGE_DATABASE
 type                           : ACTIVE
@@ -1673,7 +1734,6 @@ function New-PPDMExchangeBackupPolicy {
           'troubleShootingOption' = "debugEnabled=$($TroubleshootingDebug.IsPresent)"
           'consistencyCheck'      = $consistencyCheck
         }
-
 
         [switch]$passive = $false
 
