@@ -231,7 +231,8 @@ FunctionsToExport = @(
     'Restore-PPDMVMcopies',
     'Get-PPDMAudit_logs',
     'Update-PPDMAudit_logs',
-    'Get-PPDMrestore_plans',
+    'Get-PPDMrestore_plans'
+    'Get-PPDMRestorePlans',
     'Get-PPDMrules',
     'Start-PPDMflr_sessions',
     'Get-PPDMflr_sessions',
