@@ -4,10 +4,12 @@ Get all Protection Policies from PPDM
 .Description
 Retrieve al Protection Policies
 - supports PPDM Filters
+- Supports Policies by Type
+- supports asset assignments
 
 .Example
 Get all Protection Policies as table format 
-
+Get-PPDMprotection_policies | ft
 id                                   name                          description                         assetType                   type   targetStorageProvisionStrategy
 --                                   ----                          -----------                         ---------                   ----   ------------------
 13ca2528-171f-4628-9063-b35aa9d265c5 Silver_SPBM                   This Policy does DDVE Cloud Tier    VMWARE_VIRTUAL_MACHINE      ACTIVE AUTO_PROVISION
@@ -22,7 +24,20 @@ ead5f20a-efd6-42bc-a353-985121f62ed2 Gold_VMware                                
 4f8ee8f7-68ef-4c09-8789-17301e82be3a Kube Backup Platform Services                                     KUBERNETES                  ACTIVE AUTO_PROVISION
 e890a685-9fe9-4f9e-b91f-cfd61e7b131e Exchange Silver SelfService                                       MICROSOFT_EXCHANGE_DATABASE ACTIVE AUTO_PROVISION
 aa9665ac-9a25-44db-a3e1-cbf0e698c971 CI_EX_CLI_CENTRAL2                                                MICROSOFT_EXCHANGE_DATABASE ACTIVE AUTO_PROVISION
+.Example
+Get all vmware assets assigned
+Get-PPDMprotection_policies -type VMWARE_VIRTUAL_MACHINE -asset_assignments | ft
 
+id                                   name              description assetType              type     category               targetStorageProvisionStrategy enabled passive forc
+                                                                                                                                                                         eFul
+                                                                                                                                                                            l
+--                                   ----              ----------- ---------              ----     --------               ------------------------------ ------- ------- ----
+3e38a236-24f3-4b90-a09d-71867a1b2081 PPDM                          VMWARE_VIRTUAL_MACHINE ACTIVE   CENTRALIZED_PROTECTION AUTO_PROVISION                   False   False …lse
+aad3c5b2-bb17-4426-82a0-56addf1c72b2 Exclusions_VM_SPB             VMWARE_VIRTUAL_MACHINE EXCLUDED EXCLUSION              AUTO_PROVISION                    True   False
+abf4f09e-9249-4bc6-8daf-cbcbd470ccc1 Exclusions                    VMWARE_VIRTUAL_MACHINE EXCLUDED EXCLUSION              AUTO_PROVISION                    True   False
+9bc6b090-0826-4fe6-8f4a-53b57f135b9f win_test                      VMWARE_VIRTUAL_MACHINE ACTIVE   CENTRALIZED_PROTECTION AUTO_PROVISION                    True   False …lse
+62095aab-ccf6-4d23-8563-63f61c86bf47 VM_TAG_BASED_AA               VMWARE_VIRTUAL_MACHINE ACTIVE   CENTRALIZED_PROTECTION AUTO_PROVISION                    True   False …lse
+56c5ae63-df2c-44e2-96b8-039e348de3de LINUX_IMAGE                   VMWARE_VIRTUAL_MACHINE ACTIVE   CENTRALIZED_PROTECTION AUTO_PROVISION                    True   False …lse
 .Example
 Get Protection Policy with ID
 Get-PPDMprotection_policies -id a374a075-4b9f-4ea8-bfc7-3700bea23314
@@ -74,14 +89,57 @@ id                                   name              assetType
 --                                   ----              ---------
 200fb9c7-22a8-406b-b495-b6d6457de034 GOLD_SPBM         VMWARE_VIRTUAL_MACHINE
 a374a075-4b9f-4ea8-bfc7-3700bea23314 GOLD_SPBM_NOTOOLS VMWARE_VIRTUAL_MACHINE
+.EXAMPLE
 
+Get-PPDMprotection_policies -type FILE_SYSTEM -asset_assignments
+
+id                             : 553a0d10-7075-41fa-a645-08262f6addd8
+name                           : fs_demo
+description                    :
+assetType                      : FILE_SYSTEM
+type                           : ACTIVE
+category                       : CENTRALIZED_PROTECTION
+targetStorageProvisionStrategy : AUTO_PROVISION
+enabled                        : True
+passive                        : False
+forceFull                      : False
+priority                       : 1
+credentials                    :
+encrypted                      : False
+dataConsistency                : CRASH_CONSISTENT
+complianceInterval             :
+details                        :
+summary                        : @{numberOfAssets=1; totalAssetCapacity=105086115840; totalAssetProtectionCapacity=47862742004; numberOfJobFailures=0;
+                                 numberOfSlaFailures=0; numberOfSlaSuccess=0; lastExecutionStatus=SUCCEEDED}
+stages                         : {@{id=03cbb135-bdde-f70a-81e7-4dc3f079826b; type=PROTECTION; passive=False; retention=; extendedRetentions=System.Object[]; target=;
+                                 attributes=; operations=System.Object[]; options=}}
+filterIds                      : {}
+createdAt                      : 27.10.2022 12:09:53
+updatedAt                      : 27.10.2022 12:10:12
+slaId                          :
+_links                         : @{self=}
 
 #>
 function Get-PPDMprotection_policies {
   [CmdletBinding()]
-  param(
+  param(    
+    [Parameter(Mandatory = $true, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $true)]
+    [ValidateSet(
+      'VMAX_STORAGE_GROUP',
+      'VMWARE_VIRTUAL_MACHINE',
+      'ORACLE_DATABASE',
+      'MICROSOFT_SQL_DATABASE',
+      'FILE_SYSTEM',
+      'KUBERNETES',
+      'MICROSOFT_EXCHANGE_DATABASE',
+      'SAP_HANA_DATABASE',
+      'NAS_SHARE',
+      'POWERSTORE_BLOCK'
+    )]$type,
+    
     [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     $id,
+    [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     [switch]$asset_assignments,
@@ -89,12 +147,15 @@ function Get-PPDMprotection_policies {
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     $filter,
     [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]    
+    [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]  
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     $apiver = "/api/v2",
     [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     $body = @{pageSize = 200 }   
   )
@@ -127,6 +188,9 @@ function Get-PPDMprotection_policies {
     }
     if ($filter) {
       $parameters.Add('filter', $filter)
+    }
+    if ($type) {
+      $parameters.Add('filter', "assetType eq `"$type`"")
     }    
     Write-Verbose ($Parameters | Out-String)       
     try {
@@ -318,12 +382,15 @@ function Start-PPDMprotection_policies {
     } | convertto-json -compress
     write-verbose ($body | out-string)
     $Parameters = @{
-      body             = $body 
-      Uri              = "/$Myself/$PolicyID/backups"
-      Method           = $Method
-      PPDM_API_BaseUri = $PPDM_API_BaseUri
-      apiver           = $apiver
-      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+      body                    = $body 
+      Uri                     = "/$Myself/$PolicyID/backups"
+      Method                  = $Method
+      PPDM_API_BaseUri        = $PPDM_API_BaseUri
+      apiver                  = $apiver
+      RequestMethod           = "REST"
+      Verbose                 = $PSBoundParameters['Verbose'] -eq $true
+      ResponseHeadersVariable = 'HeaderResponse'
+
     }           
     try {
       $Response += Invoke-PPDMapirequest @Parameters
@@ -337,10 +404,10 @@ function Start-PPDMprotection_policies {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
-        write-output $response | convertfrom-json
+        write-output $response.date
       }
       default {
-        write-output ($response | convertfrom-json)
+        write-output $response.date
       } 
     }   
   }

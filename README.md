@@ -1,33 +1,27 @@
 ﻿# PPDM-pwsh
 ![ppdm19 6](https://user-images.githubusercontent.com/8255007/97328230-186df900-1876-11eb-8ad4-4feed5dac316.gif)
 
-## :heart: Powershell Modules for DellEMC PowerProtect DataManager API :heart:
+## :heart: Powershell Modules for Dell PowerProtect DataManager API :heart:
 
 
 :sunrise: This is the 19.14 Vesrion :sunrise:
 
 
 
-## installing the Module
+## installing the Module and connecting to PPDM
 
 the module should be installed from [PSgallery](https://www.powershellgallery.com/packages/PPDM-pwsh/)
 ```Powershell
-Install-Module -Name PPDM-pwsh	-MinimumVersion 19.14.0.20
+Install-Module -Name PPDM-pwsh	-MinimumVersion 19.14.20
 ```
+connect to the API Endpoint:
 
-:stuck_out_tongue: Install the Pre-Release Version:
-```Powershell
-Install-Module PPDM-pwsh -AllowPrerelease -MinimumVersion 19.14
-```
-
-We need to initially load the Module and connect to the API Endpoint:
-### Optionally: Loading the Module (if cloned from Github)
 ```Powershell
 ipmo .\PPDM-pwsh -Force
 Connect-PPDMapiEndpoint -PPDM_API_URI https://<your ppdm server> -trustCert
 ```
-this uses a user password authentication. the token is saved as a Global Variable.
-You also can use a secure Credentials string to connect. Credentials will be stored in Session ofr easy reconnect
+this uses a user password/authentication to retrieve the token. The login can be interactive or wit a Credentials PSobject.  
+The token is saved as a Global Variable.
 
 # Workload Examples
 
@@ -38,161 +32,44 @@ Get-Help
 ## VMware Protection
 
 ## Kubernetes Protection
-
+Examples for Kubernetes Onboarding, Protection and restores
+[Kubernetes Protection](./Demos/05.%20kubernetes_protection_example.md)
 ## Agent Protection
-
+Examples for Managing Agent Based Protection and Restores  
+[FSAgent Agent](./Demos/02.1%20Asset%20Restore%20FLR%20client%20Side.md)  
+[MSSQL Agent](./Demos/03.%20Asset%20Restore%20MSSQL%20Powershell.md)  
 ## Asset Managemnt
 Examples for managing Assets  
-[Asset Management](Demos/04. Asset Management.md)
+[Asset Management](./Demos/04.%20Asset%20Management.md)
 
 
+# Missing and API ? No worries, keep Prototyping
 
-
-
-
-
-
-
-## :stuck_out_tongue: Backups ! :stuck_out_tongue:
-
-### Get configured Protection Policies
+We implemented an Request Wrapper for PPDM API requeststhat utilizes all header ane endpoint variables
 ```Powershell
- Get-PPDMprotection_policies | ft
+NAME
+    Invoke-PPDMapirequest
+
+SYNTAX
+    Invoke-PPDMapirequest -OutFile <Object> [-uri <Object>] [-Method {Get | Delete | Put | Post | Patch}] [-Query <Object>] [-ContentType <Object>]
+    [-ResponseHeadersVariable <Object>] [-apiver <Object>] [-retries <int>] [-timeout <int>] [-apiport <Object>] [-PPDM_API_BaseUri <Object>] [-RequestMethod {Rest | Web}]
+    [<CommonParameters>]
+
+    Invoke-PPDMapirequest -uri <Object> -Method {Get | Delete | Put | Post | Patch} -Query <Object> -InFile <Object> [-ContentType <Object>] [-ResponseHeadersVariable
+    <Object>] [-apiver <Object>] [-retries <int>] [-timeout <int>] [-apiport <Object>] [-PPDM_API_BaseUri <Object>] [-RequestMethod {Rest | Web}] [<CommonParameters>]
+
+    Invoke-PPDMapirequest -uri <Object> [-Method {Get | Delete | Put | Post | Patch}] [-Query <Object>] [-ContentType <Object>] [-ResponseHeadersVariable <Object>] [-apiver
+    <Object>] [-retries <int>] [-timeout <int>] [-apiport <Object>] [-PPDM_API_BaseUri <Object>] [-RequestMethod {Rest | Web}] [-Body <Object>] [-Filter <Object>]
+    [<CommonParameters>]
 ```
-![image](https://user-images.githubusercontent.com/8255007/97300880-4e4fb500-1857-11eb-9632-c1c7c4b07157.png)
-
-
-### Start a Protection Policy (ad-Hoc Backup) by an ID
+Thus, you only need to specify the relative 
 ```Powershell
-Start-PPDMprotection_policies -PolicyID <ID>
+Invoke-PPDMapirequest -Method Get -uri /copy-metrics
 ```
+Note, this will utilize a WebRequest per default and thus return a Json Document, including Response Headers, to be converted
 
-### Start Protection Policy based on Pipeline Query
-this starts the Policy that matches the name Exchange and is not Self Service
+One can utilize the RestMethod via
 ```Powershell
-Get-PPDMprotection_policies | where { ($_.name -match "Exchange") -and ($_.passive -eq $False) } | Start-PPDMprotection_policies
+Invoke-PPDMapirequest -Method Get -RequestMethod Rest -uri /copy-metrics
 ```
-
-### :star: Query the Queued activity
-```Powershell
-Get-PPDMactivities -days 1 -PredefinedFilter QUEUED
-```
-![image](https://user-images.githubusercontent.com/8255007/97305950-0d0ed380-185e-11eb-9340-a4bc607082e9.png)
-
-### :star: Query Finished Successfull Activities, query for "Manual" in name
-```Powershell
-Get-PPDMactivities -days 1 -PredefinedFilter PROTECT_OK -query Manual | ft
-```
-
-![image](https://user-images.githubusercontent.com/8255007/97305737-d0db7300-185d-11eb-868e-a74d6999ea5d.png)
-
-
-
-## working with assets
-
-### getting all assets
-```Powershell
-Get-PPDMassets | ft
-```
-### getting specific asset(s)
-now we want to see a specific asset
-```Powershell
-Get-PPDMassets | where name -eq dcnode
-``` 
-And finally view the Storage and Replica Locations .....
-
-### Get a map of PPDM Copies per Asset ID
-```Powershell
-(Get-PPDMassets | where name -eq dcnode | Get-PPDMcopy_map).storagelocations
-```
-
-## Some other Commands
-```Powershell
-Get-PPDMinventory_sources | ft
-Get-PPDMprotection_policies | ft
-Start-PPDMprotection_policies -PolicyID 4f8ee8f7-68ef-4c09-8789-17301e82be3a
-Get-PPDMactivities -Filter RUNNING | ft
-Get-PPDMactivities  -query Kubernetes -Filter RUNNING | ft
-Get-PPDMprotection_policies | ft
- (Get-PPDMprotection_policies -id 200fb9c7-22a8-406b-b495-b6d6457de034).stages | ft
-```
-# storage
-```powershell
-Get-PPDMstorage_systems
-Get-PPDMdatadomain_cloud_units -storageSystemId ed9a3cd6-7e69-4332-a299-aaf258e23328
-```
-
-# :new: :star: Protection Policy Creation
-
-
-##
-Create a Centralized Exchange Backup Policy
-In order to create a Primary Backup for Exchange, we fisrt need to create a Schdule locally
-Schedules for Primary Backup set the Time / Window for Synthetic Fulls, and Optionally
-the Time For FULLS 
-
-```Powershell
-$schedule=New-PPDMBackupSchedule -hourly_w_full_weekly -CreateCopyIntervalHrs 2 -CreateFull_Every_DayofWeek SUNDAY -RetentionUnit DAY -RetentionInterval 7 
-```
-this Translates into a Primary PPDM Backup Schedule as follows:
-
-![image](https://github.com/bottkars/bottkars.github.io/raw/master/images/PPDM_NEW_SCHEDULE.png)
-
-Now we can set the Backup Policy with Above Schedule, and control Exchange Specific Feature
-```Powershell
-New-PPDMExchangeBackupPolicy -Schedule $sched -StorageSystemID ed9a3cd6-7e69-4332-a299-aaf258e23328 -consistencyCheck LOGS_ONLY -enabled -encrypted -Name CI_EX_CLI_CENTRAL2
-```
-
-# :star: :star: :star:Monitor activities
-
-## get activity Metrics
-
-```Powershell
-Get-PPDMactivity_metrics
-```
-this gets all metrics of the actual day, us -days parameters for extended list
-
-## :bomb: get failed activities
-Things can fail, i want to know !
-```Powershell
-Get-PPDMactivities  -query Kubernetes -days 14 -PredefinedFilter PROTECT_FAILED | Select-Object name, id -ExpandProperty result
-```
-### Custom Filters
-From above, we can see that predefined query filters are used.
-PowerProtect comes with it´s own query filters, see more 
-from 
-```Powershell
-Get-Help Get-PPDMactivities -Online
-```
-You can use your own Filters:
-
-
-```Powershell
-# get a date stamp from -1 week ( Adjust to you duration)
-$myDate=(get-date).AddDays(-7)
-$usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
-
-# all protection Jobs last week
-$FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT")'
-Get-PPDMactivities -Filter $FILTER  | Select-Object * -ExpandProperty result | ft 
-
-# all failed last week
-$FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT") and result.status eq "FAILED"'
-Get-PPDMactivities -Filter $FILTER  | Select-Object * -ExpandProperty result | ft 
-
-# Protect SUCCEEDED
-$FILTER='result.status in  ("OK","OK_WITH_ERRORS") and startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("PROTECT")'
-Get-PPDMactivities -Filter $FILTER  | Select-Object * -ExpandProperty result | ft 
-
-
-# filter for failed system jobs
-$FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "FAILED"'
-
-# filter for Successfull system:
-$FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "OK"'
-```
-
-
-
-
-
+This will return only content and page as PSobjects, for Headers a Hedervariable must be requested (only need for some POST request )

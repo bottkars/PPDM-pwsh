@@ -64,14 +64,23 @@ Retrieve PPDM Alerts, IDś, State as
 .Example
 
 Get-PPDMalerts | where acknowledgement -match UNACKNOWLEDGED | Set-PPDMalerts_acknowledgement -acknowledgeState ACKNOWLEDGED
+.EXAMPLE
+Get-PPDMalerts -filter {acknowledgement.acknowledgeState eq "UNACKNOWLEDGED"} -body {pagesize=1000}
+.EXAMPLE
+Get-PPDMalerts -filter {acknowledgement.acknowledgeState eq "UNACKNOWLEDGED"} -body {pagesize=1000}| Set-PPDMalerts_acknowledgement -acknowledgeState ACKNOWLEDGED
 #>
 function Get-PPDMalerts {
     [CmdletBinding()]
     param(
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $id,
+        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
+        $body = @{pageSize = 200 },
+        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
+        $filter,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2",
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $id
+        $apiver = "/api/v2"
+
     )
     begin {
         $Response = @()
@@ -86,10 +95,26 @@ function Get-PPDMalerts {
             default {
                 $URI = "/$myself"
             }
-        }        
-        try {
-            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body"
+        } 
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body 
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }
+        if ($filter) {
+            $parameters.Add('filter', $filter)
+        }
+        if ($query) {
+            $Parameters.Add('q', $query)
+        }    
+        Write-Verbose ($Parameters | Out-String)       
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters       
+        }                
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
             break
@@ -99,10 +124,10 @@ function Get-PPDMalerts {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response | convertfrom-json
+                write-output $response 
             }
             default {
-                write-output ($response | convertfrom-json).content
+                write-output $response.content
             } 
         }   
     }

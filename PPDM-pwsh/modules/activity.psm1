@@ -269,6 +269,13 @@ function Stop-PPDMactivities {
 
 
 #/api/v2/activities/{id}/retry
+<#
+.SYNOPSIS
+This commands restarts failed activities by id. id can come frome pipeline
+.EXAMPLE
+# restart failed activities 
+Get-PPDMactivities -PredefinedFilter PROTECT_FAILED -days 1 | where { $_.actions.retryable -eq $True } | Restart-PPDMactivities
+#>
 function Restart-PPDMactivities {
     [CmdletBinding(ConfirmImpact = 'Low',
         HelpUri = 'https://developer.dellemc.com/data-protection/powerprotect/data-manager/api/monitoring/getallactivitymetrics')]
