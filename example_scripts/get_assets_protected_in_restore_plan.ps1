@@ -1,6 +1,6 @@
 
 
-$PLAN_NAME="Surfer_Plan"
+$PLAN_NAME="TESPLAN"
 $RESTORE_PLAN=Get-PPDMrestore_plans -filter "name eq `"$PLAN_NAME`""
 $AssetState=@()
 foreach ($restoreGroup in $RESTORE_PLAN.restoreGroups)

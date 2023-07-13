@@ -15,37 +15,62 @@ Get-PPDMassets -body @{pageSize=10;page=2}
 .Example
 Filter PVC´s based on storageClassName
 Get-PPDMassets -filter 'subtype eq "K8S_PERSISTENT_VOLUME_CLAIM" and details.k8s.persistentVolumeClaim.storageClassName eq "thin-csi-immediate" and details.k8s.persistentVolumeClaim.excluded eq "FALSE"'
-
+.EXAMPLE
+# Get the Host Detail of a SQL Database Asset
+Get-PPDMassets -AssetType MICROSOFT_SQL_DATABASE -filter {name lk "Adventure%2019"} | Get-PPDMassets -Hosts
 #>
 function Get-PPDMassets {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true, ValueFromPipeline = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [alias('assetIds')]$id,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID')]
+        [alias('assetHosts')]
+        [switch]$Hosts,        
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
         $filter,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
+        [ValidateSet(
+            'VMAX_STORAGE_GROUP',
+            'VMWARE_VIRTUAL_MACHINE',
+            'ORACLE_DATABASE',
+            'MICROSOFT_SQL_DATABASE',
+            'FILE_SYSTEM',
+            'KUBERNETES',
+            'MICROSOFT_EXCHANGE_DATABASE',
+            'SAP_HANA_DATABASE',
+            'NAS_SHARE',
+            'CLOUD_NATIVE_ENTITY',
+            'POWERSTORE_BLOCK',
+            'CLOUD_DIRECTOR_VAPP',
+            'DR')]
+        [Alias('AssetType')][string]$type,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $apiver = "/api/v2",
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $false)]
         [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
-        $Response = @()
+        #        $Response = @{}
         $METHOD = "GET"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "/").ToLower()
         # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
-   
-    }     
+        $Response = @()   
+    }
+      
     Process {
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                $URI = "/$myself/$id"
+                if ($Hosts) {
+                    $URI = "/$myself/$id/hosts"
+                }
+                else {
+                    $URI = "/$myself/$id"                    
+                }
                 $body = @{}  
 
             }
@@ -62,6 +87,14 @@ function Get-PPDMassets {
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }
+        if ($type) {
+            if ($filter) {
+                $filter = 'type eq "' + $type + '" and ' + $filter 
+            }
+            else {
+                $filter = 'type eq "' + $type + '"'
+            }
+        }        
         if ($filter) {
             $parameters.Add('filter', $filter)
         }      
@@ -77,7 +110,12 @@ function Get-PPDMassets {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response 
+                if ($hosts.isPresent) {
+                    write-output $response.content 
+                }
+                else {
+                    write-output $response  
+                }
             }
             default {
                 write-output $response.content
@@ -547,12 +585,12 @@ function Get-PPDMhosts {
     param(
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $id,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [switch]$validaddresses,        
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('PRIMARY', 'GROUP', 'APP_HOST', 'ESX_HOST', 'ESX_CLUSTER', 'MSSQL', 'ORACLE', 'Filesystem')]
         [alias('hosttype')]$type,        
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $filter,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
@@ -561,7 +599,6 @@ function Get-PPDMhosts {
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $apiver = "/api/v2",
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
@@ -574,7 +611,11 @@ function Get-PPDMhosts {
     Process {
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                $URI = "/$myself/$id"
+                If ($validaddresses.IsPresent) {
+                    $URI = "/app-hosts/$id/valid-addresses"
+                }
+                else { $URI = "/$myself/$id" }
+
                 $body = @{}  
             }
             default {
@@ -700,55 +741,49 @@ function Set-PPDMassets {
     }
 }
 
-# /api/v2/common-settings/DELETION_TTL_SETTING
-function Get-PPDMassets {
+function Set-PPDMapp_hosts {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true, ValueFromPipeline = $true)]
-        [alias('assetIds')]$id,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $filter,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'address', ValueFromPipelineByPropertyName = $true)]
+        $id,
+        [Parameter(Mandatory = $false, ParameterSetName = 'address', ValueFromPipelineByPropertyName = $true)]
+        [switch]$preferredaddress,        
+        [Parameter(Mandatory = $true, ParameterSetName = 'address', ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('IPV6', 'IPV4', 'FQDN')][string]$type,
+        [Parameter(Mandatory = $true, ParameterSetName = 'address', ValueFromPipelineByPropertyName = $true)]
+        [string]$value,                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $apiver = "/api/v2",
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [hashtable]$body = @{pageSize = 200 }  
+        $apiver = "/api/v2"
+
     )
     begin {
         $Response = @()
-        $METHOD = "GET"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "/").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+        $METHOD = "PATCH"
    
     }     
     Process {
         switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                $URI = "/$myself/$id"
-                $body = @{}  
-
-            }
             default {
-                $URI = "/$myself"
+                $URI = "app-hosts/$ID/preferred-address"
             }
-        }   
-        $Parameters = @{
-            RequestMethod    = 'REST'
-            body             = $body
-            Uri              = $URI
-            Method           = $Method
-            PPDM_API_BaseUri = $PPDM_API_BaseUri
-            apiver           = $apiver
-            Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }
-        if ($filter) {
-            $parameters.Add('filter', $filter)
-        }      
+        $body = @{}
+        $body.add('type', $type)
+        $body.add('value', $value)
+        $body = $body | ConvertTo-Json
+        write-verbose ($body | out-string)
+        $Parameters = @{
+            RequestMethod           = 'REST'
+            body                    = $body
+            Uri                     = $URI
+            Method                  = $Method
+            PPDM_API_BaseUri        = $PPDM_API_BaseUri
+            apiver                  = $apiver
+            Verbose                 = $PSBoundParameters['Verbose'] -eq $true
+            ResponseHeadersVariable = 'HeaderResponse'
+
+        }   
+            
         try {
             $Response += Invoke-PPDMapirequest @Parameters
         }
@@ -760,11 +795,8 @@ function Get-PPDMassets {
     } 
     end {    
         switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response 
-            }
             default {
-                write-output $response.content
+                write-output ($response.Date)
             } 
         }   
     }

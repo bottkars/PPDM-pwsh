@@ -54,13 +54,18 @@ Examples for Managing Agent Based Protection and Policies
 ## Asset Management
 Examples for managing Assets  
 [Asset Management](./Demos/04.%20Asset%20Management.md)
+[Manage AppHosts Preferred IP/Comms Assignment](./Demos/99.%20appHosts.md)
 
+## Manage Common Settings
+There are Common Appliance Settings that can be retreive and modified
+[View and Modify Common Settings](./Demos/99.%20CommonSettings.md)
 ## Restore Plans
 [Example Script getting Assets protected in restore Plan](./example_scripts/get_assets_protected_in_restore_plan.ps1)  
 
 # Inventory Examples
 ## Managing / Adding Protection Storage
 [Example Script adding a DataDomain](./example_scripts/connect-ddve.ps1)  
+The Storage_Systems API has some festures for Capacity Reports // NFS Shares described here   
 [Examles for Managing Storage and Capacity](./Demos/10.%20storage.md)  
 
 ## Managing vProxies

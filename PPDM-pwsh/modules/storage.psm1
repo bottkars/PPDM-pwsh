@@ -129,6 +129,83 @@ reductionPercentage : 97,4411988097023
 capacityStatus      : GOOD
 totalLicensedSize   : 16000000000000
 licensedUtilization : 3,6905582592
+.EXAMPLE
+Get-PPDMstorage_systems -Type DATA_DOMAIN_SYSTEM -Filter {name eq "ddve.home.labbuildr.com"} | Get-PPDMstorage_systems -nfsexports
+# Gest the NFS Exports
+exportId           : %2Fdata
+storageArrayId     : aa0b484c-8f1e-4749-99c1-91f3611ab3b1
+path               : /data
+mtreeName          : -
+numberOfClients    : 1
+nfsv3Mounts        : 28233
+activeNfsv3Clients : 0
+activeNfsv4Clients : 0
+clients            : {@{address=192.168.1.236; options=sec=sys,rw,no_root_squash,no_all_squash,secure,version=3}}
+
+exportId           : %2Fdata%2Fcol1%2FDEMO_FOR_RECOVER_PLANS-ppdm-demo-ac245%2FPLCTLP-74a931e0-5ff6-4eac-94e9-1e30bcb282f3%2FRestores%2Fb704722c-d915-46ce-a6ec-3099919536f8%2F501b6968-1720-3794-a7d2-9ac505e80ffc%2F1686126813
+                     620762066%2F1686119022%2FvProxy-ppdm-demo.home.labbuildr.com-1ad75544-1854-4dd3-a889-ec97a02bc752
+storageArrayId     : aa0b484c-8f1e-4749-99c1-91f3611ab3b1
+path               : /data/col1/DEMO_FOR_RECOVER_PLANS-ppdm-demo-ac245/PLCTLP-74a931e0-5ff6-4eac-94e9-1e30bcb282f3/Restores/b704722c-d915-46ce-a6ec-3099919536f8/501b6968-1720-3794-a7d2-9ac505e80ffc/1686126813620762066/168611
+                     9022/vProxy-ppdm-demo.home.labbuildr.com-1ad75544-1854-4dd3-a889-ec97a02bc752
+mtreeName          : /data/col1/DEMO_FOR_RECOVER_PLANS-ppdm-demo-ac245
+numberOfClients    : 14
+nfsv3Mounts        : 1
+activeNfsv3Clients : 1
+activeNfsv4Clients : 0
+clients            : {@{address=10.0.0.12; options=sec=sys,rw,no_root_squash,no_all_squash,secure,version=3:4}, @{address=100.250.1.84; options=sec=sys,rw,no_root_squash,no_all_squash,secure,version=3:4},
+                     @{address=100.250.1.123; options=sec=sys,rw,no_root_squash,no_all_squash,secure,version=3:4}, @{address=172.16.100.81; options=sec=sys,rw,no_root_squash,no_all_squash,secure,version=3:4}…}
+
+exportId           : %2Fdata%2Fcol1%2Fctdemo
+storageArrayId     : aa0b484c-8f1e-4749-99c1-91f3611ab3b1
+path               : /data/col1/ctdemo
+mtreeName          : /data/col1/ctdemo
+numberOfClients    : 10
+nfsv3Mounts        : 0
+activeNfsv3Clients : 0
+activeNfsv4Clients : 0
+clients            : {@{address=10.240.1.175; options=sec=sys,rw,no_root_squash,no_all_squash,secure,version=3}, @{address=10.240.1.196; options=sec=sys,rw,no_root_squash,no_all_squash,secure,version=3},
+                     @{address=10.240.1.197; options=sec=sys,rw,no_root_squash,no_all_squash,secure,version=3}, @{address=172.17.62.115; options=sec=sys,rw,no_root_squash,no_all_squash,secure,version=3}…}
+
+exportId           : %2Fdata%2Fcol1%2Focp_etcd
+storageArrayId     : aa0b484c-8f1e-4749-99c1-91f3611ab3b1
+path               : /data/col1/ocp_etcd
+mtreeName          : /data/col1/ocp_etcd
+numberOfClients    : 1
+nfsv3Mounts        : 0
+activeNfsv3Clients : 0
+activeNfsv4Clients : 0
+clients            : {@{address=10.240.1.1/24; options=sec=sys,rw,no_root_squash,no_all_squash,secure,version=4}}
+
+exportId           : %2Fdata%2Fcol1%2Fpowerprotect
+storageArrayId     : aa0b484c-8f1e-4749-99c1-91f3611ab3b1
+path               : /data/col1/powerprotect
+mtreeName          : /data/col1/powerprotect
+numberOfClients    : 23
+nfsv3Mounts        : 0
+activeNfsv3Clients : 0
+activeNfsv4Clients : 0
+clients            : {@{address=10.240.1.136; options=sec=sys,rw,no_root_squash,no_all_squash,secure,version=3:4}, @{address=10.240.1.162; options=sec=sys,rw,no_root_squash,no_all_squash,secure,version=3:4},
+                     @{address=10.240.1.226; options=sec=sys,rw,no_root_squash,no_all_squash,secure,version=3:4}, @{address=10.240.1.234; options=sec=sys,rw,no_root_squash,no_all_squash,secure,version=3:4}…}
+
+exportId           : %2Fdata%2Fcol1%2Fvault_updates
+storageArrayId     : aa0b484c-8f1e-4749-99c1-91f3611ab3b1
+path               : /data/col1/vault_updates
+mtreeName          : /data/col1/vault_updates
+numberOfClients    : 2
+nfsv3Mounts        : 0
+activeNfsv3Clients : 0
+activeNfsv4Clients : 0
+clients            : {@{address=192.168.1.60/32; options=sec=sys,rw,root_squash,no_all_squash,secure,version=3:4}, @{address=192.168.1.203/32; options=sec=sys,rw,no_root_squash,no_all_squash,secure,version=3:4}}
+
+exportId           : %2Fddvar
+storageArrayId     : aa0b484c-8f1e-4749-99c1-91f3611ab3b1
+path               : /ddvar
+mtreeName          : -
+numberOfClients    : 0
+nfsv3Mounts        : 0
+activeNfsv3Clients : 0
+activeNfsv4Clients : 0
+clients            : {}
 
 #>
 function Get-PPDMstorage_systems {
@@ -146,9 +223,14 @@ function Get-PPDMstorage_systems {
       'POWER_SCALE_APPLIANCE'
     )]$Type, 
     [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $true, ParameterSetName = 'nfsexports', ValueFromPipelineByPropertyName = $true)]     
+    [Parameter(Mandatory = $true, ParameterSetName = 'livecapacity', ValueFromPipelineByPropertyName = $true)]     
     [string]$ID,
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    [switch]$Livecapacities,    
+    [Parameter(Mandatory = $true, ParameterSetName = 'livecapacity', ValueFromPipelineByPropertyName = $true)]     
+    [switch]$Livecapacities, 
+    [Parameter(Mandatory = $true, ParameterSetName = 'nfsexports', ValueFromPipelineByPropertyName = $true)]     
+    [switch]$nfsexports,    
+  
     [string]$Filter,
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     $apiver = "/api/v2"
@@ -163,9 +245,10 @@ function Get-PPDMstorage_systems {
   }     
   Process {
     switch ($PsCmdlet.ParameterSetName) {
+      'livecapacity' { $URI = "/$myself/$ID/capacities" }
+      'nfsexports' { $URI = "/$myself/$ID/nfs-exports" }
       'byID' {
         $URI = "/$myself/$ID"
-        if ($Livecapacities.IsPresent){$URI = "/$myself/$ID/capacities"}
       }
       default {
         $URI = "/$myself"
@@ -208,15 +291,10 @@ function Get-PPDMstorage_systems {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
-        if ($Livecapacities.IsPresent){
-          write-output $response.capacities
-        }
-        else {
-          write-output $response
-        }
-
-         
+        write-output $response
       }
+      'livecapacity' { write-output $response.capacities }
+
       default {
         write-output $response.content 
       } 
@@ -348,8 +426,17 @@ function Set-PPDMstorage_systems {
   [CmdletBinding()]
   param(
 
-    [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-    [Array]$Storage_Configuration,        
+    [Parameter(Mandatory = $true, ParameterSetName = 'Configurations', ValueFromPipeline = $true)]
+    [Array]$Storage_Configuration,    
+    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $true, ParameterSetName = 'nfsexports', ValueFromPipelineByPropertyName = $true)] 
+    $id,
+    [Parameter(Mandatory = $true, ParameterSetName = 'nfsexports', ValueFromPipelineByPropertyName = $true)] 
+    [string[]]$Clients,
+    [Parameter(Mandatory = $true, ParameterSetName = 'nfsexports', ValueFromPipelineByPropertyName = $true)] 
+    [string]$Path, 
+    [Parameter(Mandatory = $true, ParameterSetName = 'nfsexports', ValueFromPipelineByPropertyName = $true)] 
+    [switch]$nfsexports,         
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     $apiver = "/api/v2"
 
@@ -362,12 +449,21 @@ function Set-PPDMstorage_systems {
    
   }     
   Process {
-    $body = $Storage_Configuration | convertto-json -Depth 10
+    
     switch ($PsCmdlet.ParameterSetName) {
-      default {
+      'Configurations' {
         $URI = "/$myself/$($Storage_Configuration.id)"            
+        $body = $Storage_Configuration 
+      }
+      'nfsexports' {
+        $URI = "/$myself/$ID/nfs-exports"
+        $Method = "Post"
+        $body = @{}
+        $body.Add('clients', $Clients)
+        $body.Add('path', $Path)
       }
     }
+    $body = $body | convertto-json -Depth 10 
     write-verbose ($body | Out-String)  
     $Parameters = @{
       body             = $body 
@@ -393,9 +489,12 @@ function Set-PPDMstorage_systems {
       'byID' {
         write-output $response 
       }
-      default {
+      'Confiurations' {
         write-output $response
       } 
+      'nfsexports' {
+        write-output $response
+      }
     }   
   }
 }
@@ -1086,3 +1185,5 @@ function Get-PPDMprotection_storage_metrics {
     }   
   }
 }
+
+

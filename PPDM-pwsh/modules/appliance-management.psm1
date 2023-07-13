@@ -109,6 +109,7 @@ function Get-PPDMdatacomponents {
 }
 function Get-PPDMcomponents {
     [CmdletBinding()]
+    [Alias('Get-PPDMServiceStatus')]
     param(
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [string]$id,

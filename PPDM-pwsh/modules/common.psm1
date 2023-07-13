@@ -1,20 +1,10 @@
-function Get-PPDMrestore_plans {
+function Get-PPDMcommon_settings {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $id,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $filter,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [string]$id,        
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $apiver = "/api/v2",
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-       [hashtable]$body = @{pageSize = 200 }  
+        $apiver = "/api/v2"
     )
     begin {
         $Response = @()
@@ -31,18 +21,15 @@ function Get-PPDMrestore_plans {
             default {
                 $URI = "/$myself"
             }
-        }   
+        }  
         $Parameters = @{
-            RequestMethod    = 'REST'
-            body             = $body
-            Uri              = $URI
+            body             = $body 
+            Uri              = $Uri
             Method           = $Method
+            RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
-        }
-        if ($filter) {
-            $parameters.Add('filter', $filter)
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -56,7 +43,7 @@ function Get-PPDMrestore_plans {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response 
+                write-output $response
             }
             default {
                 write-output $response.content
@@ -65,28 +52,19 @@ function Get-PPDMrestore_plans {
     }
 }
 
-
-function Get-PPDMprotection_groups {
+function Set-PPDMcommon_settings {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $id,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $filter,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [string]$id,  
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [psobject]$Properties,      
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $apiver = "/api/v2",
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-       [hashtable]$body = @{pageSize = 200 }  
+        $apiver = "/api/v2"
     )
     begin {
         $Response = @()
-        $METHOD = "GET"
+        $METHOD = "PUT"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
         # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
@@ -99,18 +77,17 @@ function Get-PPDMprotection_groups {
             default {
                 $URI = "/$myself"
             }
-        }   
+        }
+        $body = $Properties | ConvertTo-Json -Depth 7
+        Write-Verbose ($body | Out-String)  
         $Parameters = @{
-            RequestMethod    = 'REST'
-            body             = $body
-            Uri              = $URI
+            body             = $body 
+            Uri              = $Uri
             Method           = $Method
+            RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
-        }
-        if ($filter) {
-            $parameters.Add('filter', $filter)
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -124,7 +101,7 @@ function Get-PPDMprotection_groups {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response 
+                write-output $response
             }
             default {
                 write-output $response.content

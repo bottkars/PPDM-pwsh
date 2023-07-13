@@ -91,7 +91,8 @@ NestedModules = @(
     './modules/protection-engines',
     './modules/restore-plans',
     './modules/rules',
-    './modules/flr'
+    './modules/flr',
+    './modules/common'
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -123,6 +124,7 @@ FunctionsToExport = @(
     'Start-PPDMdiscoveries',
     'Update-PPDMtoken',
     'Get-PPDMcommon_settings',
+    'Set-PPDMcommon_settings',
     'Get-PPDMinventory_sources',  
     'Set-PPDMinventory_sources',
     'Get-PPDMvcenterDatastores',  
@@ -246,7 +248,9 @@ FunctionsToExport = @(
     'Restore-PPDMFileFLR_copies',
     'Restore-PPDMMSSQL_copies',
     'Get-PPDMstorage_system_metrics',
-    'Get-PPDMasset_protection_metrics'        
+    'Get-PPDMasset_protection_metrics',
+    'Set-PPDMapp_hosts',
+    'Get-PPDMprotection_groups'       
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -282,7 +286,8 @@ AliasesToExport = @(
     'Start-PPDMPLC',
     'Start-PPDMPLCStage',
     'Start-PPDMProtectionStage',
-    'Get-PPDMStorageMetrics'
+    'Get-PPDMStorageMetrics',
+    'Get-PPDMServiceStatus'
 )
 
 # DSC resources to export from this module
