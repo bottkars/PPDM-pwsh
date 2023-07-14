@@ -47,7 +47,7 @@ Examples for Managing Agent Based Protection and Policies
 [MSSQL Agent](./Demos/03.%20Asset%20Restore%20MSSQL%20Powershell.md)   
 [Create Centralized MSSQL Protection Policy](./Demos/07.%20Create%20Centralized_SQL.md)  
 [Create Self Service MSSQL Policy](./Demos/08.%20Create_SelfService_SQL.md)
-
+[Manage Agent Updates](./Demos/99.%20Agent%20Upgrades.md)  
 
 # Management Examples
 
