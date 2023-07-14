@@ -48,7 +48,7 @@ function Get-PPDMprotection_engines {
             }
         }
         if ($filter) {
-        write-verbose $filter
+         write-verbose ($filter | Out-String)
         $parameters.Add('filter', $filter)
         }      
         try {

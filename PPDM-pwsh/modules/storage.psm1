@@ -230,8 +230,8 @@ function Get-PPDMstorage_systems {
     [switch]$Livecapacities, 
     [Parameter(Mandatory = $true, ParameterSetName = 'nfsexports', ValueFromPipelineByPropertyName = $true)]     
     [switch]$nfsexports,    
-  
     [string]$Filter,
+    [hashtable]$body = @{pageSize = 200 },
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     $apiver = "/api/v2"
 
@@ -276,7 +276,7 @@ function Get-PPDMstorage_systems {
 
 
     if ($filter) {
-      write-verbose $filter
+       write-verbose ($filter | Out-String)
       $parameters.Add('filter', $filter)   
     }
     try {
@@ -340,7 +340,7 @@ function Get-PPDMstorage_system_metrics {
 
 
     if ($filter) {
-      write-verbose $filter
+       write-verbose ($filter | Out-String)
       $parameters.Add('filter', $filter)   
     }
     try {
@@ -964,6 +964,13 @@ function Get-PPDMdatadomain_mtrees {
   param(
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     [string]$ID,
+    [ValidateSet('DDSTORAGEUNIT'        
+    )]
+    $Type,
+    [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+    $filter,  
+    [hashtable]$body = @{pageSize = 200 },  
+   
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     $apiver = "/api/v2"
 
@@ -992,7 +999,19 @@ function Get-PPDMdatadomain_mtrees {
       PPDM_API_BaseUri = $PPDM_API_BaseUri
       apiver           = $apiver
       Verbose          = $PSBoundParameters['Verbose'] -eq $true
-    }      
+    } 
+    if ($type) {
+      if ($filter) {
+        $filter = 'type eq "' + $type + '" and ' + $filter 
+      }
+      else {
+        $filter = 'type eq "' + $type + '"'
+      }
+    }
+    if ($filter) {
+      write-verbose ($filter | Out-String)
+      $parameters.Add('filter', $filter)
+    }     
     try {
       $Response += Invoke-PPDMapirequest @Parameters
     }

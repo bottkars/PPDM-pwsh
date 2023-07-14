@@ -318,7 +318,7 @@ function Invoke-PPDMapirequest {
                 if ($filter) {
                     $filterstring = [System.Web.HTTPUtility]::UrlEncode($filter)
                     $filterstring = "filter=$filterstring"
-                    Write-Verbose $filterstring | Out-String
+                     write-verbose ($filter | Out-String)string | Out-String
                     $uri = "$($uri)?$filterstring"
                     Write-Verbose $uri
                 }
