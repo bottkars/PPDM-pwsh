@@ -27,7 +27,7 @@ Author = 'karsten.bott@dell.com'
 CompanyName = 'Private build by individual'
 
 # Copyright statement for this module
-Copyright = '(c) 2022 karsten.bott@dell.com. All rights reserved.'
+Copyright = '(c) 2023 karsten.bott@dell.com. All rights reserved.'
 
 # Description of the functionality provided by this module
 Description = 'Powershell Module to interact with the PowerProdect Data Manager (PPDM) API'
