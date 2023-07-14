@@ -65,4 +65,5 @@ $Parameters = @{
 }
 
 $Restore = Restore-PPDMFileFLR_copies @Parameters
+Write-Host $Restore
 

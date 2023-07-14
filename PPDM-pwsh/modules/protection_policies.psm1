@@ -384,10 +384,10 @@ function Start-PPDMprotection_policies {
   Process {
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
-        $URI = "/$myself"
+        $URI = "/$Myself/$PolicyID/backups"
       }
       default {
-        $URI = "/$myself"
+        $URI = "/$Myself/$PolicyID/backups"
       }
     }    
     $Body = [ordered]@{
@@ -402,7 +402,7 @@ function Start-PPDMprotection_policies {
     write-verbose ($body | out-string)
     $Parameters = @{
       body                    = $body 
-      Uri                     = "/$Myself/$PolicyID/backups"
+      Uri                     = $URI
       Method                  = $Method
       PPDM_API_BaseUri        = $PPDM_API_BaseUri
       apiver                  = $apiver
@@ -1410,7 +1410,7 @@ function New-PPDMFSBackupPolicy {
 $Credentials=New-PPDMcredentials -type OS -name sqldemoaccount -authmethod BASIC
 $StorageSystem=Get-PPDMstorage_systems -Type DATA_DOMAIN_SYSTEM -Filter {name eq "ddve.home.labbuildr.com"}
 $BackupSchedule=New-PPDMDatabaseBackupSchedule -daily -LogBackupUnit HOURLY -LogBackupInterval 1 -RetentionUnit DAY -RetentionInterval 3
-New-PPDMSQLBackupPolicy -Schedule $BackupSchedule -Name MMSSQL_APPAWARE -AppAware -dbcredentialsID $credentials.id -StorageSystemID $StorageSystem.id -DataMover SDM -SizeSegmentation FSS
+New-PPDMSQLBackupPolicy -Schedule $BackupSchedule -Name MMSSQL_APPAWARE -AppAware -dbCID $credentials.id -StorageSystemID $StorageSystem.id -DataMover SDM -SizeSegmentation FSS
 
 .EXAMPLE
 # Create a New SelfServicee MSSQL Policy
@@ -1424,7 +1424,7 @@ New-PPDMSQLBackupPolicy  -Name MSSQL_SELF -RetentionUnit DAY -RetentionInterval 
 $Credentials=New-PPDMcredentials -type OS -name sqldemoaccount -authmethod BASIC
 $StorageSystem=Get-PPDMstorage_systems -Type DATA_DOMAIN_SYSTEM -Filter {name eq "ddve.home.labbuildr.com"}
 $BackupSchedule=New-PPDMDatabaseBackupSchedule -daily -LogBackupUnit HOURLY -LogBackupInterval 1 -RetentionUnit DAY -RetentionInterval 3
-New-PPDMSQLBackupPolicy -Schedule $BackupSchedule -Name MSSQL_CENTRAL  -dbcredentialsID $credentials.id -StorageSystemID $StorageSystem.id
+New-PPDMSQLBackupPolicy -Schedule $BackupSchedule -Name MSSQL_CENTRAL  -dbCID $credentials.id -StorageSystemID $StorageSystem.id
 
 #>
 function New-PPDMSQLBackupPolicy {
@@ -1445,7 +1445,7 @@ function New-PPDMSQLBackupPolicy {
     [psobject]$Schedule,
     [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
-    [string]$dbcredentialsID,
+    [string]$dbCID,
     [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
@@ -1509,7 +1509,7 @@ function New-PPDMSQLBackupPolicy {
         $copyoperation.Add('backupType', 'FULL')         
         $operations += $copyoperation 
         $mssql_credentials = @{
-          'id'   = $dbcredentialsID
+          'id'   = $dbCID
           'type' = 'OS'
         }
         if ($schedule.differentialSchedule) {
