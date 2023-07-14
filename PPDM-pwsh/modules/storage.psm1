@@ -6,6 +6,18 @@ function Get-PPDMdata_targets {
   param(
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     [string]$ID,
+    [Parameter(Mandatory = $true, ParameterSetName = 'TYPE', ValueFromPipelineByPropertyName = $true)]
+    [ValidateSet(
+      'DDV_DISK_POOL',
+      'DDV_DISK_DEVICE_GROUP',
+      'DDV_DISK_SERVICE',
+      'DD_MTREE',
+      'STORAGE_ARRAY',
+      'DD_STORAGE_UNIT',
+      'CDR_CONTAINER')][string]$subtype,
+    [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+    [string]$filter,
+    [hashtable]$body = @{pageSize = 200 },
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     $apiver = "/api/v2"
 
@@ -21,6 +33,16 @@ function Get-PPDMdata_targets {
       'byID' {
         $URI = "/$myself/$ID"
       }
+      'TYPE' {
+        $URI = "/$myself"
+        if ($filter) {
+          $filter = 'subtype eq "' + $subtype + '" and ' + $filter 
+        }
+        else {
+          $filter = 'subtype eq "' + $subtype + '"'
+        }
+        Write-Verbose ($filter | Out-String)
+      }
       default {
         $URI = "/$myself"
       }
@@ -33,7 +55,12 @@ function Get-PPDMdata_targets {
       PPDM_API_BaseUri = $PPDM_API_BaseUri
       apiver           = $apiver
       Verbose          = $PSBoundParameters['Verbose'] -eq $true
-    }      
+    }  
+    if ($filter) {
+      $Parameters.Add('filter', $filter)
+    }
+    Write-Verbose ($body | Out-String)   
+    Write-Verbose ($Parameters | Out-String)     
     try {
       $Response += Invoke-PPDMapirequest @Parameters
     }
@@ -49,7 +76,7 @@ function Get-PPDMdata_targets {
         write-output $response 
       }
       default {
-        write-output $response.content 
+        write-output $response.content
       } 
     }   
   }
@@ -276,7 +303,7 @@ function Get-PPDMstorage_systems {
 
 
     if ($filter) {
-       write-verbose ($filter | Out-String)
+      write-verbose ($filter | Out-String)
       $parameters.Add('filter', $filter)   
     }
     try {
@@ -340,7 +367,7 @@ function Get-PPDMstorage_system_metrics {
 
 
     if ($filter) {
-       write-verbose ($filter | Out-String)
+      write-verbose ($filter | Out-String)
       $parameters.Add('filter', $filter)   
     }
     try {

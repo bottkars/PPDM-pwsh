@@ -250,7 +250,9 @@ FunctionsToExport = @(
     'Get-PPDMstorage_system_metrics',
     'Get-PPDMasset_protection_metrics',
     'Set-PPDMapp_hosts',
-    'Get-PPDMprotection_groups'       
+    'Get-PPDMprotection_groups',
+    'Get-PPDMagents_update_sessions',       
+    'Get-PPDMwhitelist'       
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
