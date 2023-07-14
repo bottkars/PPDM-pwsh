@@ -1,10 +1,14 @@
 function Get-PPDMxxxNoID {
     [CmdletBinding()]
     param(
-
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $id,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $filter,
+        [ValidateSet()]
+        [Alias('AssetType')][string]$type,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
@@ -15,6 +19,7 @@ function Get-PPDMxxxNoID {
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [hashtable]$body = @{pageSize = 200 }  
     )
+
     begin {
         $Response = @()
         $METHOD = "GET"
@@ -42,9 +47,17 @@ function Get-PPDMxxxNoID {
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }
+        if ($type) {
+            if ($filter) {
+                $filter = 'type eq "' + $type + '" and ' + $filter 
+            }
+            else {
+                $filter = 'type eq "' + $type + '"'
+            }
+        }        
         if ($filter) {
             $parameters.Add('filter', $filter)
-        }      
+        }       
         try {
             $Response += Invoke-PPDMapirequest @Parameters
         }

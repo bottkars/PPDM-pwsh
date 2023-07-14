@@ -163,7 +163,7 @@ FunctionsToExport = @(
     'New-PPDMcredentials',
     'Remove-PPDMcredentials',
     'Update-PPDMcredentials',
-    'Get-PPDMagents_list',
+   # 'Get-PPDMagents_list',
     'Get-PPDMagent_registration_status',
     'Get-PPDMalerts',
     'Set-PPDMalerts_acknowledgement',
@@ -252,7 +252,9 @@ FunctionsToExport = @(
     'Set-PPDMapp_hosts',
     'Get-PPDMprotection_groups',
     'Get-PPDMagents_update_sessions',       
-    'Get-PPDMwhitelist'       
+    'Get-PPDMwhitelist',
+    'Set-PPDMagents_update_sessions',
+    'Remove-PPDMagents_update_sessions'       
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -289,7 +291,8 @@ AliasesToExport = @(
     'Start-PPDMPLCStage',
     'Start-PPDMProtectionStage',
     'Get-PPDMStorageMetrics',
-    'Get-PPDMServiceStatus'
+    'Get-PPDMServiceStatus',
+    'Get-PPDMagents'
 )
 
 # DSC resources to export from this module
