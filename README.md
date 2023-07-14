@@ -22,6 +22,8 @@ Connect-PPDMapiEndpoint -PPDM_API_URI https://<your ppdm server> -trustCert
 this will do an interactive password/authentication to retrieve the token. The login can alos be done via a PSCredential object.  
 The token is saved as a Global Variable.
 
+All functions can use -verbose to show the API Calls amde against the PPDM  
+
 # Workload Examples
 
 This section gives Some Examples for Workloads. Most of the Examples are also available from the Inline Help, e.g. 
@@ -78,7 +80,7 @@ The Storage_Systems API has some festures for Capacity Reports // NFS Shares des
 [Example Script to wait for Appliance Configured](./example_scripts/wait_for_config_ready.ps1)   
 
 
-# Missing and API ? No worries, keep Prototyping
+# Missing a cmdlet and have an API endpoint? No worries, keep Prototyping
 
 We implemented an Request Wrapper for PPDM API requeststhat utilizes all header ane endpoint variables
 ```Powershell
