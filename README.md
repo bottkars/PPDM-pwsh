@@ -34,7 +34,7 @@ get-help New-PPDMProtectionEngineProxy -Examples
 Example for vMware Based Protections, Policies   
 [VM Restore from CLI](./Demos/01.%20VM%20Restore%20from%20CLI.md)    
 [VM Instant Access Restore LINUX VM](./example_scripts/flr_linux_vm_ia.ps1)  
-[Example Script Custom Restore Text](./example_scripts/restore_custom.ps1)  
+[Example Script Custom Restore Comments](./example_scripts/restore_custom.ps1)  
 [Example script to exclude Disks from VM Asset](./example_scripts/modify_assets_disks.ps1)
 [Create AppAware MSSQL Protection using Transparent Snapshots](./Demos/06.%20Create%20APP_AWARE%20SQL.md)  
 
