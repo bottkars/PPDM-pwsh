@@ -254,7 +254,12 @@ FunctionsToExport = @(
     'Get-PPDMagents_update_sessions',       
     'Get-PPDMwhitelist',
     'Set-PPDMagents_update_sessions',
-    'Remove-PPDMagents_update_sessions'       
+    'Remove-PPDMagents_update_sessions',
+    'Get-PPDMEula',
+    'Get-PPDMactivity_categories',
+    'Get-PPDMsystem_health_issues',
+    'Get-PPDMsystem_health_score_categories',
+    'Remove-PPDMcloud_dr_server_deployment'     
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

@@ -170,9 +170,79 @@ function Get-PPDMactivities {
     }
 }
 
+
+
+
+
+# GET /api/v2/activity-categories
+function Get-PPDMactivity_categories {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $id,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $filter,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2",
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{pageSize = 200 }  
+    )
+
+    begin {
+        $Response = @()
+        $METHOD = "GET"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                $URI = "/$myself/$id"
+                $body = @{}  
+
+            }
+            default {
+                $URI = "/$myself"
+            }
+        }   
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+       
+        if ($filter) {
+            $parameters.Add('filter', $filter)
+        }       
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                write-output $response 
+            }
+            default {
+                write-output $response.content
+            } 
+        }   
+    }
+}
+
 # /api/v2/activity-metrics
-
-
 function Get-PPDMactivity_metrics {
     [CmdletBinding(ConfirmImpact = 'Low',
         HelpUri = 'https://developer.dellemc.com/data-protection/powerprotect/data-manager/api/monitoring/getallactivitymetrics')]

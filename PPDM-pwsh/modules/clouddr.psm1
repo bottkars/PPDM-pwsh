@@ -574,3 +574,53 @@ function Remove-PPDMcdrs {
     }
 }
 
+# /api/v2/cloud-dr-server-deployment
+function Remove-PPDMcloud_dr_server_deployment {
+    [CmdletBinding()]
+    param(
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2"
+
+    )
+    begin {
+        $Response = @()
+        $METHOD = "DELETE"
+        $Myself = "cloud-dr-server-deployment"
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                $URI = "/$myself"
+            }
+        } 
+#        $body = @{
+ #           operation = "start"
+#        } | convertto-json 
+        $Parameters = @{
+#            body             = $body 
+            Uri              = $Uri
+            Method           = $Method
+            RequestMethod    = 'Rest'
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }      
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                write-output $response 
+            }
+        }   
+    }
+}

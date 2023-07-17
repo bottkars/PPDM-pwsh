@@ -316,11 +316,12 @@ function Invoke-PPDMapirequest {
                     Write-Verbose ($Query | Out-String)
                 }
                 if ($filter) {
-                    $filterstring = [System.Web.HTTPUtility]::UrlEncode($filter)
-                    $filterstring = "filter=$filterstring"
+                   # $filterstring = [System.Web.HTTPUtility]::UrlEncode($filter)
+                   # $filterstring = "filter=$filterstring"
                      write-verbose ($filter | Out-String)
-                    $uri = "$($uri)?$filterstring"
-                    Write-Verbose $uri
+                    $body.add('filter',$Filter) 
+                   # $uri = "$($uri)?$filterstring"
+                   # Write-Verbose $uri
                 }
                 if ($ResponseHeadersVariable) {
                     $Parameters.Add('ResponseHeadersVariable', 'HeadersResponse')
@@ -518,7 +519,7 @@ function Approve-PPDMEula {
         } | convertto-json 
         $Parameters = @{
             body             = $body 
-            Uri              = '/eulas/PPDM'
+            Uri              = '/eulas/data-manager'
             Method           = $Method
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
@@ -544,6 +545,50 @@ function Approve-PPDMEula {
     }
 }
 
+
+function Get-PPDMEula {
+    [CmdletBinding()]
+    param(
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2"
+
+    )
+    begin {
+        $Response = @()
+        $METHOD = "GET"
+    }     
+    Process {
+
+        $body = @{
+            accepted = "true"
+        } | convertto-json 
+        $Parameters = @{
+            body             = $body 
+            Uri              = '/eulas/data-manager'
+            Method           = $Method
+            RequestMethod    = 'Rest'
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }      
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+
+            default {
+                write-output $response
+            } 
+        }   
+    }
+}
 function Get-PPDMTELEMETRY_SETTING {
     [CmdletBinding()]
     param(
