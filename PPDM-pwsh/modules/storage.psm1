@@ -73,7 +73,7 @@ function Get-PPDMdata_targets {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
-        write-output $response 
+        write-output $response
       }
       default {
         write-output $response.content
@@ -447,6 +447,77 @@ function Remove-PPDMstorage_systems {
 
 ###
 
+function Remove-PPDMdatadomain_storage_units {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [string]$ID,
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [pscredential]$SecurityOfficerCredentials,
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
+
+  )
+  begin {
+    $Response = @()
+    $METHOD = "DELETE"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
+  }     
+  Process {
+    Write-Host "Checking if we need SecurityOfficer Credentials for Storage Unit with ID: $ID"
+    if ((Get-PPDMdatadomain_storage_units -id $id).retentionLock.mode -eq "Compliance" ) {
+      if (!$($SecurityOfficerCredentials)) {
+        $username = Read-Host -Prompt "Please Enter PowerProtect SecurityOfficer Username"
+        $SecurePassword = Read-Host -Prompt "Password for SecurityOfficer $username" -AsSecureString
+        $SecurityOfficerCredentials = New-Object System.Management.Automation.PSCredential($username, $Securepassword)
+      }
+      $password = $($SecurityOfficerCredentials.GetNetworkCredential()).password
+      $Body = @{
+        'securityOfficerUsername' = $username
+        'securityOfficerPassword' = $password
+      } 
+      $body = $Body | ConvertTo-Json
+    }
+    else {
+      Write-Host "No SO Credtials required"
+    }
+    Write-Host "deleting SU $ID"
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        $URI = "/$myself/$ID"
+      }
+    }  
+    $Parameters = @{
+      body                    = $body 
+      Uri                     = $Uri
+      Method                  = $Method
+      RequestMethod           = 'Rest'
+      PPDM_API_BaseUri        = $PPDM_API_BaseUri
+      apiver                  = $apiver
+      Verbose                 = $PSBoundParameters['Verbose'] -eq $true
+      ResponseHeadersVariable = 'HeaderResponse'
+    }      
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response.date 
+      }
+      default {
+        write-output $response.date
+      } 
+    }   
+  }
+}
+
 # Storage Targets
 # /api/v2/storage-systems
 function Set-PPDMstorage_systems {
@@ -457,13 +528,17 @@ function Set-PPDMstorage_systems {
     [Array]$Storage_Configuration,    
     [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $true, ParameterSetName = 'nfsexports', ValueFromPipelineByPropertyName = $true)] 
+    [Parameter(Mandatory = $true, ParameterSetName = 'deletenfsexports', ValueFromPipelineByPropertyName = $true)] 
     $id,
     [Parameter(Mandatory = $true, ParameterSetName = 'nfsexports', ValueFromPipelineByPropertyName = $true)] 
     [string[]]$Clients,
     [Parameter(Mandatory = $true, ParameterSetName = 'nfsexports', ValueFromPipelineByPropertyName = $true)] 
+    [Parameter(Mandatory = $true, ParameterSetName = 'deletenfsexports', ValueFromPipelineByPropertyName = $true)] 
     [string]$Path, 
     [Parameter(Mandatory = $true, ParameterSetName = 'nfsexports', ValueFromPipelineByPropertyName = $true)] 
-    [switch]$nfsexports,         
+    [switch]$nfsexports,
+    [Parameter(Mandatory = $true, ParameterSetName = 'deletenfsexports', ValueFromPipelineByPropertyName = $true)] 
+    [switch]$deletenfsexports,              
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     $apiver = "/api/v2"
 
@@ -489,6 +564,12 @@ function Set-PPDMstorage_systems {
         $body.Add('clients', $Clients)
         $body.Add('path', $Path)
       }
+      'deletenfsexports' {
+        $URI = "/$myself/$ID/nfs-exports-deletion"
+        $Method = "Post"
+        $body = @{}
+        $body.Add('path', $Path)
+      }      
     }
     $body = $body | convertto-json -Depth 10 
     write-verbose ($body | Out-String)  
@@ -522,6 +603,9 @@ function Set-PPDMstorage_systems {
       'nfsexports' {
         write-output $response
       }
+      'deletenfsexports' {
+        write-output $response
+      }      
     }   
   }
 }
@@ -1059,6 +1143,238 @@ function Get-PPDMdatadomain_mtrees {
     }   
   }
 }
+
+# /api/v2/datadomain-storage-units/{dataTargetId}
+<#
+.SYNOPSIS
+Provides a data target ID to get information about the storage unit such as name, retention lock status, and PowerProtect DD storage system
+.EXAMPLE
+Get-PPDMdata_targets -subtype DD_STORAGE_UNIT | where name -eq MMDECENTRAL-ppdm-4ea1e | Get-PPDMdatadomain_storage_units
+
+storageArrayId    : aa0b484c-8f1e-4749-99c1-91f3611ab3b1
+credentialId      : 8a8e8036-b833-4499-b9d4-5c6333220806
+storageUnit       : @{name=MMDECENTRAL-ppdm-4ea1e; tenantUnit=00000000-0000-4000-a000-000000000000; hardLimit=; softLimit=; combinedStreamSoftLimit=; combinedStreamHardLimit=; nativeId=; nativeUri=}
+retentionLock     : @{enable=False}
+dataTargetId      : 72cd6779-86ed-4405-a053-c9f7adc62bbb
+dataAccessIp      :
+networkInterfaces :
+
+#>
+function Get-PPDMdatadomain_storage_units {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $True, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Alias('dataTargetID')][string]$ID,
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
+
+  )
+  begin {
+    $Response = @()
+    $METHOD = "GET"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+  }     
+  Process {
+    switch ($PsCmdlet.ParameterSetName) {
+      default {
+        $Uri = "/$myself/$ID"
+      }
+    }  
+    $Parameters = @{
+      body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Rest'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    } 
+   
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response 
+      }
+      default {
+        write-output $response
+      } 
+    }   
+  }
+}
+
+
+
+
+function New-PPDMdatadomain_storage_units {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $True, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Alias('credentialID')][string]$adminuserid,
+    [Parameter(Mandatory = $True, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Alias('DDID')][string]$StorageID, 
+    [Parameter(Mandatory = $True, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Alias('Name')][string]$StorageUnitName,        
+    [Parameter(Mandatory = $False, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [ValidateSet('COMPLIANCE', 'GOVERNANCE')]$RetentionLockMode,
+
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
+
+  )
+  begin {
+    $Response = @()
+    $METHOD = "POST"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+  }     
+  Process {
+    switch ($PsCmdlet.ParameterSetName) {
+      default {
+        $Uri = "/$myself"
+      }
+    }  
+    $body = @{}
+    $body.Add('credentialId', $adminuserid)
+    $body.Add('storageArrayId', $StorageID)
+    $body.Add('storageUnit', @{})
+    $Body.storageUnit.Add('name', $StorageUnitName)
+    if ($RetentionLockMode) {
+      $body.Add('retentionLock', @{})
+      $body.retentionLock.Add('enabled', $true)
+      $body.retentionLock.Add('mode', $RetentionLockMode)
+    }
+
+    $Body = $Body | ConvertTo-Json -depth 4
+    write-verbose ($body | Out-String)	
+    $Parameters = @{
+      body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Rest'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    } 
+   
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response 
+      }
+      default {
+        write-output $response
+      } 
+    }   
+  }
+}
+
+
+function New-PPDMdatadomain_mtrees {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [pscredential]$SecurityOfficerCredentials,
+    [Parameter(Mandatory = $True, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [ValidateSet('DDSTORAGEUNIT')][string]$Type,
+    [Parameter(Mandatory = $True, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Alias('DDID')][string]$StorageID, 
+    [Parameter(Mandatory = $True, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Alias('Name')][string]$StorageUnitName,        
+    [Parameter(Mandatory = $False, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [ValidateSet('COMPLIANCE', 'GOVERNANCE')]$RetentionLockMode,
+
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
+
+  )
+  begin {
+    $Response = @()
+    $METHOD = "POST"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+  }     
+  Process {
+    switch ($PsCmdlet.ParameterSetName) {
+      default {
+        $Uri = "/$myself"
+      }
+    }  
+    $body = @{}
+    $body.Add('type', $type)
+    $body.Add('name', $StorageUnitName)
+    $body.Add('storageSystem', @{})
+    $Body.storageSystem.Add('id', $StorageID)
+    if ($RetentionLockMode) {
+      $body.Add('retentionLockMode', $RetentionLockMode)
+      $body.Add('retentionLockSatus', $ENABLED)
+    }
+    If ($RetentionLockMode -eq "GOVERNANCE") {
+      if (!$($SecurityOfficerCredentials)) {
+        $username = Read-Host -Prompt "Please Enter PowerProtect SecurityOfficer Username"
+        $SecurePassword = Read-Host -Prompt "Password for SecurityOfficer $username" -AsSecureString
+        $SecurityOfficerCredentials = New-Object System.Management.Automation.PSCredential($username, $Securepassword)
+      }
+      $password = $($SecurityOfficerCredentials.GetNetworkCredential()).password
+      $Body.add('securityOfficerUsername', $username)
+      $Body.Add('securityOfficerPassword', $password)
+    }
+ 
+    $Body = $Body | ConvertTo-Json -depth 4
+    write-verbose ($body | Out-String)	
+    $Parameters = @{
+      body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Rest'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    } 
+   
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response 
+      }
+      default {
+        write-output $response
+      } 
+    }   
+  }
+}
+
+
 
 
 ####

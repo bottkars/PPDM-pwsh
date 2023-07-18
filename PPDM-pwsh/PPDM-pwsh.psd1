@@ -259,7 +259,14 @@ FunctionsToExport = @(
     'Get-PPDMactivity_categories',
     'Get-PPDMsystem_health_issues',
     'Get-PPDMsystem_health_score_categories',
-    'Remove-PPDMcloud_dr_server_deployment'     
+    'Remove-PPDMcloud_dr_server_deployment',
+    'Get-PPDMinfrastructure_nodes',
+    'New-PPDMprotection_groups',
+    'Get-PPDMdatadomain_storage_units',
+    'New-PPDMdatadomain_storage_units',
+    'Remove-PPDMdatadomain_storage_units',
+    'New-PPDMdatadomain_mtrees',
+    'Get-PPDMcopies_query'     
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

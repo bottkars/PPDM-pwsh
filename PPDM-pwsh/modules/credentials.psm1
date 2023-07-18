@@ -4,6 +4,8 @@ function Get-PPDMcredentials {
     param(
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [string]$ID,
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Alias('consumerlist')][switch]$usage,    
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
 
@@ -18,7 +20,13 @@ function Get-PPDMcredentials {
     Process {
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                $URI = "/$myself/$ID"
+                if ($usage.IsPresent) {
+                    $URI = "/$myself/$ID/usage"
+                }
+                else {
+                    $URI = "/$myself/$ID"   
+                }
+                
             }
             default {
                 $URI = "/$myself"
@@ -45,7 +53,13 @@ function Get-PPDMcredentials {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response 
+                if ($usage.ispresent) {
+                    write-output $response.consumerlist  
+                }
+                else {
+                    write-output $response  
+                }
+                 
             }
             default {
                 write-output $response.content 

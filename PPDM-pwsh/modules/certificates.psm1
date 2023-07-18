@@ -1,4 +1,48 @@
+<#
+.SYNOPSIS
+Get the external, internal  hosts, agent and root CA TLS certificates that are stored in the trust store and have the state ACCEPTED
+.EXAMPLE
+Get-PPDMcertificates -type internal
 
+id             : Y3VzdG9t
+host           : custom
+port           :
+notValidBefore : Thu Jul 13 10:05:29 CEST 2023
+notValidAfter  : Wed Oct 11 10:05:28 CEST 2023
+fingerprint    : 817DBC5F143F30CFFD9E05B201310FBC7B0471AA
+subjectName    : CN=ppdm.home.labbuildr.com
+issuerName     : CN=R3, O=Let's Encrypt, C=US
+state          : ACCEPTED
+type           : HOST
+verify         : False
+.EXAMPLE
+Get-PPDMcertificates -type external
+
+id             : dGtnaS5wa3MuaG9tZS5sYWJidWlsZHIuY29tOjg0NDM6aG9zdA==
+host           : tkgi.pks.home.labbuildr.com
+port           : 8443
+notValidBefore : Thu Mar 02 17:21:16 CET 2023
+notValidAfter  : Tue Mar 02 17:21:16 CET 2027
+fingerprint    : 673D87DFA1BCF339571FDDA637BB68BC51805616
+subjectName    : O=system:masters, CN=tkgi.pks.home.labbuildr.com
+issuerName     : O=VMware, OU=TKGI, CN=CA
+state          : ACCEPTED
+type           : HOST
+verify         : False
+
+id             : ZGR2ZWF6czEubG9jYWwuY2xvdWRhcHAuYXp1cmVzdGFjay5leHRlcm5hbDozMDA5Omhvc3Q=
+host           : ddveazs1.local.cloudapp.azurestack.external
+port           : 3009
+notValidBefore : Tue Jul 20 07:06:18 CEST 2021
+notValidAfter  : Fri Jul 19 14:06:18 CEST 2024
+fingerprint    : ACEC3DA18EABB4582ADCB264CE40E780565249D6
+subjectName    : CN=ddveazs1.azsdps.labbuildr.com, O=Valued DataDomain customer, ST=CA, C=US
+issuerName     : CN=ddveazs1.azsdps.labbuildr.com, O=Valued Datadomain Customer, L=Santa Clara, ST=CA, C=US
+state          : ACCEPTED
+type           : HOST
+verify         : False
+
+#>
 function Get-PPDMcertificates {
     [CmdletBinding()]
     param(
@@ -10,6 +54,8 @@ function Get-PPDMcertificates {
         [string]$Port=443,        
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         [switch]$list,
+        [Parameter(Mandatory = $true, ParameterSetName = 'Type', ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('agent','root','external','internal' )][string]$type,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
 
@@ -27,7 +73,10 @@ function Get-PPDMcertificates {
             }
             'byHost' {
                     $URI = "/$($myself)?host=$newhost&port=$port&type=Host"
-                }            
+                }
+            'TYPE' {
+                    $URI = "/$($myself)/$type"
+                }                             
             default {
                 $URI = "/$myself"
             }
@@ -207,6 +256,8 @@ function Remove-PPDMcertificates {
             apiver           = $apiver
             apiport          = 8443 
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
+            ResponseHeadersVariable = 'HeaderResponse'
+
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -220,7 +271,7 @@ function Remove-PPDMcertificates {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             default {
-                write-output $response
+                write-output $response.date
             } 
         }   
     }

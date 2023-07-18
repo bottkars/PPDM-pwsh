@@ -105,7 +105,7 @@ function Get-PPDMagent_registration_status {
         'SAP HANA Agent')]
         [string]$type,
 
-        [hashtable]$body = @{pageSize = 200 },
+        [hashtable]$body = {pageSize = 200 },
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
 

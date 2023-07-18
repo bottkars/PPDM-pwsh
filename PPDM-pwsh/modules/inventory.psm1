@@ -76,6 +76,95 @@ function Get-PPDMinventory_sources {
     }
 }
 
+
+function Get-PPDMinfrastructure_nodes {
+    [CmdletBinding()]
+    [Alias('Get-PPDMAssetSource')]
+    param(
+        [Parameter(Mandatory = $TRUE, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $TRUE,  ParameterSetName = 'Children', ValueFromPipelineByPropertyName = $true)]
+        $id,
+        [Parameter(Mandatory = $TRUE, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $TRUE,  ParameterSetName = 'ALL', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $TRUE,  ParameterSetName = 'Children', ValueFromPipelineByPropertyName = $true)]
+
+        [ValidateSet('MICROSOFT_SQL_DATABASE_VIEW',
+        'FILE_SYSTEM_VIEW',
+        'VMWARE_VIRTUAL_MACHINE_HOST_VIEW',
+        'VMWARE_VIRTUAL_MACHINE_FOLDER_VIEW',
+        'ORACLE_DATA_GUARD_VIEW'      
+        )]
+        $Type,
+        [Parameter(Mandatory = $TRUE,  ParameterSetName = 'Children', ValueFromPipelineByPropertyName = $true)]
+        [switch]$children,       
+        [Parameter(Mandatory = $false,  ValueFromPipelineByPropertyName = $true)]
+        $filter, 
+        [hashtable]$body = @{pageSize = 200 },  
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2"    
+    )
+    begin {
+        $Response = @()
+        $METHOD = "GET"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+        
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                $URI = "/$myself/$id"
+            }
+            'children' {
+                $URI = "/$myself/$id/children"
+            }            
+            default {
+                $URI = "/$myself"
+            }
+        }          
+        if ($type) {
+          $body.Add('hierarchyType',$TYPE)  
+          }
+       # $Body = $body | ConvertTo-Json  
+       # write-verbose ( $body | Out-String   )   
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+          }
+
+          if ($filter) {
+             write-verbose ($filter | Out-String)
+            $parameters.Add('filter', $filter)
+          }    
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                write-output $response
+            }
+            default {
+                write-output $response.content
+            } 
+        }   
+    }
+}
+
+
+
+
 function Set-PPDMinventory_sources {
     [CmdletBinding()]
     [Alias('Set-PPDMAssetSource')]
