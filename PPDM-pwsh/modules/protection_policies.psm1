@@ -1530,7 +1530,7 @@ function New-PPDMSQLBackupPolicy {
         $stages.attributes.vm.Add('disableQuiescing', $false)
         $stages.attributes.vm.Add('excludeSwapFiles', $false)
         $Stages.attributes.Add('protection', @{})
-        $Stages.attributes.protection.Add('backupMode', $SizeSegmentation)
+        $Stages.attributes.protection.Add('backupMode', $SBT)
         $Stages.Add('target', @{})
         $Stages.Target.Add('storageSystemId', $StorageSystemID)
         $Stages.Add('operations' , $operations)
@@ -1810,4 +1810,6 @@ function New-PPDMExchangeBackupPolicy {
     }   
   }
 }
+
+
 
