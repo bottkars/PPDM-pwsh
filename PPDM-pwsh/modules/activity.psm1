@@ -64,7 +64,6 @@ function Get-PPDMactivities {
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
-
         [hashtable]$body = @{pageSize = 200 },
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
@@ -165,6 +164,10 @@ function Get-PPDMactivities {
             }
             default {
                 write-output $response.content
+                if ($response.page)
+                {
+                    write-host ($response.page | out-string)
+                }
             } 
         }   
     }

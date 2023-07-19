@@ -49,7 +49,11 @@ function Get-PPDMcopies {
         )]$Type,
         [Parameter(Mandatory = $false, ParameterSetName = 'TYPE', ValueFromPipelineByPropertyName = $true)]
         $filter,  
-        [hashtable]$body = @{pageSize = 200 },  
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $page,              
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
     )
@@ -69,7 +73,12 @@ function Get-PPDMcopies {
                 $URI = "/$myself"
             }
         }  
-        
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
+        }          
         $Parameters = @{
             body             = $body 
             Uri              = $Uri
@@ -106,7 +115,12 @@ function Get-PPDMcopies {
                 write-output $response 
             }
             default {
+
                 write-output $response.content
+                if ($response.page)
+                {
+                    write-host ($response.page | out-string)
+                }
             } 
         }   
     }

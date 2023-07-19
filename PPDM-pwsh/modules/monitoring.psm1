@@ -75,7 +75,7 @@ function Get-PPDMalerts {
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $id,
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-       [hashtable]$body = @{pageSize = 200 },
+        [hashtable]$body = @{pageSize = 200 },
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         $filter,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
@@ -128,6 +128,9 @@ function Get-PPDMalerts {
             }
             default {
                 write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }    
             } 
         }   
     }
@@ -206,15 +209,15 @@ function Get-PPDMaudit_logs {
     param(
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $id,
-        [Parameter(Mandatory = $false,ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $filter,
-        [Parameter(Mandatory = $false,ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $orderby, 
-        [Parameter(Mandatory = $false,ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $pageSize, 
-        [Parameter(Mandatory = $false,ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $page,              
-       [hashtable]$body = @{orderby='createdAt DESC'},
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
 
@@ -243,6 +246,7 @@ function Get-PPDMaudit_logs {
         $Parameters = @{
             body             = $body 
             Uri              = "$URI"
+            RequestMethod    = "REST"
             Method           = $Method
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
@@ -250,7 +254,7 @@ function Get-PPDMaudit_logs {
         }         
 
         if ($filter) {
-                $parameters.Add('filter', $filter)    
+            $parameters.Add('filter', $filter)    
         }           
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -264,10 +268,13 @@ function Get-PPDMaudit_logs {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response | convertfrom-json
+                write-output $response 
             }
             default {
-                write-output ($response | convertfrom-json).content
+                write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }    
             } 
         }   
     }
@@ -298,10 +305,10 @@ function Update-PPDMaudit_logs {
             }
 
         } 
-        $body=@{
-            'id' = $id
+        $body = @{
+            'id'       = $id
             'userNote' = @{
-                'note' = $note
+                'note'     = $note
                 'username' = $Global:PPDM_API_Credentials.UserName
             }
         } | convertto-json
