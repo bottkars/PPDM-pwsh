@@ -54,25 +54,24 @@ function Get-PPDMactivities {
     param(
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
         $days = 1,
-        [Parameter(Mandatory = $true, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('RUNNING', 'QUEUED', 'PROTECT_OK', 'PROTECT_FAILED', 'SYSTEM_FAILED', 'SYSTEM_OK', 'CLOUD_PROTECT_OK', 'CLOUD_PROTECT_FAILED')]
         $PredefinedFilter,                         
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [alias('taskid', 'id')]$activityId,
-        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
-        [hashtable]$body = @{pageSize = 200 },
-        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $filter,
-        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false,  ValueFromPipelineByPropertyName = $true)]
         $query,
-        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $apiver = "/api/v2"
     )
     begin {
@@ -82,8 +81,8 @@ function Get-PPDMactivities {
     }     
     Process {
         switch ($PsCmdlet.ParameterSetName) {
-            'predefined' {
-
+            default {
+                if ($PredefinedFilter)  { 
                 $myDate = (get-date).AddDays(-$days)
                 $timespan = get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
 
@@ -114,6 +113,7 @@ function Get-PPDMactivities {
                         $filterstring = 'createTime gt "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT") and state eq "RUNNING"'
                     }
                 }
+            }
                 if ($filter) {
                     $filter = "$filterstring $filter"
                 }
@@ -126,10 +126,15 @@ function Get-PPDMactivities {
             'byID' {
                 $URI = "/$myself/$activityId"
             }
-            default {
-                $URI = "/$myself"
-            }
+
         }
+
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
+        }         
         $Parameters = @{
             RequestMethod    = 'REST'
             body             = $body 

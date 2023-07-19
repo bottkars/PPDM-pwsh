@@ -52,7 +52,8 @@ function Get-PPDMcopies {
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $pageSize, 
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
-        $page,              
+        $page, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [hashtable]$body = @{orderby = 'createdAt DESC' },
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"

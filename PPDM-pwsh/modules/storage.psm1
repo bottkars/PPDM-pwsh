@@ -4,9 +4,9 @@
 function Get-PPDMdata_targets {
   [CmdletBinding()]
   param(
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     [string]$ID,
-    [Parameter(Mandatory = $true, ParameterSetName = 'TYPE', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'TYPE', ValueFromPipelineByPropertyName = $true)]
     [ValidateSet(
       'DDV_DISK_POOL',
       'DDV_DISK_DEVICE_GROUP',
@@ -15,9 +15,12 @@ function Get-PPDMdata_targets {
       'STORAGE_ARRAY',
       'DD_STORAGE_UNIT',
       'CDR_CONTAINER')][string]$subtype,
-    [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
     [string]$filter,
-    [hashtable]$body = @{pageSize = 200 },
+    [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+    $pageSize, 
+    [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+    $page,              
+    [hashtable]$body = @{orderby = 'createdAt DESC' },
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     $apiver = "/api/v2"
 
@@ -33,20 +36,16 @@ function Get-PPDMdata_targets {
       'byID' {
         $URI = "/$myself/$ID"
       }
-      'TYPE' {
-        $URI = "/$myself"
-        if ($filter) {
-          $filter = 'subtype eq "' + $subtype + '" and ' + $filter 
-        }
-        else {
-          $filter = 'subtype eq "' + $subtype + '"'
-        }
-        Write-Verbose ($filter | Out-String)
-      }
       default {
         $URI = "/$myself"
       }
     }  
+    if ($pagesize) {
+      $body.add('pageSize', $pagesize)
+    }
+    if ($page) {
+      $body.add('page', $page)
+    }      
     $Parameters = @{
       body             = $body 
       Uri              = $Uri
@@ -55,9 +54,17 @@ function Get-PPDMdata_targets {
       PPDM_API_BaseUri = $PPDM_API_BaseUri
       apiver           = $apiver
       Verbose          = $PSBoundParameters['Verbose'] -eq $true
-    }  
+    } 
+    if ($subtype) {
+      if ($filter) {
+        $filter = 'subtype eq "' + $subtype + '" and ' + $filter 
+      }
+      else {
+        $filter = 'subtype eq "' + $subtype + '"'
+      }
+    }        
     if ($filter) {
-      $Parameters.Add('filter', $filter)
+      $parameters.Add('filter', $filter) 
     }
     Write-Verbose ($body | Out-String)   
     Write-Verbose ($Parameters | Out-String)     
@@ -77,6 +84,9 @@ function Get-PPDMdata_targets {
       }
       default {
         write-output $response.content
+        if ($response.page) {
+          write-host ($response.page | out-string)
+        }      
       } 
     }   
   }

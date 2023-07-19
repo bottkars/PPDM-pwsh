@@ -45,14 +45,16 @@ function Get-PPDMassets {
             'CLOUD_DIRECTOR_VAPP',
             'DR')]
         [Alias('AssetType')][string]$type,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $page,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]              
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $apiver = "/api/v2",
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $false)]
-        [hashtable]$body = @{pageSize = 200 }  
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
     )
     begin {
         #        $Response = @{}
@@ -77,7 +79,13 @@ function Get-PPDMassets {
             default {
                 $URI = "/$myself"
             }
-        }   
+        }  
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
+        }           
         $Parameters = @{
             RequestMethod    = 'REST'
             body             = $body
@@ -119,6 +127,9 @@ function Get-PPDMassets {
             }
             default {
                 write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
             } 
         }   
     }
@@ -181,7 +192,18 @@ function Get-PPDMasset_protection_metrics {
             } 
         }   
     }
+
 }
+
+<#
+.SYNOPSIS
+
+.EXAMPLE
+Get-PPDMassets -filter 'name eq "scale002" and protectionStatus eq "PROTECTED" and details.k8s.inventorySourceName eq "api.ocs1.home.labbuildr.com"' | Get-PPDMcopy_map
+
+.EXTERNALHELP
+
+#>
 function Get-PPDMcopy_map {
     [CmdletBinding()]
     param(
@@ -642,7 +664,7 @@ function Get-PPDMhosts {
 
 
         if ($filter) {
-             write-verbose ($filter | Out-String)
+            write-verbose ($filter | Out-String)
             $parameters.Add('filter', $filter)
         }      
         try {
@@ -819,7 +841,7 @@ function Get-PPDMprotection_groups {
         $apiver = "/api/v2",
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-       [hashtable]$body = @{pageSize = 200 }  
+        [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
         $Response = @()
@@ -899,7 +921,7 @@ function New-PPDMprotection_groups {
                 $URI = "/$myself"
             }
         }  
-        $Body = @{'name'=$Name} 
+        $Body = @{'name' = $Name } 
         $Body.Add('type', "ORACLE_DATA_GUARD")
         $Body = $Body | ConvertTo-Json
         $Parameters = @{

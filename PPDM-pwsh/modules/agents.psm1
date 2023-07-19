@@ -99,14 +99,20 @@ function Get-PPDMagent_registration_status {
         )]
         [string]$updateState,
         [ValidateSet('Microsoft Application SQL Agent',
-        'Microsoft Application Exchange Agent',
-        'File System Agent',
-        'Oracle RMAN Agent',
-        'SAP HANA Agent')]
+            'Microsoft Application Exchange Agent',
+            'File System Agent',
+            'Oracle RMAN Agent',
+            'SAP HANA Agent')]
         [string]$type,
-
-        [hashtable]$body = {pageSize = 200 },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $apiver = "/api/v2"
 
     )
@@ -123,6 +129,12 @@ function Get-PPDMagent_registration_status {
             default {
                 $URI = "/$myself"
             }
+        }  
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
         }  
         $Parameters = @{
             body             = $body 
@@ -169,6 +181,9 @@ function Get-PPDMagent_registration_status {
             }
             default {
                 write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
             } 
         }   
     }
@@ -219,13 +234,13 @@ function Remove-PPDMagents_update_sessions {
 
         }   
         $Parameters = @{
-            RequestMethod    = 'REST'
-            body             = $body
-            Uri              = $URI
-            Method           = $Method
-            PPDM_API_BaseUri = $PPDM_API_BaseUri
-            apiver           = $apiver
-            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+            RequestMethod           = 'REST'
+            body                    = $body
+            Uri                     = $URI
+            Method                  = $Method
+            PPDM_API_BaseUri        = $PPDM_API_BaseUri
+            apiver                  = $apiver
+            Verbose                 = $PSBoundParameters['Verbose'] -eq $true
             ResponseHeadersVariable = 'HeaderResponse'
 
         }
@@ -263,20 +278,22 @@ function Get-PPDMagents_update_sessions {
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [ValidateSet(        
-        'COMPLETED',
-        'IN_PROGRESS',
-        'SCHEDULED'
+            'COMPLETED',
+            'IN_PROGRESS',
+            'SCHEDULED'
         )]
         [string[]]$state,
 
-
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $apiver = "/api/v2",
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [hashtable]$body = @{pageSize = 200 }  
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
     )
     begin {
         $Response = @()
@@ -293,15 +310,24 @@ function Get-PPDMagents_update_sessions {
 
             }
             default {
-                if ($state){
-                $URI = "/$myself/filter"
+                if ($state) {
+                    $URI = "/$myself/filter"
                 }
                 else {
                     $URI = "/$myself"
                 }
                 
             }
-        }   
+        }          
+        if ($state) {
+            $body.Add('state', $state -join (','))
+        }
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
+        }    
         $Parameters = @{
             RequestMethod    = 'REST'
             body             = $body
@@ -312,9 +338,7 @@ function Get-PPDMagents_update_sessions {
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
             
         }
-        if ($state) {
-            $body.Add('state',$state -join (','))
-        } 
+ 
         if ($filter) {
             $parameters.Add('filter', $filter)
         }      
@@ -334,6 +358,9 @@ function Get-PPDMagents_update_sessions {
             }
             default {
                 write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
             } 
         }   
     }

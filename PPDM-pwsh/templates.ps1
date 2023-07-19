@@ -9,15 +9,16 @@ function Get-PPDMxxxNoID {
         $filter,
         [ValidateSet()]
         [Alias('AssetType')][string]$type,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $apiver = "/api/v2",
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [hashtable]$body = @{pageSize = 200 }  
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
     )
 
     begin {
@@ -37,6 +38,12 @@ function Get-PPDMxxxNoID {
             default {
                 $URI = "/$myself"
             }
+        }  
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
         }   
         $Parameters = @{
             RequestMethod    = 'REST'
@@ -74,6 +81,9 @@ function Get-PPDMxxxNoID {
             }
             default {
                 write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
             } 
         }   
     }
