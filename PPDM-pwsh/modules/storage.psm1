@@ -248,7 +248,7 @@ clients            : {}
 function Get-PPDMstorage_systems {
   [CmdletBinding()]
   param(
-    [Parameter(Mandatory = $true, ParameterSetName = 'Type', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'Type', ValueFromPipelineByPropertyName = $true)]
     [ValidateSet(
       'VMAX_STORAGE_SYSTEM',
       'DATA_DOMAIN_SYSTEM',
@@ -292,12 +292,7 @@ function Get-PPDMstorage_systems {
       }
       'TYPE' {
         $URI = "/$myself"
-        if ($filter) {
-          $filter = 'type eq "' + $type + '" and ' + $filter 
-        }
-        else {
-          $filter = 'type eq "' + $type + '"'
-        }
+
       }
       
     }  
@@ -310,8 +305,14 @@ function Get-PPDMstorage_systems {
       apiver           = $apiver
       Verbose          = $PSBoundParameters['Verbose'] -eq $true
     }   
-
-
+    if ($type) {
+      if ($filter) {
+        $filter = 'type eq "' + $type + '" and ' + $filter 
+      }
+      else {
+        $filter = 'type eq "' + $type + '"'
+      }
+    }
     if ($filter) {
       write-verbose ($filter | Out-String)
       $parameters.Add('filter', $filter)   

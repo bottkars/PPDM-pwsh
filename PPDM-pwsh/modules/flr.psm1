@@ -93,7 +93,6 @@ function Remove-PPDMflr_sessions {
         $Response = @()
         $METHOD = "DELETE"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -152,7 +151,6 @@ function Get-PPDMflr_sessions {
         $Response = @()
         $METHOD = "GET"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -217,7 +215,6 @@ function Get-PPDMflr_filelisting {
         $Response = @()
         $METHOD = "GET"
         $Myself = "flr-sessions"
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -281,7 +278,6 @@ function Set-PPDMflr_sessions {
         $Response = @()
         $METHOD = "PUT"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -359,7 +355,6 @@ function Restore-PPDMflr_sessions {
         $Response = @()
         $METHOD = "POST"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(12) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {

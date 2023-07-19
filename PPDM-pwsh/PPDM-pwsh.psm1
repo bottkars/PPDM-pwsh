@@ -439,7 +439,6 @@ function Start-PPDMasset_backups {
         $Response = @()
         $METHOD = "POST"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(10) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -602,7 +601,6 @@ function Get-PPDMTELEMETRY_SETTING {
         $Response = @()
         $METHOD = "GET"
         # $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
         $Myself = "common-settings/TELEMETRY_SETTING"
    
     }     

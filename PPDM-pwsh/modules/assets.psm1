@@ -60,7 +60,6 @@ function Get-PPDMassets {
         #        $Response = @{}
         $METHOD = "GET"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "/").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
         $Response = @()   
     }
       
@@ -197,11 +196,9 @@ function Get-PPDMasset_protection_metrics {
 
 <#
 .SYNOPSIS
-
+'Retrieves copy map of the specified asset
 .EXAMPLE
 Get-PPDMassets -filter 'name eq "scale002" and protectionStatus eq "PROTECTED" and details.k8s.inventorySourceName eq "api.ocs1.home.labbuildr.com"' | Get-PPDMcopy_map
-
-.EXTERNALHELP
 
 #>
 function Get-PPDMcopy_map {
@@ -216,7 +213,6 @@ function Get-PPDMcopy_map {
         $Response = @()
         $METHOD = "GET"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -295,7 +291,6 @@ function Get-PPDMassetcopies {
         $Response = @()
         $METHOD = "GET"
         
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -339,16 +334,44 @@ function Get-PPDMassetcopies {
 function Get-PPDMprotection_rules {
     [CmdletBinding()]
     param(
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $id,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $filter,
+
+        [ValidateSet(
+        'CLOUD_NATIVE_ENTITY',
+        'CLOUD_DIRECTOR_VAPP',
+        'POWERSTORE_BLOCK',
+        'VMAX_STORAGE_GROUP',
+        'VMWARE_VIRTUAL_MACHINE',
+        'ORACLE_DATABASE',
+        'MICROSOFT_SQL_DATABASE',
+        'FILE_SYSTEM',
+        'KUBERNETES',
+        'MICROSOFT_EXCHANGE_DATABASE',
+        'SAP_HANA_DATABASE',
+        'NAS_SHARE',
+        'DR'
+        )]
+        [Alias('AssetType')][string]$type,
+
+
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2",
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $id
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
     )
     begin {
         $Response = @()
         $METHOD = "GET"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -359,9 +382,35 @@ function Get-PPDMprotection_rules {
             default {
                 $URI = "/$myself"
             }
+        } 
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
+        }   
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+        if ($type) {
+            if ($filter) {
+                $filter = 'inventorySourceType eq "' + $type + '" and ' + $filter 
+            }
+            else {
+                $filter = 'inventorySourceType eq "' + $type + '"'
+            }
         }        
+        if ($filter) {
+            $parameters.Add('filter', $filter)
+        }       
         try {
-            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body" -Verbose:($PSBoundParameters['Verbose'] -eq $true)
+            $Response += Invoke-PPDMapirequest @Parameters
         }
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
@@ -372,10 +421,13 @@ function Get-PPDMprotection_rules {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response | convertfrom-json
+                write-output $response
             }
             default {
-                write-output ($response | convertfrom-json).content
+                write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
             } 
         }   
     }
@@ -398,7 +450,6 @@ function Set-PPDMprotection_rules {
         $Response = @()
         $METHOD = "PUT"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -451,7 +502,6 @@ function Remove-PPDMprotection_rules {
         $Response = @()
         $METHOD = "DELETE"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -491,7 +541,6 @@ function Get-PPDMvm_backup_setting {
         $Response = @()
         $METHOD = "GET"
         $Myself = "common-settings/VM_BACKUP_SETTING"
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -543,7 +592,6 @@ function Set-PPDMvm_backup_setting {
         $Response = @()
         $METHOD = "PUT"
         $Myself = "common-settings/VM_BACKUP_SETTING"
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -614,20 +662,21 @@ function Get-PPDMhosts {
         [alias('hosttype')]$type,        
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         $filter,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $apiver = "/api/v2",
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [hashtable]$body = @{pageSize = 200 }  
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
     )
     begin {
         $Response = @()
         $METHOD = "GET"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "/").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -643,6 +692,12 @@ function Get-PPDMhosts {
             default {
                 $URI = "/$myself"
             }
+        }
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
         }   
         $Parameters = @{
             RequestMethod    = 'REST'
@@ -683,6 +738,9 @@ function Get-PPDMhosts {
             }
             default {
                 write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
             } 
         }   
     }
@@ -847,7 +905,6 @@ function Get-PPDMprotection_groups {
         $Response = @()
         $METHOD = "GET"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -909,7 +966,6 @@ function New-PPDMprotection_groups {
         $Response = @()
         $METHOD = "POST"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {

@@ -130,7 +130,6 @@ function Update-PPDMcertificates {
         $Response = @()
         $METHOD = "PUT"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -185,7 +184,6 @@ function Approve-PPDMcertificates {
         $Response = @()
         $METHOD = "PUT"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(12) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -242,7 +240,6 @@ function Remove-PPDMcertificates {
         $Response = @()
         $METHOD = "DELETE"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {

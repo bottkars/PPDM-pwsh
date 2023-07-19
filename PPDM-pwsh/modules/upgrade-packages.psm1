@@ -12,7 +12,6 @@ function Get-PPDMupgrade_packages {
         $Response = @()
         $METHOD = "GET"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -66,7 +65,6 @@ Function Stop-PPDMupgrade {
     begin {
         $Response = @()
         $METHOD = "POST"
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -121,7 +119,6 @@ Function Remove-PPDMupgrade {
     begin {
         $Response = @()
         $METHOD = "DELETE"
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
@@ -177,7 +174,6 @@ Function Stop-PPDMupgradePrecheck {
     begin {
         $Response = @()
         $METHOD = "POST"
-        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {

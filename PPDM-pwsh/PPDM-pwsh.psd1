@@ -266,7 +266,9 @@ FunctionsToExport = @(
     'New-PPDMdatadomain_storage_units',
     'Remove-PPDMdatadomain_storage_units',
     'New-PPDMdatadomain_mtrees',
-    'Get-PPDMcopies_query'     
+    'Get-PPDMcopies_query',
+    'Get-PPDMvm_backup_setting',
+    'Set-PPDMvm_backup_setting'     
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
