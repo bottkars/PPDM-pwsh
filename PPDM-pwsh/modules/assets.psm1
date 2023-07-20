@@ -860,7 +860,7 @@ function Set-PPDMapp_hosts {
             PPDM_API_BaseUri        = $PPDM_API_BaseUri
             apiver                  = $apiver
             Verbose                 = $PSBoundParameters['Verbose'] -eq $true
-            ResponseHeadersVariable = 'HeaderResponse'
+            # ResponseHeadersVariable = 'HeaderResponse'
 
         }   
             

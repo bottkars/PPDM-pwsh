@@ -239,7 +239,7 @@ function Remove-PPDMagents_update_sessions {
             PPDM_API_BaseUri        = $PPDM_API_BaseUri
             apiver                  = $apiver
             Verbose                 = $PSBoundParameters['Verbose'] -eq $true
-            ResponseHeadersVariable = 'HeaderResponse'
+            # ResponseHeadersVariable = 'HeaderResponse'
 
         }
    
@@ -255,7 +255,7 @@ function Remove-PPDMagents_update_sessions {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response.Date 
+                # write-output $response.Date 
             }
             default {
                 write-output $response.content

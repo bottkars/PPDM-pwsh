@@ -315,7 +315,7 @@ function Start-PPDMprotection {
       PPDM_API_BaseUri        = $PPDM_API_BaseUri
       apiver                  = $apiver
       Verbose                 = $PSBoundParameters['Verbose'] -eq $true
-      ResponseHeadersVariable = 'HeaderResponse'
+      # ResponseHeadersVariable = 'HeaderResponse'
     }
     Write-Verbose ($Parameters | Out-String)
     if (!$noop.ispresent) {        
@@ -334,7 +334,7 @@ function Start-PPDMprotection {
 
       switch ($PsCmdlet.ParameterSetName) {
         default {
-          write-output $response.Date
+          # write-output $response.Date
         } 
       }   
     }
@@ -408,7 +408,7 @@ function Start-PPDMprotection_policies {
       apiver                  = $apiver
       RequestMethod           = "REST"
       Verbose                 = $PSBoundParameters['Verbose'] -eq $true
-      ResponseHeadersVariable = 'HeaderResponse'
+      # ResponseHeadersVariable = 'HeaderResponse'
 
     }           
     try {
@@ -423,10 +423,10 @@ function Start-PPDMprotection_policies {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
-        write-output $response.date
+        # write-output $response.Date
       }
       default {
-        write-output $response.date
+        # write-output $response.Date
       } 
     }   
   }
@@ -460,7 +460,7 @@ function Remove-PPDMprotection_policies {
       PPDM_API_BaseUri        = $PPDM_API_BaseUri
       apiver                  = $apiver
       Verbose                 = $PSBoundParameters['Verbose'] -eq $true
-      ResponseHeadersVariable = 'HeaderResponse'
+      # ResponseHeadersVariable = 'HeaderResponse'
     }      
     try {
       $Response += Invoke-PPDMapirequest @Parameters      
@@ -477,7 +477,7 @@ function Remove-PPDMprotection_policies {
         write-output $response 
       }
       default {
-        write-output $response.date
+        # write-output $response.Date
       } 
     }   
   }

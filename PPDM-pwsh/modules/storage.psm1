@@ -506,7 +506,7 @@ function Remove-PPDMdatadomain_storage_units {
       PPDM_API_BaseUri        = $PPDM_API_BaseUri
       apiver                  = $apiver
       Verbose                 = $PSBoundParameters['Verbose'] -eq $true
-      ResponseHeadersVariable = 'HeaderResponse'
+      # ResponseHeadersVariable = 'HeaderResponse'
     }      
     try {
       $Response += Invoke-PPDMapirequest @Parameters
@@ -520,10 +520,10 @@ function Remove-PPDMdatadomain_storage_units {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
-        write-output $response.date 
+        # write-output $response.Date 
       }
       default {
-        write-output $response.date
+        # write-output $response.Date
       } 
     }   
   }

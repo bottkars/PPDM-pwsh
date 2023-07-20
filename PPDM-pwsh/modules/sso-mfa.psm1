@@ -195,7 +195,7 @@ function Remove-PPDMmfa_securids {
             PPDM_API_BaseUri        = $PPDM_API_BaseUri
             apiver                  = $apiver
             Verbose                 = $PSBoundParameters['Verbose'] -eq $true
-            ResponseHeadersVariable = 'HeaderResponse'
+            # ResponseHeadersVariable = 'HeaderResponse'
 
         }
         try {
@@ -473,7 +473,7 @@ function Remove-PPDMmfa_bypass_accounts {
             PPDM_API_BaseUri        = $PPDM_API_BaseUri
             apiver                  = $apiver
             Verbose                 = $PSBoundParameters['Verbose'] -eq $true
-            ResponseHeadersVariable = 'HeaderResponse'
+            # ResponseHeadersVariable = 'HeaderResponse'
 
         }
         try {

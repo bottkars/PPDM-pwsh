@@ -480,7 +480,7 @@ function Remove-PPDMProtectionEngineProxy {
         PPDM_API_BaseUri        = $PPDM_API_BaseUri
         apiver                  = $apiver
         Verbose                 = $PSBoundParameters['Verbose'] -eq $true
-        ResponseHeadersVariable = 'HeaderResponse'
+        # ResponseHeadersVariable = 'HeaderResponse'
       }      
       try {
         $Response += Invoke-PPDMapirequest @Parameters      
@@ -494,7 +494,7 @@ function Remove-PPDMProtectionEngineProxy {
     end {    
       switch ($PsCmdlet.ParameterSetName) {
         default {
-          write-output $response.date
+          # write-output $response.Date
         } 
       }   
     }

@@ -253,7 +253,7 @@ function Remove-PPDMcertificates {
             apiver           = $apiver
             apiport          = 8443 
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
-            ResponseHeadersVariable = 'HeaderResponse'
+            # ResponseHeadersVariable = 'HeaderResponse'
 
         }      
         try {
@@ -268,7 +268,7 @@ function Remove-PPDMcertificates {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             default {
-                write-output $response.date
+                # write-output $response.Date
             } 
         }   
     }

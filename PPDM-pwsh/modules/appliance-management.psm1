@@ -1018,7 +1018,7 @@ function Set-PPDMcertificates {
             RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
-            ResponseHeadersVariable = 'HeaderResponse'
+            # ResponseHeadersVariable = 'HeaderResponse'
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
@@ -1033,7 +1033,7 @@ function Set-PPDMcertificates {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             default {
-                write-output $response.Date
+                # write-output $response.Date
                 Write-Host "Certificates have been set. Refresh your Browser. You might restart nginx on the Appliance (systemclt restart nginx ) for changes to take place immediately"
             } 
         }   

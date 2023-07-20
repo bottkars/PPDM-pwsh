@@ -682,7 +682,7 @@ function Restore-PPDMK8Scopies {
       PPDM_API_BaseUri        = $PPDM_API_BaseUri
       apiver                  = $apiver
       Verbose                 = $PSBoundParameters['Verbose'] -eq $true
-      ResponseHeadersVariable = 'HeaderResponse'
+      # ResponseHeadersVariable = 'HeaderResponse'
     }
     Write-Verbose ($Parameters | Out-String)
     if (!$noop.ispresent) {        
@@ -701,7 +701,7 @@ function Restore-PPDMK8Scopies {
   
       switch ($PsCmdlet.ParameterSetName) {
         default {
-          write-output $response.Date
+          # write-output $response.Date
         } 
       }   
     }
@@ -817,7 +817,7 @@ function Restore-PPDMVMcopies {
       PPDM_API_BaseUri        = $PPDM_API_BaseUri
       apiver                  = $apiver
       Verbose                 = $PSBoundParameters['Verbose'] -eq $true
-      ResponseHeadersVariable = 'HeaderResponse'
+      # ResponseHeadersVariable = 'HeaderResponse'
     }
     Write-Verbose ($Parameters | Out-String)
     if (!$noop.ispresent) {        
@@ -836,7 +836,7 @@ function Restore-PPDMVMcopies {
 
       switch ($PsCmdlet.ParameterSetName) {
         default {
-          write-output $response.Date
+          # write-output $response.Date
         } 
       }   
     }
