@@ -211,7 +211,7 @@ function Remove-PPDMmfa_securids {
         switch ($PsCmdlet.ParameterSetName) {
             default {
                 if ($response.date) {
-                    write-host $response.date
+                    # write-host $response.Date
                 }
             } 
         }   
@@ -489,7 +489,7 @@ function Remove-PPDMmfa_bypass_accounts {
         switch ($PsCmdlet.ParameterSetName) {
             default {
                 if ($response.date) {
-                    write-host $response.date
+                    # write-host $response.Date
                 }
             } 
         }   
