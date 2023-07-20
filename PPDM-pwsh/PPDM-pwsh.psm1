@@ -18,6 +18,7 @@ function Unblock-PPDMSSLCerts {
 }
 function Connect-PPDMapiEndpoint {
     [CmdletBinding()]
+    [Alias('Connect-PPDMsystem')]
     param(
         [Parameter(Mandatory = $false, ParameterSetName = 'Credential', ValueFromPipelineByPropertyName = $true)]
         [pscredential]$PPDM_API_Credentials = $Global:PPDM_API_Credentials,
@@ -28,7 +29,7 @@ function Connect-PPDMapiEndpoint {
         #        [Parameter(Mandatory = $True, ParameterSetName = 'Client')]
         #        [switch]$Client,
         [Parameter(Mandatory = $false, Position = 0, ValueFromPipelineByPropertyName = $true)]
-        [string][alias('PPDM_API_URI')]
+        [string][alias('FQDN')]
         $PPDM_API_BaseURI = $GLOBAL:PPDM_API_BaseUri,
         [switch]$trustCert,
         #        [Parameter(Mandatory = $True, ParameterSetName = 'SSO')]

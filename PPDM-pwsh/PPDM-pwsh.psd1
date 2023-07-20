@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.1'
+ModuleVersion = '19.14.20.3'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -92,7 +92,9 @@ NestedModules = @(
     './modules/restore-plans',
     './modules/rules',
     './modules/flr',
-    './modules/common'
+    './modules/common',
+    './modules/sso-mfa',
+    './modules/identity-providers'
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -268,7 +270,15 @@ FunctionsToExport = @(
     'New-PPDMdatadomain_mtrees',
     'Get-PPDMcopies_query',
     'Get-PPDMvm_backup_setting',
-    'Set-PPDMvm_backup_setting'     
+    'Set-PPDMvm_backup_setting',
+    'Get-PPDMmfa_securids',
+    'New-PPDMmfa_securids',
+    'Remove-PPDMmfa_securids',
+    'Set-PPDMmfa_securids',
+    'Get-PPDMidentity_providers',
+    'Set-PPDMmfa_bypass_accounts',
+    'Get-PPDMmfa_bypass_accounts',
+    'Remove-PPDMmfa_bypass_accounts'     
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -306,7 +316,9 @@ AliasesToExport = @(
     'Start-PPDMProtectionStage',
     'Get-PPDMStorageMetrics',
     'Get-PPDMServiceStatus',
-    'Get-PPDMagents'
+    'Get-PPDMagents',
+    'Connect-PPDMSystem',
+    'Get-PPDMidp'
 )
 
 # DSC resources to export from this module
@@ -337,6 +349,10 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
+        2023-07-20 (v19.14.20.3)
+        - added initial mfa and idp support 
+        - fixes to pagination, streamlined -page and -pagesuze parameters
+        - added default activity views for Protection, Asset and System Jobs
         2023-07-11 (v19.14.20)
         - added FLR Usecases for Agent Backup
         - Further Implementation of Filters

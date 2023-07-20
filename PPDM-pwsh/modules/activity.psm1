@@ -2,7 +2,108 @@
 .SYNOPSIS
 Activity Monitoring
 .DESCRIPTION
+The first 3 Predefined Filters represent the Job View from the UI : PROTECTION_JOBS, ASSET_JOBS, SYSTEM_JOBS
+The Function supports Pagination with -page and -pagesize
+.EXAMPLE
+# This outputs the SYSTEM JOBS of the last2 24hrs similar to UI Job View
+Get-PPDMactivities -PredefinedFilter SYSTEM_JOBS
+id                      : dba6095b-e95e-4c48-a304-7ae3ce5ef809
+name                    : Manual Discovery for inventory source tkgi.pks.home.labbuildr.com
+category                : DISCOVER
+classType               : JOB_GROUP
+source                  : @{type=DATA_MANAGER}
+createTime              : 19/07/2023 20:04:30
+updateTime              : 19/07/2023 20:05:25
+startTime               : 19/07/2023 20:04:30
+endTime                 : 19/07/2023 20:05:25
+duration                : 44080
+averageDuration         : 44080
+averageBytesTransferred : 0
+progress                : 100
+owner                   : @{name=DISCOVERY; ownerResource=}
+state                   : COMPLETED
+result                  : @{status=OK; summaries=System.Object[]}
+hasLogs                 : False
+hasChildren             : True
+actions                 : @{cancelable=False; retryable=False}
+stateSummaries          : @{total=1; queued=0; running=0; pendingCancellation=0; completed=1; ok=1; okWithErrors=0; canceled=0; failed=0; unknown=0; skipped=0; criticalEvent=0}
+displayId               : 137F8ADB
+_links                  : @{self=}
 
+
+size number totalPages totalElements
+---- ------ ---------- -------------
+ 100      1          2           159
+
+.EXAMPLE
+# This outputs the Asset JOBS of the last2 24hrs similar to UI Job View
+ Get-PPDMactivities -PredefinedFilter ASSET_JOBS
+groupByOptions        : {VIRTUAL_DATACENTER, VM_GUEST_OS, VMWARE_CLUSTER, ESX_HOST…}
+extendedData          : @{keyValues=System.Object[]}
+id                    : 2df277d0-198b-4a6f-b5bd-fd87be4ccdb4
+name                  : Protecting VM - sqlsinglenode2
+category              : PROTECT
+subcategory           : SYNTHETIC_FULL
+parentId              : 963221ec-f61d-406e-9d7a-97148fc383b2
+classType             : JOB
+source                : @{type=DATA_MANAGER}
+scheduleInfo          : @{type=DAILY; description=Every day; nextScheduledTime=20/07/2023 18:00:00}
+createTime            : 19/07/2023 18:00:01
+updateTime            : 19/07/2023 18:04:32
+startTime             : 19/07/2023 18:02:05
+endTime               : 19/07/2023 18:04:32
+nextScheduledTime     : 20/07/2023 18:00:00
+duration              : 147565
+progress              : 100
+owner                 : @{name=workflow}
+state                 : COMPLETED
+result                : @{status=OK; summaries=System.Object[]; bytesTransferred=819986432}
+hasLogs               : False
+hasChildren           : True
+actions               : @{cancelable=False; retryable=False}
+protectionPolicy      : @{id=62095aab-ccf6-4d23-8563-63f61c86bf47; name=VM_TAG_BASED_AA; type=VMWARE_VIRTUAL_MACHINE}
+asset                 : @{id=43d16419-d9c4-54ab-9995-0d25bb93a8fb; name=sqlsinglenode2; type=VMWARE_VIRTUAL_MACHINE}
+initiatedType         : SCHEDULED
+activityInitiatedType : SCHEDULED
+storageSystem         : @{id=aa0b484c-8f1e-4749-99c1-91f3611ab3b1; name=ddve.home.labbuildr.com}
+inventorySource       : @{id=69c8ac3a-3eca-55f1-a2e0-347e63a90540; name=vcsa1.home.labbuildr.com; type=VCENTER}
+stats                 : @{numberOfAssets=1; numberOfProtectedAssets=1; bytesTransferredThroughput=5359388; bytesTransferredThroughputUnitOfTime=second; assetSizeInBytes=608811614208; preCompBytes=819986432; postCompBytes=298365110; bytesTransferred=819986432; dedupeRatio=2,74826514400427; reductionPercentage=63,6134089106489; storageCompStats=}
+_links                : @{self=}
+
+
+size number totalPages totalElements
+---- ------ ---------- -------------
+  43      1          1            43
+
+.EXAMPLE
+Get-PPDMactivities -PredefinedFilter PROTECTION_JOBS
+id                      : 3340d0ec-5631-4fee-8c60-4ce970a2f46e
+name                    : Manual Discovery for inventory source tkgi.pks.home.labbuildr.com
+category                : DISCOVER
+classType               : JOB_GROUP
+source                  : @{type=DATA_MANAGER}
+createTime              : 20/07/2023 05:14:45
+updateTime              : 20/07/2023 05:15:55
+startTime               : 20/07/2023 05:14:45
+endTime                 : 20/07/2023 05:15:55
+duration                : 44042
+averageDuration         : 44042
+averageBytesTransferred : 0
+progress                : 100
+owner                   : @{name=DISCOVERY; ownerResource=}
+state                   : COMPLETED
+result                  : @{status=OK; summaries=System.Object[]}
+hasLogs                 : False
+hasChildren             : True
+actions                 : @{cancelable=False; retryable=False}
+stateSummaries          : @{total=1; queued=0; running=0; pendingCancellation=0; completed=1; ok=1; okWithErrors=0; canceled=0; failed=0; unknown=0; skipped=0; criticalEvent=0}
+displayId               : 781B6668
+_links                  : @{self=}
+
+
+size number totalPages totalElements
+---- ------ ---------- -------------
+ 100      1          7           680
 .EXAMPLE
 ## Get all Failed Activitis
 Get-PPDMactivities -PredefinedFilter PROTECT_FAILED
@@ -54,24 +155,39 @@ function Get-PPDMactivities {
     param(
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
         $days = 1,
-        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('RUNNING', 'QUEUED', 'PROTECT_OK', 'PROTECT_FAILED', 'SYSTEM_FAILED', 'SYSTEM_OK', 'CLOUD_PROTECT_OK', 'CLOUD_PROTECT_FAILED')]
-        $PredefinedFilter,                         
+        [Parameter(Mandatory = $TRUE, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('PROTECTION_JOBS','ASSET_JOBS','SYSTEM_JOBS','RUNNING', 'QUEUED', 'PROTECT_OK', 'PROTECT_FAILED', 'SYSTEM_FAILED', 'SYSTEM_OK', 'CLOUD_PROTECT_OK', 'CLOUD_PROTECT_FAILED')]
+        $PredefinedFilter,  
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [alias('taskid', 'id')]$activityId,
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         $filter,
-        [Parameter(Mandatory = $false,  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         $query,
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         $pageSize, 
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         $page, 
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         [hashtable]$body = @{orderby = 'createdAt DESC' },
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
+        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         $apiver = "/api/v2"
     )
     begin {
@@ -81,8 +197,7 @@ function Get-PPDMactivities {
     }     
     Process {
         switch ($PsCmdlet.ParameterSetName) {
-            default {
-                if ($PredefinedFilter)  { 
+            'predefined' {
                 $myDate = (get-date).AddDays(-$days)
                 $timespan = get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
 
@@ -112,8 +227,17 @@ function Get-PPDMactivities {
                     'RUNNING' {
                         $filterstring = 'createTime gt "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT") and state eq "RUNNING"'
                     }
+                    'SYSTEM_JOBS' {
+                        $filterstring = 'createTime gt "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("HOST_CONFIGURATION","CLOUD_COPY_RECOVER","CLOUD_DR","CONFIG","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE")'
+                    }
+                    'ASSET_JOBS' {
+                        $filterstring = 'createTime gt "' + $timespan + '" and classType eq "JOB" and asset.id ne null"'
+                    }
+                    'PROTECTION_JOBS' {
+                        $filterstring = 'createTime gt "' + $timespan + '" parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_PROTECT","CLOUD_TIER","EXPORT_REUSE","INDEX","INSTANT_ACCESS_ATTACH","INSTANT_ACCESS_DELETE_SESSION","INSTANT_ACCESS_DETACH","PROTECT","REPLICATE","RESTORE")'
+                    }
                 }
-            }
+
                 if ($filter) {
                     $filter = "$filterstring $filter"
                 }
@@ -126,6 +250,9 @@ function Get-PPDMactivities {
             'byID' {
                 $URI = "/$myself/$activityId"
             }
+            default {
+                $URI = "/$myself/$activityId"
+            }            
 
         }
 
@@ -169,8 +296,7 @@ function Get-PPDMactivities {
             }
             default {
                 write-output $response.content
-                if ($response.page)
-                {
+                if ($response.page) {
                     write-host ($response.page | out-string)
                 }
             } 
