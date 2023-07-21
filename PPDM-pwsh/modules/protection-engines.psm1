@@ -6,14 +6,22 @@ function Get-PPDMprotection_engines {
     [Alias('Get-PPDMVPE')]
 
     param(
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $id,
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ALL', ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('VPE')]
         $Type,
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ALL', ValueFromPipelineByPropertyName = $true)]
         $filter,         
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $apiver = "/api/v2"
     )
     begin {
@@ -29,7 +37,13 @@ function Get-PPDMprotection_engines {
             default {
                 $URI = "/$myself"
             }
-        }  
+        } 
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
+        }            
         $Parameters = @{
             RequestMethod    = 'REST'
             body             = $body 
@@ -49,7 +63,7 @@ function Get-PPDMprotection_engines {
         }
         if ($filter) {
             write-verbose ($filter | Out-String)
-            $parameters.Add('filter', $filter)
+            $Parameters.Add('filter', $filter)
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -63,10 +77,13 @@ function Get-PPDMprotection_engines {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response
+                write-output $response 
             }
             default {
                 write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
             } 
         }   
     }
@@ -141,7 +158,7 @@ function Get-PPDMprotectionEngineProxies {
                 write-output $response 
             }
             default {
-                write-output $response.content 
+                write-output $response.content
             } 
         }   
     }

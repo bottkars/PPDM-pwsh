@@ -55,6 +55,7 @@ function Start-PPDMflr_sessions {
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
+            RequestMethod    = 'Rest'
         }       
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -68,10 +69,10 @@ function Start-PPDMflr_sessions {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response | convertfrom-json
+                write-output $response
             }
             default {
-                write-output ($response.content | convertfrom-json)
+                write-output $response.content
             } 
         }   
     }

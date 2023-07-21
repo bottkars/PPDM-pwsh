@@ -175,13 +175,14 @@ function Get-PPDMalerts {
 function Set-PPDMalerts_acknowledgement {
     [CmdletBinding()]
     param(
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2",
+
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $id,
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [ValidateSet("ACKNOWLEDGED", "UNACKNOWLEDGED")]
-        $acknowledgeState = "ACKNOWLEDGED"       
+        $acknowledgeState = "ACKNOWLEDGED",
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2"      
     )
     begin {
         $Response = @()
@@ -208,6 +209,7 @@ function Set-PPDMalerts_acknowledgement {
         } | convertto-json -Depth 7
         write-verbose ($body | out-string)
         $Parameters = @{
+            RequestMethod   = 'Rest'
             body             = $body 
             Uri              = "$URI"
             Method           = $Method
@@ -227,10 +229,10 @@ function Set-PPDMalerts_acknowledgement {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response | convertfrom-json
+                write-output $response
             }
             default {
-                write-output ($response | convertfrom-json).content
+                write-output $response.content
             } 
         }   
     }

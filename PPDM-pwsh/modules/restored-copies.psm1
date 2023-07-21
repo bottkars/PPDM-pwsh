@@ -1419,7 +1419,7 @@ function Get-PPDMFSAgentFLRBrowselist {
     switch ($PsCmdlet.ParameterSetName) {
 
       default {
-        write-output $response | ConvertFrom-Json
+        write-output $response
       } 
     }   
   }

@@ -248,7 +248,7 @@ function Get-PPDMcopy_map {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response  #.content | convertfrom-json
+                write-output $response  
             }
             default {
                 write-output $response 
@@ -582,7 +582,7 @@ function Get-PPDMvm_backup_setting {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response | convertfrom-json
+                write-output $response 
             }
             default {
                 write-output $response
@@ -634,7 +634,7 @@ function Set-PPDMvm_backup_setting {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response | convertfrom-json
+                write-output $response
             }
             default {
                 write-output $response

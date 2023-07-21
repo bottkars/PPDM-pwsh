@@ -399,9 +399,6 @@ function Get-PPDMpasswordpolicies {
     } 
     end {    
         switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response | convertfrom-json
-            }
             default {
                 write-output $response 
             } 
@@ -460,9 +457,6 @@ function Set-PPDMpasswordpolicies {
     } 
     end {    
         switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response | convertfrom-json
-            }
             default {
                 write-output $response 
             } 

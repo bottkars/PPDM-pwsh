@@ -273,7 +273,7 @@ function Invoke-PPDMapirequest {
         [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
         [ValidateSet('Rest', 'Web')]$RequestMethod,        
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
-        $Body,
+        $Body=@{},
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
         $Filter,
         [Parameter(Mandatory = $true, ParameterSetName = 'infile')]
@@ -432,7 +432,7 @@ function Start-PPDMasset_backups {
     param(
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2",
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [string][alias('id')]$AssetID,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('FULL', 'SYNTHETIC_FULL', 'DIFFERNTIAL', 'GEN0', 'LOG', 'INCREMENTAL', 'CUMULATIVE', 'AUTO_FULL')]
@@ -459,6 +459,7 @@ function Start-PPDMasset_backups {
         } | convertto-json -compress
         write-verbose ($body | out-string)
         $Parameters = @{
+            RequestMethod   = 'REST'
             body             = $body 
             Uri              = $Uri
             Method           = $Method
@@ -473,15 +474,15 @@ function Start-PPDMasset_backups {
             Get-PPDMWebException  -ExceptionMessage $_
             break
         }
-        write-verbose ($response | Out-String)
+       # write-verbose ($response | Out-String)
     } 
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response | convertfrom-json
+                write-output $response
             }
             default {
-                write-output ($response | convertfrom-json).content
+                write-output $response.content
             } 
         }   
     }

@@ -493,10 +493,10 @@ function Remove-PPDMinventory_sources {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response | convertfrom-json
+                write-output $response 
             }
             default {
-                write-output ($response | convertfrom-json).content
+                write-output $response
             } 
         }   
     }
@@ -619,9 +619,7 @@ function Get-PPDMesxDatastores {
     } 
     end {    
         switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response | convertfrom-json
-            }
+
             default {
                 write-output $response.datastores
             } 

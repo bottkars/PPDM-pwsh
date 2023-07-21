@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.7'
+ModuleVersion = '19.14.20.8'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -129,7 +129,7 @@ FunctionsToExport = @(
     'Set-PPDMcommon_settings',
     'Get-PPDMinventory_sources',  
     'Set-PPDMinventory_sources',
-    #'Get-PPDMvcenterDatastores',  
+    'Get-PPDMesxDatastores',  
     'Add-PPDMinventory_sources',
     'Remove-PPDMinventory_sources',   
     'Get-PPDMcomponents',

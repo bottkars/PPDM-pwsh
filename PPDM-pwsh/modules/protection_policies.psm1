@@ -1107,6 +1107,7 @@ function New-PPDMVMBackupPolicy {
         
     write-verbose ($body | out-string)
     $Parameters = @{
+      RequestMethod    = 'Rest'
       body             = $body 
       Uri              = $URI
       Method           = $Method
@@ -1128,7 +1129,7 @@ function New-PPDMVMBackupPolicy {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       default {
-        write-output ($response | convertfrom-json)
+        write-output $response
       } 
     }   
   }
@@ -1230,6 +1231,7 @@ function New-PPDMK8SBackupPolicy {
         
     write-verbose ($body | out-string)
     $Parameters = @{
+      RequestMethod    = 'Rest'
       body             = $body 
       Uri              = $URI
       Method           = $Method
@@ -1251,7 +1253,7 @@ function New-PPDMK8SBackupPolicy {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       default {
-        write-output ($response | convertfrom-json)
+        write-output $response
       } 
     }   
   }
@@ -1372,6 +1374,7 @@ function New-PPDMFSBackupPolicy {
         
     write-verbose ($body | out-string)
     $Parameters = @{
+      RequestMethod    = 'Rest'
       body             = $body 
       Uri              = $URI
       Method           = $Method
@@ -1393,7 +1396,7 @@ function New-PPDMFSBackupPolicy {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       default {
-        write-output ($response | convertfrom-json)
+        write-output $response
       } 
     }   
   }
@@ -1598,6 +1601,7 @@ function New-PPDMSQLBackupPolicy {
         
     write-verbose ($body | out-string)
     $Parameters = @{
+      RequestMethod    = 'REST'
       body             = $body 
       Uri              = $URI
       Method           = $Method
@@ -1619,7 +1623,7 @@ function New-PPDMSQLBackupPolicy {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       default {
-        write-output ($response | convertfrom-json)
+        write-output $response
       } 
     }   
   }
@@ -1784,6 +1788,7 @@ function New-PPDMExchangeBackupPolicy {
         
     write-verbose ($body | out-string)
     $Parameters = @{
+      RequestMethod    = 'REST'
       body             = $body 
       Uri              = $URI
       Method           = $Method
@@ -1805,9 +1810,9 @@ function New-PPDMExchangeBackupPolicy {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       default {
-        write-output ($response | convertfrom-json)
-      } 
-    }   
+        write-output $response
+      }   
+    }
   }
 }
 
