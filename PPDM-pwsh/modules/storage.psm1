@@ -520,10 +520,10 @@ function Remove-PPDMdatadomain_storage_units {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
-        write-output $response.Headers.Date 
+        write-host $response.Headers.Date 
       }
       default {
-        write-output $response.Headers.Date
+        write-host $response.Headers.Date
       } 
     }   
   }

@@ -701,7 +701,7 @@ function Restore-PPDMK8Scopies {
   
       switch ($PsCmdlet.ParameterSetName) {
         default {
-          write-output $response.Headers.Date
+          write-host $response.Headers.Date
         } 
       }   
     }
@@ -836,7 +836,7 @@ function Restore-PPDMVMcopies {
 
       switch ($PsCmdlet.ParameterSetName) {
         default {
-          write-output $response.Headers.Date
+          write-host $response.Headers.Date
         } 
       }   
     }

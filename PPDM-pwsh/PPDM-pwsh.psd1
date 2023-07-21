@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.4'
+ModuleVersion = '19.14.20.5'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -129,7 +129,7 @@ FunctionsToExport = @(
     'Set-PPDMcommon_settings',
     'Get-PPDMinventory_sources',  
     'Set-PPDMinventory_sources',
-    'Get-PPDMvcenterDatastores',  
+    #'Get-PPDMvcenterDatastores',  
     'Add-PPDMinventory_sources',
     'Remove-PPDMinventory_sources',   
     'Get-PPDMcomponents',
@@ -278,7 +278,9 @@ FunctionsToExport = @(
     'Get-PPDMidentity_providers',
     'Set-PPDMmfa_bypass_accounts',
     'Get-PPDMmfa_bypass_accounts',
-    'Remove-PPDMmfa_bypass_accounts'     
+    'Remove-PPDMmfa_bypass_accounts',
+    'Get-PPDMvcenterDatacenters',
+    'Get-PPDMvcenterMorefs'     
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -350,7 +352,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
-        2023-07-20 (v19.14.20.3)
+        2023-07-21 (v19.14.20.5)
+        - reverted headerResponse to use webrequest on POST/PUT/PATCH for PSH 5
+        - Updated vcenter api´s for Moref
         - added initial mfa and idp support 
         - fixes to pagination, streamlined -page and -pagesuze parameters
         - added default activity views for Protection, Asset and System Jobs

@@ -1032,7 +1032,7 @@ function Set-PPDMcertificates {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             default {
-                write-output $response.Headers.Date
+                write-host $response.Headers.Date
                 Write-Host "Certificates have been set. Refresh your Browser. You might restart nginx on the Appliance (systemclt restart nginx ) for changes to take place immediately"
             } 
         }   

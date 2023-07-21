@@ -492,7 +492,7 @@ function Remove-PPDMProtectionEngineProxy {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             default {
-                write-output $response.Headers.Date
+                write-host $response.Headers.Date
             } 
         }   
     }

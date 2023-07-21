@@ -334,7 +334,7 @@ function Start-PPDMprotection {
 
       switch ($PsCmdlet.ParameterSetName) {
         default {
-          write-output $response.Headers.Date
+          write-host $response.Headers.Date
         } 
       }   
     }
@@ -423,10 +423,10 @@ function Start-PPDMprotection_policies {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
-        write-output $response.Headers.Date
+        write-host $response.Headers.Date
       }
       default {
-        write-output $response.Headers.Date
+        write-host $response.Headers.Date
       } 
     }   
   }
@@ -477,7 +477,7 @@ function Remove-PPDMprotection_policies {
         write-output $response 
       }
       default {
-        write-output $response.Headers.Date
+        write-host $response.Headers.Date
       } 
     }   
   }

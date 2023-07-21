@@ -493,8 +493,79 @@ function Remove-PPDMinventory_sources {
 }
 
 
+<#
+.SYNOPSIS
+This gets the datacenter Morefs attached to an ESX Host
+.EXAMPLE
 
-function Get-PPDMvcenterDatastores {
+Get-PPDMinventory_sources -Type VCENTER -filter 'name lk "vcsa1%"' | Get-PPDMvcenterDatacenters
+
+size                : 1
+number              : 1
+totalPages          : 1
+totalElements       : 1
+maxPageableElements : 1
+
+
+
+
+name    moref
+----    -----
+home_dc Datacenter:datacenter-2
+Get-PPDMvcenterMorefs -ID 69c8ac3a-3eca-55f1-a2e0-347e63a90540 -DatacenterMoref Datacenter:datacenter-2
+
+id       : /home_cluster
+name     : home_cluster
+type     : ClusterComputeResource
+moref    : ClusterComputeResource:domain-c7
+children : {@{id=/home_cluster/e200-n1.home.labbuildr.com; name=e200-n1.home.labbuildr.com; type=HostSystem; moref=HostSystem:host-11893; children=System.Object[]; flags=System.Object[]; networks=System.Object[]},
+           @{id=/home_cluster/e200-n2.home.labbuildr.com; name=e200-n2.home.labbuildr.com; type=HostSystem; moref=HostSystem:host-1099088; children=System.Object[]; flags=System.Object[]; networks=System.Object[]},
+           @{id=/home_cluster/e200-n3.home.labbuildr.com; name=e200-n3.home.labbuildr.com; type=HostSystem; moref=HostSystem:host-11923; children=System.Object[]; flags=System.Object[]; networks=System.Object[]},
+           @{id=/home_cluster/e200-n4.home.labbuildr.com; name=e200-n4.home.labbuildr.com; type=HostSystem; moref=HostSystem:host-1114033; children=System.Object[]; flags=System.Object[]; networks=System.Object[]}…}
+flags    : {@{name=drsEnbled; value=true}}
+networks : {}
+Get-PPDMvcenterDatastores -id 69c8ac3a-3eca-55f1-a2e0-347e63a90540 -clusterMOREF HostSystem:host-11893
+
+name      : ISO
+capacity  : 2180614373376
+freeSpace : 738130546688
+moref     : Datastore:datastore-1122133
+type      : NFS
+
+name      : QNAP_LARGE
+capacity  : 8795824586752
+freeSpace : 6403246784512
+moref     : Datastore:datastore-1091023
+type      : VMFS
+
+name      : Quorum1
+capacity  : 5100273664
+freeSpace : 3586129920
+moref     : Datastore:datastore-1123021
+type      : VMFS
+
+name      : Quorum2
+capacity  : 5100273664
+freeSpace : 3591372800
+moref     : Datastore:datastore-1123022
+type      : VMFS
+
+name      : datastore1
+capacity  : 23622320128
+freeSpace : 11849957376
+moref     : Datastore:datastore-11895
+type      : VMFS
+
+name      : vsanDatastore
+capacity  : 8001583071232
+freeSpace : 5517655113812
+moref     : Datastore:datastore-544
+type      : vsan
+
+
+
+#>
+function Get-PPDMesxDatastores {
     [CmdletBinding()]
     param(
 
@@ -502,7 +573,7 @@ function Get-PPDMvcenterDatastores {
         $id,
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         # Moref Cluster ID , e.g. "ClusterComputeResource:domain-c1006, can be retived via '(Get-PPDMhosts -hosttype ESX_CLUSTER -filter 'name eq "<clustername>"').details.esxcluster.clusterMoref'
-        $clusterMOREF,        
+        $hostMOREF,        
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
     )
@@ -515,7 +586,7 @@ function Get-PPDMvcenterDatastores {
         switch ($PsCmdlet.ParameterSetName) {
 
             default {
-                $URI = "vcenter/$id/data-stores/$clusterMoref"
+                $URI = "vcenter/$id/data-stores/$hostMoref"
             }
         }        
         $Parameters = @{
@@ -547,3 +618,228 @@ function Get-PPDMvcenterDatastores {
         }   
     }
 }
+
+
+
+function Get-PPDMvcenterDatacenters {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $id,
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $filter,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
+    )
+
+    begin {
+        $Response = @()
+        $METHOD = "GET"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "/").ToLower()
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                $URI = "/vcenter/$id/datacenters"
+                $body = @{}  
+
+            }
+            default {
+                $URI = "/$myself"
+            }
+        }  
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
+        }   
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+        if ($type) {
+            if ($filter) {
+                $filter = 'type eq "' + $type + '" and ' + $filter 
+            }
+            else {
+                $filter = 'type eq "' + $type + '"'
+            }
+        }        
+        if ($filter) {
+            $parameters.Add('filter', $filter)
+        }       
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+
+            default {
+                write-output $response.datacenters
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
+            } 
+        }   
+    }
+}
+<#
+.SYNOPSIS
+This API Call gets Managed Object references from vCenters
+.EXAMPLE
+# Get your Vcenter
+Get-PPDMinventory_sources -Type VCENTER -filter 'name lk "vcsa1%"'
+PS C:\Users\Karsten_Bott\workspace\PPDM-pwsh> get-ppdminventory_sources -Type VCENTER -filter 'name lk "vcsa1%"' | Get-PPDMvcenterDatacenters
+
+size                : 1
+number              : 1
+totalPages          : 1
+totalElements       : 1
+maxPageableElements : 1
+
+
+
+
+name    moref
+----    -----
+home_dc Datacenter:datacenter-2
+
+
+Get-PPDMvcenterMorefs -ID 69c8ac3a-3eca-55f1-a2e0-347e63a90540 -DatacenterMoref Datacenter:datacenter-2
+
+id       : /home_cluster
+name     : home_cluster
+type     : ClusterComputeResource
+moref    : ClusterComputeResource:domain-c7
+children : {@{id=/home_cluster/e200-n1.home.labbuildr.com; name=e200-n1.home.labbuildr.com; type=HostSystem; moref=HostSystem:host-11893; children=System.Object[]; flags=System.Object[]; networks=System.Object[]},
+           @{id=/home_cluster/e200-n2.home.labbuildr.com; name=e200-n2.home.labbuildr.com; type=HostSystem; moref=HostSystem:host-1099088; children=System.Object[]; flags=System.Object[]; networks=System.Object[]},
+           @{id=/home_cluster/e200-n3.home.labbuildr.com; name=e200-n3.home.labbuildr.com; type=HostSystem; moref=HostSystem:host-11923; children=System.Object[]; flags=System.Object[]; networks=System.Object[]},
+           @{id=/home_cluster/e200-n4.home.labbuildr.com; name=e200-n4.home.labbuildr.com; type=HostSystem; moref=HostSystem:host-1114033; children=System.Object[]; flags=System.Object[]; networks=System.Object[]}…}
+flags    : {@{name=drsEnbled; value=true}}
+networks : {}
+
+id       : /esxi-mgmt.home.labbuildr.com
+name     : esxi-mgmt.home.labbuildr.com
+type     : HostSystem
+moref    : HostSystem:host-703
+children : {@{id=/esxi-mgmt.home.labbuildr.com/labbuildr; name=labbuildr; type=ResourcePool; moref=ResourcePool:resgroup-2023851; children=System.Object[]; flags=; networks=System.Object[]},
+           @{id=/esxi-mgmt.home.labbuildr.com/mgmt_pool; name=mgmt_pool; type=ResourcePool; moref=ResourcePool:resgroup-747; children=System.Object[]; flags=; networks=System.Object[]}}
+flags    : {@{name=NFS.MaxVolumes; value=32}, @{name=NFS41.MaxVolumes; value=32}}
+networks : {}
+# Get Morefs for a Host
+Get-PPDMvcenterMorefs -ID 69c8ac3a-3eca-55f1-a2e0-347e63a90540 -hostMoref HostSystem:host-11923
+
+#>
+function Get-PPDMvcenterMorefs {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, ParameterSetName = 'DataCenterMoref', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'HostMoref', ValueFromPipelineByPropertyName = $true)]
+        $id,
+        [Parameter(Mandatory = $true, ParameterSetName = 'DataCenterMoref', ValueFromPipelineByPropertyName = $true)]
+        $DatacenterMoref,  
+        [Parameter(Mandatory = $true, ParameterSetName = 'HostMoref', ValueFromPipelineByPropertyName = $true)]
+        $hostMoref,                 
+        [Parameter(Mandatory = $false, ParameterSetName = 'DataCenterMoref', ValueFromPipelineByPropertyName = $true)]
+        $filter,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
+    )
+
+    begin {
+        $Response = @()
+        $METHOD = "GET"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "/").ToLower()
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            'DatacenterMoref' {
+                $URI = "/vcenter/$id/managed-entities/$DatacenterMoref"
+ 
+
+            }
+            'HostMoref' {
+                $URI = "/vcenter/$id/managed-entities/$HostMoref"
+                $body.Add('self', "true") 
+
+            }
+        }  
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
+        }   
+        Write-Verbose ($body | out-string)
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+        if ($type) {
+            if ($filter) {
+                $filter = 'type eq "' + $type + '" and ' + $filter 
+            }
+            else {
+                $filter = 'type eq "' + $type + '"'
+            }
+        }        
+        if ($filter) {
+            $parameters.Add('filter', $filter)
+        }       
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+
+            default {
+                write-output $response.managedEntities
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
+            } 
+        }   
+    }
+}
+
