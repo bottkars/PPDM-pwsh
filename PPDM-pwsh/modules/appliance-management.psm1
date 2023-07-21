@@ -462,11 +462,11 @@ function Set-PPDMconfigurations {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
-        [ValidateCount(1,2)][ValidateScript( { $_ -match [IPAddress]$_ })]
+        [ValidateCount(1, 2)][ValidateScript( { $_ -match [IPAddress]$_ })]
         [string[]]$NTPservers,
         [String]$Timezone = 'Europe/Berlin - Central European Time',
         [Parameter(Mandatory = $true)]
- #       [ValidatePattern('^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{9,}$')]
+        #       [ValidatePattern('^(?=.*[A-Z].*[A-Z])(?=.*[!@#$&*])(?=.*[0-9].*[0-9])(?=.*[a-z].*[a-z].*[a-z]).{9,}$')]
         [securestring][alias('admin_password')]$Password,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
@@ -533,7 +533,7 @@ function Set-PPDMconfigurations {
         write-Host "Setting Timezone"
         $Configurations.timeZone = $Timezone
         $Configurations.ntpServers = $ntpservers 
-        write-verbose ($Configurations | convertto-json -depth 5| out-string) 
+        write-verbose ($Configurations | convertto-json -depth 5 | out-string) 
         $body = $configurations | convertto-json -depth 5 -compress 
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
@@ -655,11 +655,11 @@ function Remove-PPDMcomponents {
                 $URI = "/$myself/$id"
             }
         } 
-#        $body = @{
- #           operation = "start"
-#        } | convertto-json 
+        #        $body = @{
+        #           operation = "start"
+        #        } | convertto-json 
         $Parameters = @{
-#            body             = $body 
+            #            body             = $body 
             Uri              = $Uri
             Method           = $Method
             RequestMethod    = 'Rest'
@@ -745,17 +745,17 @@ function Get-PPDMsmtp {
 function New-PPDMsmtp {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true,  ParameterSetName = 'withoutuser', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $true,  ParameterSetName = 'withuser',  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'withoutuser', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'withuser', ValueFromPipelineByPropertyName = $true)]
         [string]$mailServer,
-        [Parameter(Mandatory = $true,  ParameterSetName = 'withoutuser', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $true,  ParameterSetName = 'withuser',  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'withoutuser', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'withuser', ValueFromPipelineByPropertyName = $true)]
         [string]$mailFrom,
-        [Parameter(Mandatory = $true,  ParameterSetName = 'withuser',  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'withuser', ValueFromPipelineByPropertyName = $true)]
         [string]$username,
-        [Parameter(Mandatory = $true,  ParameterSetName = 'withuser',  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'withuser', ValueFromPipelineByPropertyName = $true)]
         [securestring]$password,                            
-        [Parameter(Mandatory = $false,ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [int32]$port,        
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
@@ -774,17 +774,17 @@ function New-PPDMsmtp {
         }  
         $body = @{
             mailServer = $mailServer
-            mailFrom = $mailFrom
-            port= $port
+            mailFrom   = $mailFrom
+            port       = $port
 
         }
-        switch ($PsCmdlet.ParameterSetName){
+        switch ($PsCmdlet.ParameterSetName) {
             'withuser' {
-            $body.Add('username',$username)
-            $body.Add('password',[System.Runtime.InteropServices.Marshal]::PtrToStringBSTR([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($password)))
+                $body.Add('username', $username)
+                $body.Add('password', [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($password)))
             }
         }
-        $body=$body | ConvertTo-Json
+        $body = $body | ConvertTo-Json
         Write-Verbose ($body | Out-String)
         $Parameters = @{
             body             = $body 
@@ -820,20 +820,20 @@ function New-PPDMsmtp {
 function Set-PPDMsmtp {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true,  ParameterSetName = 'withoutuser', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $true,  ParameterSetName = 'withuser',  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'withoutuser', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'withuser', ValueFromPipelineByPropertyName = $true)]
         [string]$ID,        
-        [Parameter(Mandatory = $true,  ParameterSetName = 'withoutuser', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $true,  ParameterSetName = 'withuser',  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'withoutuser', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'withuser', ValueFromPipelineByPropertyName = $true)]
         [string]$mailServer,
-        [Parameter(Mandatory = $true,  ParameterSetName = 'withoutuser', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $true,  ParameterSetName = 'withuser',  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'withoutuser', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'withuser', ValueFromPipelineByPropertyName = $true)]
         [string]$mailFrom,
-        [Parameter(Mandatory = $true,  ParameterSetName = 'withuser',  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'withuser', ValueFromPipelineByPropertyName = $true)]
         [string]$username,
-        [Parameter(Mandatory = $true,  ParameterSetName = 'withuser',  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'withuser', ValueFromPipelineByPropertyName = $true)]
         [securestring]$password,                            
-        [Parameter(Mandatory = $false,ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [int32]$port,        
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
@@ -850,18 +850,18 @@ function Set-PPDMsmtp {
             }
         }  
         $body = @{
-            id = $ID
+            id         = $ID
             mailServer = $mailServer
-            mailFrom = $mailFrom
-            port= $port
+            mailFrom   = $mailFrom
+            port       = $port
         }
-        switch ($PsCmdlet.ParameterSetName){
+        switch ($PsCmdlet.ParameterSetName) {
             'withuser' {
-            $body.Add('username',$username)
-            $body.Add('password',[System.Runtime.InteropServices.Marshal]::PtrToStringBSTR([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($password)))
+                $body.Add('username', $username)
+                $body.Add('password', [System.Runtime.InteropServices.Marshal]::PtrToStringBSTR([System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($password)))
             }
         }
-        $body=$body | ConvertTo-Json
+        $body = $body | ConvertTo-Json
         Write-Verbose ($body | Out-String)
         $Parameters = @{
             body             = $body 
@@ -1008,17 +1008,16 @@ function Set-PPDMcertificates {
         $certificateChain_content = (Get-Content $certificateChainfile | Out-String )
 
         $body = @{
-            privateKey     = $privateKey_content
+            privateKey       = $privateKey_content
             certificateChain = $certificateChain_content
         } | convertto-json 
         $Parameters = @{
             body             = $body 
             Uri              = $Uri
             Method           = $Method
-            RequestMethod    = 'Rest'
+            RequestMethod    = 'WEB'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
-            # ResponseHeadersVariable = 'HeaderResponse'
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }      
         try {
@@ -1033,7 +1032,7 @@ function Set-PPDMcertificates {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             default {
-                # write-output $response.Date
+                write-output $response.Headers.Date
                 Write-Host "Certificates have been set. Refresh your Browser. You might restart nginx on the Appliance (systemclt restart nginx ) for changes to take place immediately"
             } 
         }   

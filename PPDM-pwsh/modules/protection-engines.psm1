@@ -8,10 +8,10 @@ function Get-PPDMprotection_engines {
     param(
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $id,
-        [Parameter(Mandatory = $false,  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('VPE')]
         $Type,
-        [Parameter(Mandatory = $false,  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $filter,         
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
@@ -40,16 +40,16 @@ function Get-PPDMprotection_engines {
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }
         if ($type) {
-            if ($filter){
-            $filter = 'type eq "' + $type + '" and ' + $filter 
+            if ($filter) {
+                $filter = 'type eq "' + $type + '" and ' + $filter 
             }
             else {
                 $filter = 'type eq "' + $type + '"'
             }
         }
         if ($filter) {
-         write-verbose ($filter | Out-String)
-        $parameters.Add('filter', $filter)
+            write-verbose ($filter | Out-String)
+            $parameters.Add('filter', $filter)
         }      
         try {
             $Response += Invoke-PPDMapirequest @Parameters
@@ -90,7 +90,7 @@ function Get-PPDMprotectionEngineProxies {
     [CmdletBinding()]
     [Alias('Get-PPDMProxy')]
     param(
-        [Parameter(Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         $VPE,        
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $id,
@@ -125,7 +125,7 @@ function Get-PPDMprotectionEngineProxies {
         }  
         if ($filter) {
             $parameters.Add('filter', $filter)
-          }            
+        }            
         try {
             $Response += Invoke-PPDMapirequest @Parameters
         }
@@ -164,7 +164,7 @@ function Disable-PPDMprotectionEngineProxy {
     [CmdletBinding()]
     [Alias('Disable-PPDMProxy')]
     param(
-        [Parameter(Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         $VPE,        
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         $id,
@@ -179,14 +179,12 @@ function Disable-PPDMprotectionEngineProxy {
     Process {
         write-verbose "Reading configuration"
         $configuration = (get-PPDMProtectionEngineProxies -VPE $vpe -id $id)
-        if ($configuration)
-            {
-                $configuration.config.Disabled = $true
-            }
-            else
-            {
-                write-Host "could not bread configuration for VPE $VPE Proxy $ID"
-            }
+        if ($configuration) {
+            $configuration.config.Disabled = $true
+        }
+        else {
+            write-Host "could not bread configuration for VPE $VPE Proxy $ID"
+        }
         switch ($PsCmdlet.ParameterSetName) {
 
             default {
@@ -320,11 +318,11 @@ function New-PPDMProtectionEngineProxy {
         $VPE,        
         [Parameter(Mandatory = $true, ParameterSetName = 'byHost', ValueFromPipelineByPropertyName = $true)]        
         [Parameter(Mandatory = $true, ParameterSetName = 'byCluster', ValueFromPipelineByPropertyName = $true)]  
-        [ValidateSet('Kubernetes','VM')]
+        [ValidateSet('Kubernetes', 'VM')]
         [string]$ProtectionType,
         [Parameter(Mandatory = $false, ParameterSetName = 'byHost', ValueFromPipelineByPropertyName = $true)]        
         [Parameter(Mandatory = $false, ParameterSetName = 'byCluster', ValueFromPipelineByPropertyName = $true)]  
-        [ValidateSet('HotaddPreferred','HotaddOnly','NbdOnly')]
+        [ValidateSet('HotaddPreferred', 'HotaddOnly', 'NbdOnly')]
         [string]$TransportMode = 'HotaddPreferred',
         [Parameter(Mandatory = $true, ParameterSetName = 'byHost', ValueFromPipelineByPropertyName = $true)]        
         [Parameter(Mandatory = $true, ParameterSetName = 'byCluster', ValueFromPipelineByPropertyName = $true)]  
@@ -374,38 +372,38 @@ function New-PPDMProtectionEngineProxy {
 
         $body = [ordered]@{
             Config = [ordered]@{
-                ProxyType = 'External' 
-                Port = 9090
-                DeployProxy = $true
-                AdvancedOptions = [ordered]@{
+                ProxyType                = 'External' 
+                Port                     = 9090
+                DeployProxy              = $true
+                AdvancedOptions          = [ordered]@{
                     TransportSessions = [ordered]@{
-                        Mode = $TransportMode
+                        Mode        = $TransportMode
                         UserDefined = $true
                     }
                 }
                 SupportedProtectionTypes = @(
                     $ProtectionType
                 )    
-                ProxyDeploymentConfig = [ordered]@{
-                    Location =[ordered] @{
-                        HostMoref = $HostMoref -replace 'HostSystem:'
-                        ClusterMoref =  $ClusterMoref -replace 'ClusterComputeResource:'
+                ProxyDeploymentConfig    = [ordered]@{
+                    Location   = [ordered] @{
+                        HostMoref      = $HostMoref -replace 'HostSystem:'
+                        ClusterMoref   = $ClusterMoref -replace 'ClusterComputeResource:'
                         DatastoreMoref = $DatastoreMoref -replace 'Datastore:'
-                        NetworkMoref = $NetworkMoref
+                        NetworkMoref   = $NetworkMoref
                     }
-                    Fqdn = $fqdn
-                    IpAddress = $IPAddress.IPAddressToString
-                    NetMask = $NetMask.IPAddressToString
-                    Gateway = $Gateway.IPAddressToString
+                    Fqdn       = $fqdn
+                    IpAddress  = $IPAddress.IPAddressToString
+                    NetMask    = $NetMask.IPAddressToString
+                    Gateway    = $Gateway.IPAddressToString
                     PrimaryDns = $PrimaryDns.IPAddressToString
-                    Dns = $PrimaryDns.IPAddressToString
+                    Dns        = $PrimaryDns.IPAddressToString
                     IPProtocol = 'IPv4'
                 }    
-                VimServerRef = @{
-                    Type = 'ObjectId'
+                VimServerRef             = @{
+                    Type     = 'ObjectId'
                     ObjectID = $vCenterID
                 }
-                HostName = $fqdn
+                HostName                 = $fqdn
             }
         } | convertto-json -depth 4
         Write-Verbose ($body | Out-String)  
@@ -455,47 +453,47 @@ function Remove-PPDMProtectionEngineProxy {
     [CmdletBinding()]
     [Alias('Remove-PPDMProxy')]
     param(
-      $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-      $apiver = "/api/v2",
-      [Parameter(Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
-      $VPE,       
-      [Parameter(Mandatory = $true,ValueFromPipelineByPropertyName = $true)]
-      $id
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2",
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        $VPE,       
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        $id
     )
     begin {
-      $Response = @()
-      $METHOD = "DELETE"
-      $Myself = "protection-engines"
-      # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+        $Response = @()
+        $METHOD = "DELETE"
+        $Myself = "protection-engines"
+        # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
    
     }     
     Process {
   
-      $URI = "/$myself/$vpe/proxies/$id"
-      $Parameters = @{
-        #            body             = $body 
-        Uri                     = $Uri
-        Method                  = $Method
-        RequestMethod           = 'Rest'
-        PPDM_API_BaseUri        = $PPDM_API_BaseUri
-        apiver                  = $apiver
-        Verbose                 = $PSBoundParameters['Verbose'] -eq $true
-        # ResponseHeadersVariable = 'HeaderResponse'
-      }      
-      try {
-        $Response += Invoke-PPDMapirequest @Parameters      
-      }
-      catch {
-        Get-PPDMWebException  -ExceptionMessage $_
-        break
-      }
-      write-verbose ($response | Out-String)
+        $URI = "/$myself/$vpe/proxies/$id"
+        $Parameters = @{
+            #            body             = $body 
+            Uri              = $Uri
+            Method           = $Method
+            RequestMethod    = 'Web'
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+            # ResponseHeadersVariable = 'HeaderResponse'
+        }      
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters      
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
     } 
     end {    
-      switch ($PsCmdlet.ParameterSetName) {
-        default {
-          # write-output $response.Date
-        } 
-      }   
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                write-output $response.Headers.Date
+            } 
+        }   
     }
-  }
+}

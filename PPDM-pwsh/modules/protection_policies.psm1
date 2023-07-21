@@ -157,7 +157,7 @@ function Get-PPDMprotection_policies {
     [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-   [hashtable]$body = @{pageSize = 200 }   
+    [hashtable]$body = @{pageSize = 200 }   
   )
   begin {
     $Response = @()
@@ -308,13 +308,13 @@ function Start-PPDMprotection {
     write-verbose ($body | out-string)
     Write-Verbose $PolicyID
     $Parameters = @{
-      RequestMethod           = 'Rest'
-      body                    = $body 
-      Uri                     = "protection-policies/$PolicyID/protections"
-      Method                  = $Method
-      PPDM_API_BaseUri        = $PPDM_API_BaseUri
-      apiver                  = $apiver
-      Verbose                 = $PSBoundParameters['Verbose'] -eq $true
+      RequestMethod    = 'WEB'
+      body             = $body 
+      Uri              = "protection-policies/$PolicyID/protections"
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
       # ResponseHeadersVariable = 'HeaderResponse'
     }
     Write-Verbose ($Parameters | Out-String)
@@ -334,7 +334,7 @@ function Start-PPDMprotection {
 
       switch ($PsCmdlet.ParameterSetName) {
         default {
-          # write-output $response.Date
+          write-output $response.Headers.Date
         } 
       }   
     }
@@ -401,13 +401,13 @@ function Start-PPDMprotection_policies {
     } | convertto-json -compress
     write-verbose ($body | out-string)
     $Parameters = @{
-      body                    = $body 
-      Uri                     = $URI
-      Method                  = $Method
-      PPDM_API_BaseUri        = $PPDM_API_BaseUri
-      apiver                  = $apiver
-      RequestMethod           = "REST"
-      Verbose                 = $PSBoundParameters['Verbose'] -eq $true
+      body             = $body 
+      Uri              = $URI
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      RequestMethod    = "WEB"
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
       # ResponseHeadersVariable = 'HeaderResponse'
 
     }           
@@ -423,10 +423,10 @@ function Start-PPDMprotection_policies {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
-        # write-output $response.Date
+        write-output $response.Headers.Date
       }
       default {
-        # write-output $response.Date
+        write-output $response.Headers.Date
       } 
     }   
   }
@@ -454,12 +454,12 @@ function Remove-PPDMprotection_policies {
     $URI = "/$myself/$id"
     $Parameters = @{
       #            body             = $body 
-      Uri                     = $Uri
-      Method                  = $Method
-      RequestMethod           = 'Rest'
-      PPDM_API_BaseUri        = $PPDM_API_BaseUri
-      apiver                  = $apiver
-      Verbose                 = $PSBoundParameters['Verbose'] -eq $true
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'WEB'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
       # ResponseHeadersVariable = 'HeaderResponse'
     }      
     try {
@@ -477,7 +477,7 @@ function Remove-PPDMprotection_policies {
         write-output $response 
       }
       default {
-        # write-output $response.Date
+        write-output $response.Headers.Date
       } 
     }   
   }

@@ -853,7 +853,7 @@ function Set-PPDMapp_hosts {
         $body = $body | ConvertTo-Json
         write-verbose ($body | out-string)
         $Parameters = @{
-            RequestMethod           = 'REST'
+            RequestMethod           = 'WEB'
             body                    = $body
             Uri                     = $URI
             Method                  = $Method
@@ -876,7 +876,7 @@ function Set-PPDMapp_hosts {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             default {
-                write-output ($response.Date)
+                write-output $response.Headers.Date
             } 
         }   
     }

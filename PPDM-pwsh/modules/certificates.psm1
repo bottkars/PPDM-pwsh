@@ -51,11 +51,11 @@ function Get-PPDMcertificates {
         [Parameter(Mandatory = $true, ParameterSetName = 'byHOST', ValueFromPipelineByPropertyName = $true)]
         [string]$newhost,
         [Parameter(Mandatory = $false, ParameterSetName = 'byHOST', ValueFromPipelineByPropertyName = $true)]
-        [string]$Port=443,        
+        [string]$Port = 443,        
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         [switch]$list,
         [Parameter(Mandatory = $true, ParameterSetName = 'Type', ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('agent','root','external','internal' )][string]$type,
+        [ValidateSet('agent', 'root', 'external', 'internal' )][string]$type,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
 
@@ -72,11 +72,11 @@ function Get-PPDMcertificates {
                 $URI = "/$myself/$ID"
             }
             'byHost' {
-                    $URI = "/$($myself)?host=$newhost&port=$port&type=Host"
-                }
+                $URI = "/$($myself)?host=$newhost&port=$port&type=Host"
+            }
             'TYPE' {
-                    $URI = "/$($myself)/$type"
-                }                             
+                $URI = "/$($myself)/$type"
+            }                             
             default {
                 $URI = "/$myself"
             }
@@ -137,7 +137,7 @@ function Update-PPDMcertificates {
 
             default {
                 $URI = "/$myself/$($Certificate.id)"
-                $body=$Certificate | ConvertTo-Json
+                $body = $Certificate | ConvertTo-Json
             }
         }  
         $Parameters = @{
@@ -191,8 +191,8 @@ function Approve-PPDMcertificates {
 
             default {
                 $URI = "/$myself/$($Certificate.id)"
-                $Certificate.state="ACCEPTED"
-                $body=$Certificate | ConvertTo-Json
+                $Certificate.state = "ACCEPTED"
+                $body = $Certificate | ConvertTo-Json
                 Write-Verbose ($body | Out-String)
             }
         }  
@@ -248,7 +248,7 @@ function Remove-PPDMcertificates {
             body             = $body 
             Uri              = $Uri
             Method           = $Method
-            RequestMethod    = 'Rest'
+            RequestMethod    = 'WEB'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
             apiport          = 8443 
@@ -268,7 +268,7 @@ function Remove-PPDMcertificates {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             default {
-                # write-output $response.Date
+                write-output $response.Headers.Date
             } 
         }   
     }
@@ -308,7 +308,7 @@ function Add-PPDMcertificates {
         [Alias('Cetificate')][string]$CertificateChain,
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [string]$fqdn,
-        [Parameter(Mandatory = $true,  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [string]$Port,        
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('ROOT')]$type,
@@ -330,10 +330,10 @@ function Add-PPDMcertificates {
             }
 
         } 
-            $body = @{
-            host = $fqdn
-            port = $port
-            type = $type
+        $body = @{
+            host             = $fqdn
+            port             = $port
+            type             = $type
             certificateChain = $CertificateChain
         }  | ConvertTo-Json  
         write-verbose ($body | Out-String)

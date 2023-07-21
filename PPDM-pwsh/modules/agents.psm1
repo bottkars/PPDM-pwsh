@@ -232,14 +232,13 @@ function Remove-PPDMagents_update_sessions {
 
         }   
         $Parameters = @{
-            RequestMethod           = 'REST'
-            body                    = $body
-            Uri                     = $URI
-            Method                  = $Method
-            PPDM_API_BaseUri        = $PPDM_API_BaseUri
-            apiver                  = $apiver
-            Verbose                 = $PSBoundParameters['Verbose'] -eq $true
-            # ResponseHeadersVariable = 'HeaderResponse'
+            RequestMethod    = 'WEB'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
 
         }
    
@@ -254,12 +253,10 @@ function Remove-PPDMagents_update_sessions {
     } 
     end {    
         switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                # write-output $response.Date 
-            }
             default {
-                write-output $response.content
-            } 
+                write-output $response.Headers.Date
+            }
+
         }   
     }
 }

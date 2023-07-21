@@ -185,11 +185,11 @@ function Update-PPDMToken {
     process {
         $Parameters = @{
             UseBasicParsing = $true 
-            body    = $body 
-            Headers = $($Global:PPDM_API_Headers)
+            body            = $body 
+            Headers         = $($Global:PPDM_API_Headers)
             Uri             = "$($Global:PPDM_API_BaseUri):$($Global:PPDM_API_PORT)$apiver/token"
-            Method  = $Method
-            Verbose = $PSBoundParameters['Verbose'] -eq $true
+            Method          = $Method
+            Verbose         = $PSBoundParameters['Verbose'] -eq $true
             ContentType     = "application/json"
         }
         if ($Global:SkipCertificateCheck) {
@@ -317,12 +317,12 @@ function Invoke-PPDMapirequest {
                     Write-Verbose ($Query | Out-String)
                 }
                 if ($filter) {
-                   # $filterstring = [System.Web.HTTPUtility]::UrlEncode($filter)
-                   # $filterstring = "filter=$filterstring"
-                     write-verbose ($filter | Out-String)
-                    $body.add('filter',$Filter) 
-                   # $uri = "$($uri)?$filterstring"
-                   # Write-Verbose $uri
+                    # $filterstring = [System.Web.HTTPUtility]::UrlEncode($filter)
+                    # $filterstring = "filter=$filterstring"
+                    write-verbose ($filter | Out-String)
+                    $body.add('filter', $Filter) 
+                    # $uri = "$($uri)?$filterstring"
+                    # Write-Verbose $uri
                 }
                 if ($ResponseHeadersVariable) {
                     $Parameters.Add('ResponseHeadersVariable', 'HeadersResponse')
@@ -336,17 +336,18 @@ function Invoke-PPDMapirequest {
         Write-Verbose ( $Parameters | Out-String )    
         do {
             $has_error = 0    
+            Write-Verbose $RequestMethod
             try {
                 switch ($RequestMethod) {
                     'Web' {
-                        $Result = Invoke-WebRequest @Parameters
+                        $Result = Invoke-WebRequest @Parameters #| ConvertFrom-Json -Depth 7
                     }
                     'Rest' {
                     
                         $Result = Invoke-RestMethod @Parameters
                     }
                     default {
-                        $Result = Invoke-WebRequest @Parameters
+                        $Result = Invoke-WebRequest @Parameters # | ConvertFrom-Json -Depth 7
                     }
                 }
             }
@@ -372,6 +373,7 @@ function Invoke-PPDMapirequest {
     if ($ResponseHeadersVariable) {
         Write-Output $HeadersResponse 
     }
+    
     Write-Output $Result
 }
 

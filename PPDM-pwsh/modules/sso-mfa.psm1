@@ -188,13 +188,13 @@ function Remove-PPDMmfa_securids {
             }
         }  
         $Parameters = @{
-            RequestMethod           = 'REST'
-            body                    = $body
-            Uri                     = $URI
-            Method                  = $Method
-            PPDM_API_BaseUri        = $PPDM_API_BaseUri
-            apiver                  = $apiver
-            Verbose                 = $PSBoundParameters['Verbose'] -eq $true
+            RequestMethod    = 'Web'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
             # ResponseHeadersVariable = 'HeaderResponse'
 
         }
@@ -210,8 +210,8 @@ function Remove-PPDMmfa_securids {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             default {
-                if ($response.date) {
-                    # write-host $response.Date
+                if ($response.Headers.Date) {
+                    write-host $response.Headers.Date
                 }
             } 
         }   
@@ -244,7 +244,7 @@ function Set-PPDMmfa_securids {
                 $URI = "/$myself/$id"
             }
         } 
-        $body= @{} 
+        $body = @{} 
         $body.add('is_enabled', $is_enabled.IsPresent) 
         if ($is_enabled.IsPresent) {
             $SecurePassword = Read-Host -Prompt "Please enter MFA PassCode" -AsSecureString
@@ -255,13 +255,13 @@ function Set-PPDMmfa_securids {
         $body = $body | ConvertTo-Json 
         Write-Verbose ($body | Out-String)
         $Parameters = @{
-            RequestMethod           = 'REST'
-            body                    = $body
-            Uri                     = $URI
-            Method                  = $Method
-            PPDM_API_BaseUri        = $PPDM_API_BaseUri
-            apiver                  = $apiver
-            Verbose                 = $PSBoundParameters['Verbose'] -eq $true
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
 
         }
         try {
@@ -277,7 +277,7 @@ function Set-PPDMmfa_securids {
         switch ($PsCmdlet.ParameterSetName) {
             default {
 
-                    Write-Output $response
+                Write-Output $response
             } 
         }   
     }
@@ -315,22 +315,22 @@ function Set-PPDMmfa_bypass_accounts {
                 $URI = "/$myself/$id"
             }
         } 
-        $body= @{} 
+        $body = @{} 
         $body.add('subject', $accountname) 
-        $body.Add('identityProvider',@{})
-        $body.identityProvider.Add('locator',$locator)
-        $body.identityProvider.Add('selector',$selector)
-        $body.identityProvider.Add('serviceMarker',$serviceMarker)        
+        $body.Add('identityProvider', @{})
+        $body.identityProvider.Add('locator', $locator)
+        $body.identityProvider.Add('selector', $selector)
+        $body.identityProvider.Add('serviceMarker', $serviceMarker)        
         $body = $body | ConvertTo-Json 
         Write-Verbose ($body | Out-String)
         $Parameters = @{
-            RequestMethod           = 'REST'
-            body                    = $body
-            Uri                     = $URI
-            Method                  = $Method
-            PPDM_API_BaseUri        = $PPDM_API_BaseUri
-            apiver                  = $apiver
-            Verbose                 = $PSBoundParameters['Verbose'] -eq $true
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
 
         }
         try {
@@ -346,7 +346,7 @@ function Set-PPDMmfa_bypass_accounts {
         switch ($PsCmdlet.ParameterSetName) {
             default {
 
-                    Write-Output $response
+                Write-Output $response
             } 
         }   
     }
@@ -466,13 +466,13 @@ function Remove-PPDMmfa_bypass_accounts {
             }
         }  
         $Parameters = @{
-            RequestMethod           = 'REST'
-            body                    = $body
-            Uri                     = $URI
-            Method                  = $Method
-            PPDM_API_BaseUri        = $PPDM_API_BaseUri
-            apiver                  = $apiver
-            Verbose                 = $PSBoundParameters['Verbose'] -eq $true
+            RequestMethod    = 'Web'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
             # ResponseHeadersVariable = 'HeaderResponse'
 
         }
@@ -488,8 +488,8 @@ function Remove-PPDMmfa_bypass_accounts {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             default {
-                if ($response.date) {
-                    # write-host $response.Date
+                if ($response.Headers.date) {
+                    write-host $response.Headers.Date
                 }
             } 
         }   

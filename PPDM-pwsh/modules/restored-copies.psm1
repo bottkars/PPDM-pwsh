@@ -675,13 +675,13 @@ function Restore-PPDMK8Scopies {
     $body = $body | convertto-json -Depth 5
     write-verbose ($body | out-string)
     $Parameters = @{
-      RequestMethod           = 'Rest'
-      body                    = $body 
-      Uri                     = "/restored-copies/"
-      Method                  = $Method
-      PPDM_API_BaseUri        = $PPDM_API_BaseUri
-      apiver                  = $apiver
-      Verbose                 = $PSBoundParameters['Verbose'] -eq $true
+      RequestMethod    = 'Web'
+      body             = $body 
+      Uri              = "/restored-copies/"
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
       # ResponseHeadersVariable = 'HeaderResponse'
     }
     Write-Verbose ($Parameters | Out-String)
@@ -701,7 +701,7 @@ function Restore-PPDMK8Scopies {
   
       switch ($PsCmdlet.ParameterSetName) {
         default {
-          # write-output $response.Date
+          write-output $response.Headers.Date
         } 
       }   
     }
@@ -810,13 +810,13 @@ function Restore-PPDMVMcopies {
     $body = $body | convertto-json -Depth 5
     write-verbose ($body | out-string)
     $Parameters = @{
-      RequestMethod           = 'Rest'
-      body                    = $body 
-      Uri                     = "/restored-copies/"
-      Method                  = $Method
-      PPDM_API_BaseUri        = $PPDM_API_BaseUri
-      apiver                  = $apiver
-      Verbose                 = $PSBoundParameters['Verbose'] -eq $true
+      RequestMethod    = 'Web'
+      body             = $body 
+      Uri              = "/restored-copies/"
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
       # ResponseHeadersVariable = 'HeaderResponse'
     }
     Write-Verbose ($Parameters | Out-String)
@@ -836,7 +836,7 @@ function Restore-PPDMVMcopies {
 
       switch ($PsCmdlet.ParameterSetName) {
         default {
-          # write-output $response.Date
+          write-output $response.Headers.Date
         } 
       }   
     }

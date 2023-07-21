@@ -499,13 +499,13 @@ function Remove-PPDMdatadomain_storage_units {
       }
     }  
     $Parameters = @{
-      body                    = $body 
-      Uri                     = $Uri
-      Method                  = $Method
-      RequestMethod           = 'Rest'
-      PPDM_API_BaseUri        = $PPDM_API_BaseUri
-      apiver                  = $apiver
-      Verbose                 = $PSBoundParameters['Verbose'] -eq $true
+      body             = $body 
+      Uri              = $Uri
+      Method           = $Method
+      RequestMethod    = 'Web'
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
       # ResponseHeadersVariable = 'HeaderResponse'
     }      
     try {
@@ -520,10 +520,10 @@ function Remove-PPDMdatadomain_storage_units {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
-        # write-output $response.Date 
+        write-output $response.Headers.Date 
       }
       default {
-        # write-output $response.Date
+        write-output $response.Headers.Date
       } 
     }   
   }
