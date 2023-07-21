@@ -214,6 +214,7 @@ function Start-PPDMdiscoveries {
         } 
         Write-Verbose ($Body | Out-String)
         $Parameters = @{
+            RequestMethod    = 'REST'
             body             = $body 
             Uri              = $Uri
             Method           = $Method
@@ -233,10 +234,10 @@ function Start-PPDMdiscoveries {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response | convertfrom-json
+                write-output $response 
             }
             default {
-                write-output ($response.content | convertfrom-json)
+                write-output $response.content 
             } 
         }   
     }
