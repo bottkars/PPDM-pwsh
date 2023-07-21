@@ -233,11 +233,8 @@ function Start-PPDMdiscoveries {
     } 
     end {    
         switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response 
-            }
             default {
-                write-output $response.content 
+                write-output $response
             } 
         }   
     }

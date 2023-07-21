@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.6'
+ModuleVersion = '19.14.20.7'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -352,6 +352,8 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
+        2023-07-21 (v19.14.20.7)
+        - fixed output bug
         2023-07-21 (v19.14.20.5)
         - reverted headerResponse to use webrequest on POST/PUT/PATCH for PSH 5
         - Updated vcenter api´s for Moref
