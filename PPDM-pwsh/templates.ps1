@@ -1,19 +1,18 @@
 function Get-PPDMxxxNoID {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $id,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $filter,
-        [ValidateSet()]
-        [Alias('AssetType')][string]$type,
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+ #       [ValidateSet()]
+ #       [Alias('AssetType')][string]$type,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         $pageSize, 
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         $page, 
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         [hashtable]$body = @{orderby = 'createdAt DESC' },
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
@@ -24,7 +23,7 @@ function Get-PPDMxxxNoID {
     begin {
         $Response = @()
         $METHOD = "GET"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "/").ToLower()
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
    
     }     
     Process {
@@ -88,3 +87,15 @@ function Get-PPDMxxxNoID {
     }
 }
 
+# old search invoke-ppdmapirequest -
+
+
+      #       [ValidateSet()]
+      #       [Alias('AssetType')][string]$type,
+      # [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+
+
+
+       [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+       [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+       $id,

@@ -216,9 +216,19 @@ function Set-PPDMinventory_sources {
                 $URI = "/$myself/$id"
             }
         }   
-        $body = $configobject | ConvertTo-json -Depth 7     
+        $body = $configobject | ConvertTo-json -Depth 7
+        $Parameters = @{
+            body             = $body 
+            Uri              = $Uri
+            Method           = $Method
+            RequestMethod    = 'REST'
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            ContentType      = "application/json"
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }      
         try {
-            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body"
+            $Response += Invoke-PPDMapirequest @Parameters
         }
         catch {
             Get-PPDMWebException  -ExceptionMessage $_

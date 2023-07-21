@@ -215,9 +215,20 @@ function Remove-PPDMcopies {
                 $URI = "/$myself/$id"
                 $body= @{removeConfigurationOnly = "true" }  
             }
-        }        
+        }     
+        
+        $Parameters = @{
+            body             = $body 
+            Uri              = $Uri
+            Method           = $Method
+            RequestMethod    = 'Rest'
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            ContentType      = "application/json"
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        } 
         try {
-            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body" -Verbose:($PSBoundParameters['Verbose'] -eq $true)
+            $Response += Invoke-PPDMapirequest @Parameters
         }
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
@@ -228,10 +239,10 @@ function Remove-PPDMcopies {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                write-output $response | convertfrom-json
+                write-output $response
             }
             default {
-                write-output ($response | convertfrom-json).content
+                write-output $response
             } 
         }   
     }

@@ -5,10 +5,25 @@
 function Get-PPDMdiscoveries {
     [CmdletBinding()]
     param(
-    #    discoveries by id not yet in api
-    #    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    #    $id,        
+        #    discoveries by id not yet in api
+        #    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        #    $id,        
+        # [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        # $id,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        # [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        $filter,
+        #       [ValidateSet()]
+        #       [Alias('AssetType')][string]$type,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $apiver = "/api/v2"
     )
     begin {
@@ -19,26 +34,43 @@ function Get-PPDMdiscoveries {
     }     
     Process {
         switch ($PsCmdlet.ParameterSetName) {
-                'byID' {
-                    $URI = "/$myself/$id"
-                }
+            'byID' {
+                $URI = "/$myself/$id"
+                $body = @{}  
+
+            }
             default {
                 $URI = "/$myself"
             }
+        }  
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
         }
+        if ($page) {
+            $body.add('page', $page)
+        }   
         $Parameters = @{
-            body             = $body 
-            Uri              = $Uri
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
             Method           = $Method
-            RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+        if ($type) {
+            if ($filter) {
+                $filter = 'type eq "' + $type + '" and ' + $filter 
+            }
+            else {
+                $filter = 'type eq "' + $type + '"'
+            }
         }        
+        if ($filter) {
+            $parameters.Add('filter', $filter)
+        }       
         try {
-   
-            $Response += Invoke-PPDMapirequest @Parameters 
- #           $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body" -apiver $apiver -PPDM_API_BaseUri $PPDM_API_BaseUri
+            $Response += Invoke-PPDMapirequest @Parameters
         }
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
@@ -48,11 +80,14 @@ function Get-PPDMdiscoveries {
     } 
     end {    
         switch ($PsCmdlet.ParameterSetName) {
-           #'byID' {
-           #     write-output $response | convertfrom-json
-           # }
+            'byID' {
+                write-output $response 
+            }
             default {
                 write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
             } 
         }   
     }
@@ -68,15 +103,15 @@ function Set-PPDMdiscoveries {
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('HOURLY', 'DAILY', 'MINUTES')]
         $type,
-        [Parameter(Mandatory = $false,  ValueFromPipelineByPropertyName = $true)]
-        [ValidateRange(0,23)][int]$startHour,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
-        [ValidateRange(0,60)][int]$startMinute, 
+        [ValidateRange(0, 23)][int]$startHour,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
-        [ValidateRange(0,23)][int]$hourlyFrequency, 
-        [Parameter(Mandatory = $false,  ValueFromPipelineByPropertyName = $true)]
-        [ValidateRange(0,60)][int]$minutesFrequency,
-        [Parameter(Mandatory = $false,  ValueFromPipelineByPropertyName = $true)]
+        [ValidateRange(0, 60)][int]$startMinute, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [ValidateRange(0, 23)][int]$hourlyFrequency, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [ValidateRange(0, 60)][int]$minutesFrequency,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [switch]$Enabled,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
@@ -89,22 +124,22 @@ function Set-PPDMdiscoveries {
     }     
     Process {
         switch ($PsCmdlet.ParameterSetName) {
-                default {
-                    $URI = "/$myself/$id"
-                }
+            default {
+                $URI = "/$myself/$id"
+            }
         }
-        $discovery = Get-PPDMdiscoveries| Where-Object { $_.id -match "$id" }
+        $discovery = Get-PPDMdiscoveries | Where-Object { $_.id -match "$id" }
 
         $body = [ordered]@{
-            id = $ID
-            start = $discovery.start
-            level = $discovery.level
+            id       = $ID
+            start    = $discovery.start
+            level    = $discovery.level
             schedule = [ordered]@{
-                enabled = $Enabled.IsPresent.ToString().ToLower()
-                type = $TYPE
-                startHour = $startHour
-                startMinute = $startMinute
-                hourlyFrequency = $hourlyFrequency
+                enabled          = $Enabled.IsPresent.ToString().ToLower()
+                type             = $TYPE
+                startHour        = $startHour
+                startMinute      = $startMinute
+                hourlyFrequency  = $hourlyFrequency
                 minutesFrequency = $minutesFrequency
             }
         }   | convertto-json      
@@ -120,8 +155,7 @@ function Set-PPDMdiscoveries {
         }        
         try {
    
-                $Response += Invoke-PPDMapirequest @Parameters 
- #           $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body" -apiver $apiver -PPDM_API_BaseUri $PPDM_API_BaseUri
+            $Response += Invoke-PPDMapirequest @Parameters 
         }
         catch {
             Get-PPDMWebException  -ExceptionMessage $_

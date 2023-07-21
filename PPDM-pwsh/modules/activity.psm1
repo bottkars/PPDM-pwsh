@@ -156,7 +156,7 @@ function Get-PPDMactivities {
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
         $days = 1,
         [Parameter(Mandatory = $TRUE, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('PROTECTION_JOBS','ASSET_JOBS','SYSTEM_JOBS','RUNNING', 'QUEUED', 'PROTECT_OK', 'PROTECT_FAILED', 'SYSTEM_FAILED', 'SYSTEM_OK', 'CLOUD_PROTECT_OK', 'CLOUD_PROTECT_FAILED')]
+        [ValidateSet('PROTECTION_JOBS', 'ASSET_JOBS', 'SYSTEM_JOBS', 'RUNNING', 'QUEUED', 'PROTECT_OK', 'PROTECT_FAILED', 'SYSTEM_FAILED', 'SYSTEM_OK', 'CLOUD_PROTECT_OK', 'CLOUD_PROTECT_FAILED')]
         $PredefinedFilter,  
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [alias('taskid', 'id')]$activityId,
@@ -380,11 +380,23 @@ function Get-PPDMactivity_metrics {
     [CmdletBinding(ConfirmImpact = 'Low',
         HelpUri = 'https://developer.dellemc.com/data-protection/powerprotect/data-manager/api/monitoring/getallactivitymetrics')]
     param(
-        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [switch]$states,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $filter,
+        #       [ValidateSet()]
+        #       [Alias('AssetType')][string]$type,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2",
-        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-        $days = "1"
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
+
     )
     begin {
         $Response = @()
@@ -393,17 +405,44 @@ function Get-PPDMactivity_metrics {
    
     }     
     Process {
-        $myDate = (get-date).AddDays(-$days)
-        $timespan = get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
-        $filter = 'parentId eq null and classType in ("JOB", "JOB_GROUP") and createTime gt "' + $timespan + '" and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT")'
-        $filter = [System.Web.HTTPUtility]::UrlEncode($filter) 
-        switch ($PsCmdlet.ParameterSetName) {
+        switch ($PsCmdlet.ParameterSetName) { 
+            'byID' {
+                $URI = "/$myself/$id"
+                $body = @{}  
+
+            }
             default {
-                $URI = "/$($myself)?filter=$filter"
+                $URI = "/$myself"
+            }
+        }  
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
+        }   
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+        if ($type) {
+            if ($filter) {
+                $filter = 'type eq "' + $type + '" and ' + $filter 
+            }
+            else {
+                $filter = 'type eq "' + $type + '"'
             }
         }        
+        if ($filter) {
+            $parameters.Add('filter', $filter)
+        }
         try {
-            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD  -apiver $apiver -PPDM_API_BaseUri $PPDM_API_BaseUri -Verbose:($PSBoundParameters['Verbose'] -eq $true)
+            $Response += Invoke-PPDMapirequest @Parameters
         }
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
@@ -413,11 +452,13 @@ function Get-PPDMactivity_metrics {
     } 
     end {    
         switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response | convertfrom-json
-            }
             default {
-                write-output ($response | convertfrom-json).aggregation
+                if ($States.IsPresent) {
+                   write-output $response.statusesAndStates 
+                }
+                else {
+                    $response.aggregation
+                }
             } 
         }   
     }

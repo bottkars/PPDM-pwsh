@@ -1,12 +1,20 @@
+
 function Get-PPDMprotection_details {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $id,
-        [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [switch]$asset_assignments,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $filter,
+        #       [ValidateSet()]
+        #       [Alias('AssetType')][string]$type,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $apiver = "/api/v2"
     )
     begin {
@@ -18,17 +26,44 @@ function Get-PPDMprotection_details {
     Process {
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                $URI = "/$myself/$id"
-                if ($asset_assignments.IsPresent) {
-                    $URI = "$URI/asset-assignments"
-                }    
-            }
+
+                    $URI = "/$myself/$id"
+                    $body = @{}    
+                }   
+                 
+
             default {
                 $URI = "/$myself"
             }
+        }  
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
+        }   
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+        if ($type) {
+            if ($filter) {
+                $filter = 'type eq "' + $type + '" and ' + $filter 
+            }
+            else {
+                $filter = 'type eq "' + $type + '"'
+            }
         }        
+        if ($filter) {
+            $parameters.Add('filter', $filter)
+        }       
         try {
-            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body" -apiver $apiver -PPDM_API_BaseUri $PPDM_API_BaseUri
+            $Response += Invoke-PPDMapirequest @Parameters
         }
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
@@ -39,19 +74,20 @@ function Get-PPDMprotection_details {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                if ( $asset_assignments.IsPresent ) {
-                    write-output ($response | convertfrom-json).content
-                }
-                else {
-                    write-output $response | convertfrom-json
-                }            
+                write-output $response 
             }
             default {
-                write-output ($response | convertfrom-json).content
+                write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
             } 
         }   
     }
 }
+
+
+
 
 <#
 .Synopsis

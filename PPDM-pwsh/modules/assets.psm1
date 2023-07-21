@@ -204,10 +204,11 @@ Get-PPDMassets -filter 'name eq "scale002" and protectionStatus eq "PROTECTED" a
 function Get-PPDMcopy_map {
     [CmdletBinding()]
     param(
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2",
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [Alias('AssetID')]$id
+        [Alias('AssetID')]$id,
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2"
+
     )
     begin {
         $Response = @()
@@ -236,7 +237,6 @@ function Get-PPDMcopy_map {
         }
         try {
             $Response += Invoke-PPDMapirequest @Parameters
-            # $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body"  -Verbose:($PSBoundParameters['Verbose'] -eq $true)
 
         }
         catch {
@@ -251,7 +251,7 @@ function Get-PPDMcopy_map {
                 write-output $response  #.content | convertfrom-json
             }
             default {
-                write-output ($response | convertfrom-json).content
+                write-output $response 
             } 
         }   
     }
@@ -493,10 +493,11 @@ function Set-PPDMprotection_rules {
 function Remove-PPDMprotection_rules {
     [CmdletBinding()]
     param(
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2",
+
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        $id
+        $id,
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v2"
     )
     begin {
         $Response = @()
@@ -509,9 +510,19 @@ function Remove-PPDMprotection_rules {
             default {
                 $URI = "/$myself/$id"
             }
-        }        
+        }   
+        $Parameters = @{
+            body             = $body 
+            Uri              = $Uri
+            Method           = $Method
+            RequestMethod    = 'WEB'
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            ContentType      = "application/json"
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }     
         try {
-            $Response += Invoke-PPDMapirequest -uri $URI -Method $METHOD -Body "$body" -Verbose:($PSBoundParameters['Verbose'] -eq $true)
+            $Response += Invoke-PPDMapirequest @Parameters
         }
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
@@ -523,7 +534,7 @@ function Remove-PPDMprotection_rules {
         switch ($PsCmdlet.ParameterSetName) {
 
             default {
-                write-output $response 
+                write-output $response.headers.date 
             } 
         }   
     }
