@@ -295,6 +295,7 @@ AliasesToExport = @(
     'Remove-PPDMProxy',
     'Disable-PPDMProxy',
     'Get-PPDMAssetSource',
+    'Get-PPDMAssetNodes',
     'Set-PPDMAssetSource',
     'New-PPDMAssetSource',
     'Add-PPDMAssetSource',

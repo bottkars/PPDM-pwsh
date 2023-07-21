@@ -5,18 +5,26 @@ function Get-PPDMinventory_sources {
     param(
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $id,
-        [Parameter(Mandatory = $false,  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('DATADOMAINMANAGEMENTCENTER',
-        'DDSYSTEM',
-        'VCENTER',
-        'EXTERNALDATADOMAIN',
-        'KUBERNETES'        
+            'DDSYSTEM',
+            'VCENTER',
+            'EXTERNALDATADOMAIN',
+            'KUBERNETES'        
         )]
         $Type,
-        [Parameter(Mandatory = $false,  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $filter, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2"    
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2" 
     )
     begin {
         $Response = @()
@@ -33,6 +41,12 @@ function Get-PPDMinventory_sources {
                 $URI = "/$myself"
             }
         }
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
+        }  
         $Parameters = @{
             RequestMethod    = 'REST'
             body             = $body
@@ -41,19 +55,19 @@ function Get-PPDMinventory_sources {
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
-          }
-          if ($type) {
-            if ($filter){
-            $filter = 'type eq "' + $type + '" and ' + $filter 
+        }
+        if ($type) {
+            if ($filter) {
+                $filter = 'type eq "' + $type + '" and ' + $filter 
             }
             else {
                 $filter = 'type eq "' + $type + '"'
             }
-          }
-          if ($filter) {
-             write-verbose ($filter | Out-String)
+        }
+        if ($filter) {
+            write-verbose ($filter | Out-String)
             $parameters.Add('filter', $filter)
-          }    
+        }    
         try {
             $Response += Invoke-PPDMapirequest @Parameters
         }
@@ -70,6 +84,9 @@ function Get-PPDMinventory_sources {
             }
             default {
                 write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
             } 
         }   
     }
@@ -78,29 +95,36 @@ function Get-PPDMinventory_sources {
 
 function Get-PPDMinfrastructure_nodes {
     [CmdletBinding()]
-    [Alias('Get-PPDMAssetSource')]
+    [Alias('Get-PPDMAssetNodes')]
     param(
         [Parameter(Mandatory = $TRUE, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $TRUE,  ParameterSetName = 'Children', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $TRUE, ParameterSetName = 'Children', ValueFromPipelineByPropertyName = $true)]
         $id,
         [Parameter(Mandatory = $TRUE, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $TRUE,  ParameterSetName = 'ALL', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $TRUE,  ParameterSetName = 'Children', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $TRUE, ParameterSetName = 'ALL', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $TRUE, ParameterSetName = 'Children', ValueFromPipelineByPropertyName = $true)]
 
         [ValidateSet('MICROSOFT_SQL_DATABASE_VIEW',
-        'FILE_SYSTEM_VIEW',
-        'VMWARE_VIRTUAL_MACHINE_HOST_VIEW',
-        'VMWARE_VIRTUAL_MACHINE_FOLDER_VIEW',
-        'ORACLE_DATA_GUARD_VIEW'      
+            'FILE_SYSTEM_VIEW',
+            'VMWARE_VIRTUAL_MACHINE_HOST_VIEW',
+            'VMWARE_VIRTUAL_MACHINE_FOLDER_VIEW',
+            'ORACLE_DATA_GUARD_VIEW'      
         )]
         $Type,
-        [Parameter(Mandatory = $TRUE,  ParameterSetName = 'Children', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $TRUE, ParameterSetName = 'Children', ValueFromPipelineByPropertyName = $true)]
         [switch]$children,       
-        [Parameter(Mandatory = $false,  ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $filter, 
-        [hashtable]$body = @{pageSize = 200 },  
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2"    
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
     )
     begin {
         $Response = @()
@@ -121,10 +145,14 @@ function Get-PPDMinfrastructure_nodes {
             }
         }          
         if ($type) {
-          $body.Add('hierarchyType',$TYPE)  
-          }
-       # $Body = $body | ConvertTo-Json  
-       # write-verbose ( $body | Out-String   )   
+            $body.Add('hierarchyType', $TYPE)  
+        }
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
+        }   
         $Parameters = @{
             RequestMethod    = 'REST'
             body             = $body
@@ -133,12 +161,12 @@ function Get-PPDMinfrastructure_nodes {
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
-          }
+        }
 
-          if ($filter) {
-             write-verbose ($filter | Out-String)
+        if ($filter) {
+            write-verbose ($filter | Out-String)
             $parameters.Add('filter', $filter)
-          }    
+        }    
         try {
             $Response += Invoke-PPDMapirequest @Parameters
         }
@@ -155,6 +183,9 @@ function Get-PPDMinfrastructure_nodes {
             }
             default {
                 write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
             } 
         }   
     }
@@ -287,7 +318,7 @@ function Add-PPDMinventory_sources {
             'NON_VSPHERE'
         )]$K8S_TYPE,
         [Parameter(Mandatory = $false, ParameterSetName = 'Host', ValueFromPipelineByPropertyName = $true)]
-         # Required VCENTER ID if 'TANZU_GUEST_CLUSTER'
+        # Required VCENTER ID if 'TANZU_GUEST_CLUSTER'
         $VCENTER_ID,
         [Parameter(Mandatory = $true, ParameterSetName = 'Host', ValueFromPipelineByPropertyName = $true)]
         $Name,        
@@ -329,39 +360,39 @@ function Add-PPDMinventory_sources {
                     }
                 } 
                 if ( $TYPE -eq "VCENTER" ) {
-                    $body.Add('details',@{})
-                    $body.details.Add('vCenter',@{})
+                    $body.Add('details', @{})
+                    $body.details.Add('vCenter', @{})
                     write-verbose "$VCENTER selected"
-                    $body.details.vCenter.Add('vSphereUiIntegration',$vSphereUiIntegration.IsPresent )
-                    $body.details.vCenter.Add('assetSource',$isAssetSource.isPresent )
-                    $body.details.vCenter.Add('hosting',$isHostingvCenter.ispresent )
+                    $body.details.vCenter.Add('vSphereUiIntegration', $vSphereUiIntegration.IsPresent )
+                    $body.details.vCenter.Add('assetSource', $isAssetSource.isPresent )
+                    $body.details.vCenter.Add('hosting', $isHostingvCenter.ispresent )
                 }
                 if ( $K8S_TYPE ) { 
-                    $body.Add('details',@{})
-                    $body.details.Add('k8s',@{})
+                    $body.Add('details', @{})
+                    $body.details.Add('k8s', @{})
                     write-verbose "$K8S_TYPE selected"
-                    if ($K8S_TYPE -eq "TANZU_GUEST_CLUSTER")  {                        
+                    if ($K8S_TYPE -eq "TANZU_GUEST_CLUSTER") {                        
                         if ($VCENTER_ID) {
-                            $body.details.k8s.Add('vCenterId',$VCENTER_ID )
+                            $body.details.k8s.Add('vCenterId', $VCENTER_ID )
                         }
                         else {
                             write-host "Tanzu Guest Clusters need vCenter ID to be set"
                             break                        
                         }
                     }    
-                    $body.details.k8s.Add('distributionType',$K8S_TYPE )
+                    $body.details.k8s.Add('distributionType', $K8S_TYPE )
                 }                
-                $body.Add('ssl',$ssl.isPresent )                
+                $body.Add('ssl', $ssl.isPresent )                
                 $body = $body | ConvertTo-Json
             }
             'GENERIC_NAS' {
                 $URI = "/$($myself)-batch"
                 $body = @{}
-                $body.Add('requests',@())    
+                $body.Add('requests', @())    
 
                 # this goes to foreach
                 $request = @{}
-                $request.Add('id','1')
+                $request.Add('id', '1')
                 $requestbody = @{
                     name        = $address
                     type        = 'GENERICNASMANAGEMENTSERVER'
@@ -372,7 +403,7 @@ function Add-PPDMinventory_sources {
                  
                     }
                 }
-                $request.Add('body',$requestbody)
+                $request.Add('body', $requestbody)
                 $body.requests += $request
                 
                 $body = $body | ConvertTo-Json -Depth 6
@@ -474,7 +505,7 @@ function Get-PPDMvcenterDatastores {
         $clusterMOREF,        
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
-        )
+    )
     begin {
         $Response = @()
         $METHOD = "GET"
