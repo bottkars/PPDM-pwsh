@@ -806,7 +806,8 @@ function New-PPDMBackupSchedule {
     }
 
 
-    
+    $Schedule.Add('CopySchedule', $copySchedule)
+    $schedule.Add('Retention', $retention)
 
 
     switch (($($PSCmdlet.ParameterSetName) -split "_w_")[1]) {
@@ -814,17 +815,18 @@ function New-PPDMBackupSchedule {
       'full_weekly' {
         $fullschedule.Add('frequency', 'WEEKLY')
         $fullschedule.Add('weekDays', @($CreateFull_Every_DayofWeek))
-                
+        $Schedule.Add('FullSchedule', $fullSchedule)        
       }
       'full_monthly' {
         $fullschedule.Add('frequency', 'MONTHLY')
         $fullschedule.Add('dayOfMonth', $CreateFull_Every_DayofMonth)
-      }            
+        $Schedule.Add('FullSchedule', $fullSchedule)
+      }
+
     } 
 
-    $Schedule.Add('FullSchedule', $fullSchedule)
-    $Schedule.Add('CopySchedule', $copySchedule)
-    $schedule.Add('Retention', $retention)
+    
+
   } 
   end {    
     switch ($PsCmdlet.ParameterSetName) {
@@ -1015,33 +1017,75 @@ function New-PPDMDatabaseBackupSchedule {
   }
 }
 
+<#
+.SYNOPSIS
+Creates a new VM Backup Policcy
 
+
+.EXAMPLE
+$StorageSystem=Get-PPDMStorage_systems -Type DATA_DOMAIN_SYSTEM -Filter {name eq "ddve.home.labbuildr.com"}
+$Schedule=New-PPDMBackupSchedule -daily  -RetentionUnit DAY -RetentionInterval 4
+$SLA=New-PPDMBackupService_Level_Agreements -NAME PLATINUM -RecoverPointObjective -RecoverPointUnit HOURS -RecoverPointInterval 24 -DeletionCompliance -ComplianceWindow -ComplianceWindowCopyType ALL
+New-PPDMVMBackupPolicy -Schedule $Schedule -Name Linux -backupMode FSS -StorageSystemID $StorageSystem.id -SLAId $SLA.id
+
+id                             : 91f37d35-686e-4ae4-a5f5-7bd1fcaf5128
+name                           : Linux
+description                    :
+assetType                      : VMWARE_VIRTUAL_MACHINE
+type                           : ACTIVE
+category                       : CENTRALIZED_PROTECTION
+targetStorageProvisionStrategy : AUTO_PROVISION
+enabled                        : False
+passive                        : False
+forceFull                      : False
+priority                       : 1
+credentials                    :
+encrypted                      : False
+dataConsistency                : CRASH_CONSISTENT
+complianceInterval             :
+details                        : @{vm=}
+summary                        : @{numberOfAssets=0; totalAssetCapacity=0; totalAssetProtectionCapacity=0; numberOfJobFailures=0; numberOfSlaFailures=0; numberOfSlaSuccess=0; lastExecutionStatus=IDLE}
+stages                         : {@{id=04ffa229-89b5-4e3f-87c4-da2e5778da4d; type=PROTECTION; passive=False; retention=; target=; slaId=5c0d180d-7100-4f54-a2ba-3b9b3fb5ea07; attributes=;
+                                 operations=System.Object[]}}
+filterIds                      :
+createdAt                      : 24/07/2023 12:53:37
+updatedAt                      : 24/07/2023 12:53:37
+slaId                          :
+_links                         : @{self=}
+#>
 function New-PPDMVMBackupPolicy {
   [CmdletBinding()]
   param(
-    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [psobject]$Schedule,    
-    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [ValidateLength(1, 150)][string]$Name,
-    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [ValidateLength(1, 150)][string]$StorageSystemID,
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
+    [Alias('dataTargetId')][string]$StorageUnitID,  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [string][ValidateSet('FSS', 'VSS')]$backupMode = 'VSS',
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [switch]$excludeSwapFiles,
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
-    [switch]$disableQuiescing,    
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
+    [switch]$disableQuiescing,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [switch]$enabled,
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [switch]$encrypted, 
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
+    [string]$SLAId,     
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [string]$Description = '' ,
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName = 'Stage0')]
+    [ValidateSet('VADP', 'SDM')]
+    [string]$DataMover = "SDM",
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     $apiver = "/api/v2",
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [switch]$noop           
   )
   begin {
@@ -1051,19 +1095,25 @@ function New-PPDMVMBackupPolicy {
   Process {
 
     $URI = "/protection-policies"
-  
+
+    switch ($DataMover) {
+      'SDM' {
+        $disableQuiescing = $true
+        $excludeSwapFiles = $false
+      }
+    }
     $operations = @()
     $copyoperation = @{}
     $copyoperation.Add('schedule', $Schedule.CopySchedule)
-    $copyoperation.Add('backupType', 'SYNTHETIC_FULL')         
-
-    $fulloperation = @{}
-    $fulloperation.Add('schedule', $Schedule.FullSchedule)
-    $fulloperation.Add('backupType', 'FULL')         
-      
+    $copyoperation.Add('backupType', 'SYNTHETIC_FULL') 
     $operations += $copyoperation 
-    $operations += $fulloperation 
-
+    if ($Schedule.FullSchedule) {
+      $fulloperation = @{}
+      $fulloperation.Add('schedule', $Schedule.FullSchedule)
+      $fulloperation.Add('backupType', 'FULL')     
+      $operations += $fulloperation 
+    }
+    Write-Verbose ($operations | out-string)
     $Body = [ordered]@{ 
       'name'            = $Name
       'assetType'       = 'VMWARE_VIRTUAL_MACHINE'
@@ -1085,10 +1135,12 @@ function New-PPDMVMBackupPolicy {
           'id'         = (New-Guid).Guid   
           'type'       = 'PROTECTION'
           'passive'    = $false
+          'slaId'      = $SLAId 
           'attributes' = @{
             'vm'         = @{
               'excludeSwapFiles' = $excludeSwapFiles.IsPresent
               'disableQuiescing' = $disableQuiescing.IsPresent
+              'dataMoverType'    = $DataMover
             }
             'protection' = @{
               'backupMode' = $backupMode
@@ -1101,7 +1153,13 @@ function New-PPDMVMBackupPolicy {
           'retention'  = $Schedule.Retention
         }
       ) 
-    } | convertto-json -Depth 7
+    } 
+    
+    if ($StorageUnitID) {
+      $Body.Stages[0].target.Add('dataTargetId', $StorageUnitID)
+    }
+    
+    $Body = $Body| convertto-json -Depth 7
 
 
         
@@ -1460,6 +1518,14 @@ function New-PPDMSQLBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [Alias('dataTargetId')][string]$StorageUnitID,  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [Alias('')][string]$SLAId,      
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [switch]$enabled,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
@@ -1526,6 +1592,7 @@ function New-PPDMSQLBackupPolicy {
         $stages.Add('id', (New-Guid).Guid) 
         $stages.Add('type', 'PROTECTION')
         $stages.Add('passive', $passive.IsPresent)
+        $Stages.Add('slaId',$SLAId)
         $stages.Add('attributes', @{})
         $Stages.attributes.Add('vm', @{})
         $stages.attributes.vm.Add('appConsistentProtection', $false)
@@ -1535,7 +1602,11 @@ function New-PPDMSQLBackupPolicy {
         $Stages.attributes.Add('protection', @{})
         $Stages.attributes.protection.Add('backupMode', $SBT)
         $Stages.Add('target', @{})
+        
         $Stages.Target.Add('storageSystemId', $StorageSystemID)
+        if ($StorageUnitID) {
+          $Stages.target.Add('dataTargetId', $StorageUnitID)
+        }
         $Stages.Add('operations' , $operations)
         $Stages.Add('retention'  , $Schedule.Retention)
       }
@@ -1563,6 +1634,7 @@ function New-PPDMSQLBackupPolicy {
           }
           'retention'  = $Schedule.Retention
         }
+
       }
     }
     if ($AppAware.IsPresent) {
@@ -1592,13 +1664,10 @@ function New-PPDMSQLBackupPolicy {
       'stages'          = @($stages)
        
     } 
-    if ($DataMover -eq "TransparentSnapshots") {
+    if ($DataMover -eq "SDM") {
       $Body.stages[0].vm.Add('protectionEngine', 'VMDIRECT')
     }
     $Body = $Body  | convertto-json -Depth 7
-
-
-        
     write-verbose ($body | out-string)
     $Parameters = @{
       RequestMethod    = 'REST'

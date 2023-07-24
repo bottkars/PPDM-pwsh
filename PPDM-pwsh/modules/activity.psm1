@@ -291,7 +291,6 @@ function Get-PPDMactivities {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-
                 write-output $response
             }
             default {

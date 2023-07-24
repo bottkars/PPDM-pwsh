@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.8'
+ModuleVersion = '19.14.20.15'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -94,7 +94,8 @@ NestedModules = @(
     './modules/flr',
     './modules/common',
     './modules/sso-mfa',
-    './modules/identity-providers'
+    './modules/identity-providers',
+    './modules/service-level-agreements'
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -280,7 +281,9 @@ FunctionsToExport = @(
     'Get-PPDMmfa_bypass_accounts',
     'Remove-PPDMmfa_bypass_accounts',
     'Get-PPDMvcenterDatacenters',
-    'Get-PPDMvcenterMorefs'     
+    'Get-PPDMvcenterMorefs',
+    'Get-PPDMService_Level_Agreements',
+    'New-PPDMBackupService_Level_Agreements'       
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -321,7 +324,9 @@ AliasesToExport = @(
     'Get-PPDMServiceStatus',
     'Get-PPDMagents',
     'Connect-PPDMSystem',
-    'Get-PPDMidp'
+    'Get-PPDMidp',
+    'Get-PPDMSLAs',
+    'New-PPDMBackupSLA'
 )
 
 # DSC resources to export from this module
