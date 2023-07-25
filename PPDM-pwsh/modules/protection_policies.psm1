@@ -123,7 +123,7 @@ _links                         : @{self=}
 function Get-PPDMprotection_policies {
   [CmdletBinding()]
   param(    
-    [Parameter(Mandatory = $true, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $true, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $false)]
     [ValidateSet(
       'VMAX_STORAGE_GROUP',
       'VMWARE_VIRTUAL_MACHINE',
@@ -143,11 +143,11 @@ function Get-PPDMprotection_policies {
     #    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     [switch]$asset_assignments,
-    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     $filter,
-    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-    [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $true)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $false)]
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]  
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
@@ -1065,7 +1065,7 @@ function New-PPDMVMBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [Alias('dataTargetId')][string]$StorageUnitID,  
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
-    [string][ValidateSet('FSS', 'VSS')]$backupMode = 'VSS',
+    [Alias('backupMode')][string][ValidateSet('FSS', 'VSS')]$SizeSegmentation = 'VSS',
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [switch]$excludeSwapFiles,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
@@ -1143,7 +1143,7 @@ function New-PPDMVMBackupPolicy {
               'dataMoverType'    = $DataMover
             }
             'protection' = @{
-              'backupMode' = $backupMode
+              'backupMode' = $SizeSegmentation
             }
           }                     
           'target'     = @{
@@ -1220,7 +1220,7 @@ function New-PPDMK8SBackupPolicy {
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
     [ValidateLength(1, 150)][string]$StorageSystemID,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
-    [string][ValidateSet('FSS', 'VSS')]$backupMode = 'VSS',
+    [Alias('BackupMode')][string][ValidateSet('FSS', 'VSS')]$SizeSegmentation = 'VSS',
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
     [switch]$excludeSwapFiles,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
@@ -1499,7 +1499,7 @@ function New-PPDMSQLBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
     [ValidateSet('VSS', 'FSS')]
     [string]$SizeSegmentation = "FSS",    
-    [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
     [switch]$ExcludeSwapfiles,          
     [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
@@ -1587,6 +1587,7 @@ function New-PPDMSQLBackupPolicy {
         if ($schedule.logSchedule) {
           $operations += $schedule.logSchedule   
         }
+
         [switch]$passive = $false
         $Stages = @{}
         $stages.Add('id', (New-Guid).Guid) 
@@ -1597,10 +1598,9 @@ function New-PPDMSQLBackupPolicy {
         $Stages.attributes.Add('vm', @{})
         $stages.attributes.vm.Add('appConsistentProtection', $false)
         $stages.attributes.vm.Add('dataMoverType', $DataMover)
-        $stages.attributes.vm.Add('disableQuiescing', $false)
-        $stages.attributes.vm.Add('excludeSwapFiles', $false)
+        $stages.attributes.vm.Add('excludeSwapFiles', $ExcludeSwapfiles.IsPresent)
         $Stages.attributes.Add('protection', @{})
-        $Stages.attributes.protection.Add('backupMode', $SBT)
+        $Stages.attributes.protection.Add('backupMode', $SizeSegmentation)
         $Stages.Add('target', @{})
         
         $Stages.Target.Add('storageSystemId', $StorageSystemID)
@@ -1638,11 +1638,19 @@ function New-PPDMSQLBackupPolicy {
       }
     }
     if ($AppAware.IsPresent) {
+      switch ($DataMover) {
+        'SDM' {
+          Write-Verbose "Excluding swap for TSDM"
+          $stages.attributes.vm.excludeSwapFiles=$false
+          $stages.attributes.vm.disableQuiescing=$false
+          Write-Verbose "Done"
+        }
+      }
+      Write-Verbose "Checking AppAware"
       $AssetType = 'VMWARE_VIRTUAL_MACHINE'
       $details = @{}
       $details.Add('vm', @{}) 
       $details.vm.Add('protectionEngine', 'VMDIRECT')
-
     }
     else {
       $AssetType = 'MICROSOFT_SQL_DATABASE'
@@ -1664,9 +1672,7 @@ function New-PPDMSQLBackupPolicy {
       'stages'          = @($stages)
        
     } 
-    if ($DataMover -eq "SDM") {
-      $Body.stages[0].vm.Add('protectionEngine', 'VMDIRECT')
-    }
+
     $Body = $Body  | convertto-json -Depth 7
     write-verbose ($body | out-string)
     $Parameters = @{

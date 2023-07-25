@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.15'
+ModuleVersion = '19.14.20.21'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -95,7 +95,8 @@ NestedModules = @(
     './modules/common',
     './modules/sso-mfa',
     './modules/identity-providers',
-    './modules/service-level-agreements'
+    './modules/service-level-agreements',
+    './modules/whitelist'
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -113,7 +114,7 @@ FunctionsToExport = @(
     'Unblock-PPDMSSLCerts',
     'Update-PPDMAccessToken',
     'Invoke-PPDMapirequest',
-    'Start-PPDMasset_backups',
+#    'Start-PPDMasset_backups',
     'Get-PPDMprotection_engines',
     'Get-PPDMprotectionEngineProxies',
     'New-PPDMProtectionEngineProxy'
@@ -283,7 +284,10 @@ FunctionsToExport = @(
     'Get-PPDMvcenterDatacenters',
     'Get-PPDMvcenterMorefs',
     'Get-PPDMService_Level_Agreements',
-    'New-PPDMBackupService_Level_Agreements'       
+    'New-PPDMBackupService_Level_Agreements',
+    'Get-PPDMWhitelist',
+    'Set-PPDMWhitelist',
+    'Set-PPDMMSSQLassetStreamcount'       
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -357,6 +361,8 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
+        2023-07-25 (v19.14.20.16)
+        - Working on API Compliance Mandatory // Unallowed for 19.15
         2023-07-21 (v19.14.20.7)
         - fixed output bug
         2023-07-21 (v19.14.20.5)

@@ -340,19 +340,19 @@ function Get-PPDMprotection_rules {
         $filter,
 
         [ValidateSet(
-        'CLOUD_NATIVE_ENTITY',
-        'CLOUD_DIRECTOR_VAPP',
-        'POWERSTORE_BLOCK',
-        'VMAX_STORAGE_GROUP',
-        'VMWARE_VIRTUAL_MACHINE',
-        'ORACLE_DATABASE',
-        'MICROSOFT_SQL_DATABASE',
-        'FILE_SYSTEM',
-        'KUBERNETES',
-        'MICROSOFT_EXCHANGE_DATABASE',
-        'SAP_HANA_DATABASE',
-        'NAS_SHARE',
-        'DR'
+            'CLOUD_NATIVE_ENTITY',
+            'CLOUD_DIRECTOR_VAPP',
+            'POWERSTORE_BLOCK',
+            'VMAX_STORAGE_GROUP',
+            'VMWARE_VIRTUAL_MACHINE',
+            'ORACLE_DATABASE',
+            'MICROSOFT_SQL_DATABASE',
+            'FILE_SYSTEM',
+            'KUBERNETES',
+            'MICROSOFT_EXCHANGE_DATABASE',
+            'SAP_HANA_DATABASE',
+            'NAS_SHARE',
+            'DR'
         )]
         [Alias('AssetType')][string]$type,
 
@@ -864,13 +864,13 @@ function Set-PPDMapp_hosts {
         $body = $body | ConvertTo-Json
         write-verbose ($body | out-string)
         $Parameters = @{
-            RequestMethod           = 'WEB'
-            body                    = $body
-            Uri                     = $URI
-            Method                  = $Method
-            PPDM_API_BaseUri        = $PPDM_API_BaseUri
-            apiver                  = $apiver
-            Verbose                 = $PSBoundParameters['Verbose'] -eq $true
+            RequestMethod    = 'WEB'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
             # ResponseHeadersVariable = 'HeaderResponse'
 
         }   
@@ -1019,5 +1019,99 @@ function New-PPDMprotection_groups {
                 write-output $response.content
             } 
         }   
+    }
+}
+
+<#
+.SYNOPSIS
+Batch Sets Database Stream Counts. Accepts Database Asset ID´s from Pipeline
+There is no Output Object, but a Status Date from response Headers
+.EXAMPLE
+Get-PPDMassets -type MICROSOFT_SQL_DATABASE -filter 'details.database.clusterName eq "sqlsinglenode.dpslab.home.labbuildr.com"' | Set-PPDMMSSQLassetStreamcount -FullStreamCount 10 -LogStreamCount 10 -DifferentialStreamCount 10
+
+size                : 4
+number              : 1
+totalPages          : 1
+totalElements       : 4
+maxPageableElements : 4
+
+
+
+Tue, 25 Jul 2023 15:14:19 GMT
+#>
+function Set-PPDMMSSQLassetStreamcount {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [Alias('AssetID')]$ID,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $FullStreamCount = 4,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $LogStreamCount = 1,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $DifferentialStreamCount = 4,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                        
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
+    )
+    begin {
+        $Response = @()
+        $METHOD = "PATCH"
+        $URI = "assets-batch"
+        $requestID = 1
+        $body = @{}
+        $body.Add('requests', @()) 
+   
+    }     
+    Process {
+        $request = @{
+            'id'   = $requestID
+            'body' = @{
+                'id'            = $ID
+                'backupDetails' = @(@{
+                        'backupType'  = 'FULL'
+                        'parallelism' = $FullStreamCount
+                    }
+                    @{
+                        'backupType'  = 'LOG'
+                        'parallelism' = $LogStreamCount
+                    }
+                    @{
+                        'backupType'  = 'DIFFERENTIAL'
+                        'parallelism' = $DifferentialStreamCount
+                    }
+                )
+            }    
+        }
+        $body.requests += $request
+        $requestID++ 
+
+    } 
+    end {  
+
+        $body = $body | Convertto-Json -Depth 7
+        Write-Verbose ( $body | out-string ) 
+        $Parameters = @{
+            body             = $body 
+            Uri              = $URI
+            Method           = $METHOD
+            RequestMethod   = 'WEB'
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            ContentType      = "application/json"
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }  
+        Write-Verbose ($Parameters | Out-String )  
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        Write-Verbose ($Response | Out-String)
+        Write-Host $Response.Headers.Date
+
     }
 }

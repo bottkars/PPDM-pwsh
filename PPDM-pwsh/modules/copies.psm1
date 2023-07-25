@@ -34,18 +34,18 @@ function Get-PPDMcopies {
         $id,
         [Parameter(Mandatory = $false, ParameterSetName = 'TYPE', ValueFromPipelineByPropertyName = $true)]
         [ValidateSet(          
-        'VMAXSTORAGEGROUP',
-        'VIRTUALMACHINE',
-        'ORACLE_CDB', 'ORACLE_NON_CDB', 'ORACLE_PDB',
-        'MSSQL',
-        'NTFS', 'ReFS', 'CSVFS', 'ext3', 'ext4', 'xfs', 'btrfs', 'FS_DR', 'JFS', 'JFS2',
-        'K8S_NAMESPACE', 'K8S_POD', 'K8S_PERSISTENT_VOLUME', 'K8S_PERSISTENT_VOLUME_CLAIM',
-        'EXCHANGE_MAILBOX', 'EXCHANGE_PUBLIC_FOLDER',
-        'SAPHANA_SYSTEM', 'SAPHANA_TENANT',
-        'UNITY_NFS', 'UNITY_CIFS', 'POWERSTORE_NFS', 'POWERSTORE_CIFS', 'POWERSCALE_NFS', 'POWERSCALE_CIFS', 'NFS_GENERIC', 'CIFS_GENERIC',
-        'CLOUD_NATIVE_ENTITY',
-        'POWERSTORE_VOLUMEGROUP', 'POWERSTORE_VOLUME',
-        'CLOUD_DIRECTOR_VAPP'
+            'VMAXSTORAGEGROUP',
+            'VIRTUALMACHINE',
+            'ORACLE_CDB', 'ORACLE_NON_CDB', 'ORACLE_PDB',
+            'MSSQL',
+            'NTFS', 'ReFS', 'CSVFS', 'ext3', 'ext4', 'xfs', 'btrfs', 'FS_DR', 'JFS', 'JFS2',
+            'K8S_NAMESPACE', 'K8S_POD', 'K8S_PERSISTENT_VOLUME', 'K8S_PERSISTENT_VOLUME_CLAIM',
+            'EXCHANGE_MAILBOX', 'EXCHANGE_PUBLIC_FOLDER',
+            'SAPHANA_SYSTEM', 'SAPHANA_TENANT',
+            'UNITY_NFS', 'UNITY_CIFS', 'POWERSTORE_NFS', 'POWERSTORE_CIFS', 'POWERSCALE_NFS', 'POWERSCALE_CIFS', 'NFS_GENERIC', 'CIFS_GENERIC',
+            'CLOUD_NATIVE_ENTITY',
+            'POWERSTORE_VOLUMEGROUP', 'POWERSTORE_VOLUME',
+            'CLOUD_DIRECTOR_VAPP'
         )]$Type,
         [Parameter(Mandatory = $false, ParameterSetName = 'TYPE', ValueFromPipelineByPropertyName = $true)]
         $filter,  
@@ -87,22 +87,22 @@ function Get-PPDMcopies {
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
-          }
+        }
         if ($type) {
             if ($filter) {
-              $filter = 'assetSubtype eq "' + $type + '" and ' + $filter 
+                $filter = 'assetSubtype eq "' + $type + '" and ' + $filter 
             }
             else {
-              $filter = 'assetSubtype eq "' + $type + '"'
+                $filter = 'assetSubtype eq "' + $type + '"'
             }
-          }
-          if ($filter) {
+        }
+        if ($filter) {
             write-verbose ($filter | Out-String)
             $parameters.Add('filter', $filter)
-          } 
-          try {
+        } 
+        try {
             $Response += Invoke-PPDMapirequest @Parameters
-          }
+        }
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
             break
@@ -117,8 +117,7 @@ function Get-PPDMcopies {
             default {
 
                 write-output $response.content
-                if ($response.page)
-                {
+                if ($response.page) {
                     write-host ($response.page | out-string)
                 }
             } 
@@ -138,6 +137,7 @@ function Get-PPDMlatest_copies {
         $apiver = "/api/v2"
     )
     begin {
+        $body = @{}
         $Response = @()
         $METHOD = "GET"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
@@ -158,19 +158,20 @@ function Get-PPDMlatest_copies {
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }
-        if ($filter){
+        if ($filter) {
             $filter = 'assetId in ("' + ($assetID -join '","') + '")' + $filter 
-            }
-            else {
-                $filter = 'assetId in ("' + ($assetID -join '","') + '")'
-            }
-          if ($filter) {
-             write-verbose ($filter | Out-String)
-            $parameters.Add('filter', $filter)
-        }         
+        }
+        else {
+            $filter = 'assetId in ("' + ($assetID -join '","') + '")'
+        }
+        if ($filter) {
+            write-verbose ($filter | Out-String)
+            $Parameters.Add('filter', $filter)
+        }  
         try {
             $Response += Invoke-PPDMapirequest @Parameters
         }
+        
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
             break
@@ -181,7 +182,7 @@ function Get-PPDMlatest_copies {
         switch ($PsCmdlet.ParameterSetName) {
 
             default {
-                write-output $response.content
+                write-output $response.content 
             } 
         }   
     }
@@ -213,7 +214,7 @@ function Remove-PPDMcopies {
             }
             'removeConfigurationOnly' {
                 $URI = "/$myself/$id"
-                $body= @{removeConfigurationOnly = "true" }  
+                $body = @{removeConfigurationOnly = "true" }  
             }
         }     
         
@@ -268,7 +269,7 @@ function Get-PPDMlatest_copies_old {
     }     
     Process {
         $URI = "/$myself"
-        $filter= 'assetId in ("'+$id+'")'
+        $filter = 'assetId in ("' + $id + '")'
         $Parameters = @{
             filter           = $filter
             Uri              = $Uri
@@ -308,7 +309,7 @@ function Get-PPDMcopies_query {
         $id,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $filter,  
-#        [hashtable]$body = @{pageSize = 200 },  
+        #        [hashtable]$body = @{pageSize = 200 },  
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
     )
@@ -319,21 +320,22 @@ function Get-PPDMcopies_query {
    
     }     
     Process {
-        $body=@{}
+        $body = @{}
         switch ($PsCmdlet.ParameterSetName) {
-            'byID' {#
+            'byID' {
+                #
                 $URI = "/$myself/$id"
             }
             default {
                 $URI = "/$myself"
             }
         }  
-          if ($filter) {
+        if ($filter) {
             $body.Add('filter', $filter)
-          } 
-        $body=$body | ConvertTo-Json          
+        } 
+        $body = $body | ConvertTo-Json          
         $Parameters = @{
-  #          body             = $body 
+            #          body             = $body 
             Uri              = $Uri
             Method           = $Method
             RequestMethod    = 'Rest'
@@ -341,12 +343,12 @@ function Get-PPDMcopies_query {
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
             # ResponseHeadersVariable = 'HeaderResponse'
-          }
+        }
 
     
-          try {
+        try {
             $Response += Invoke-PPDMapirequest @Parameters
-          }
+        }
         catch {
             Get-PPDMWebException  -ExceptionMessage $_
             break

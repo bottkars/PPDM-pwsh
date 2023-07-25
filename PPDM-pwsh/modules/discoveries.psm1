@@ -179,16 +179,13 @@ function Set-PPDMdiscoveries {
 
 
 
-#{start: "/inventory-sources/69c8ac3a-3eca-55f1-a2e0-347e63a90540", level: "DataCopies"}
-#level: "DataCopies"
-#start: "/inventory-sources/69c8ac3a-3eca-55f1-a2e0-347e63a90540"
 function Start-PPDMdiscoveries {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [string]$id,
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('DataCopies')]
+        [ValidateSet('DataCopies','APPSERVER','HOSTFULL')]
         [string]$level,
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('inventory-sources', 'hosts', 'storage-systems')]

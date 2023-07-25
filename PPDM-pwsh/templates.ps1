@@ -87,15 +87,3 @@ function Get-PPDMxxxNoID {
     }
 }
 
-# old search invoke-ppdmapirequest -
-
-
-      #       [ValidateSet()]
-      #       [Alias('AssetType')][string]$type,
-      # [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
-
-
-
-       [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-       [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-       $id,
