@@ -1,14 +1,47 @@
 # /api/v2/credentials
+<#
+.SYNOPSIS
+'Retrieves all **Credentials** in PowerProtect Data Manager. **Credentials** contains username and password or token. The password is securely stored in the lockbox of PowerProtect Data Manager.
+his endpoint supports execution by the following roles: Administrator, User, Backup Administrator, Restore Administrator'
+#>
 function Get-PPDMcredentials {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [string]$ID,
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        [Alias('consumerlist')][switch]$usage,    
+        [Alias('consumerlist')][switch]$usage,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $filter,
+        [ValidateSet(
+            'DATADOMAIN',
+            'POWERPROTECT',
+            'DBUSER',
+            'OS',
+            'RMAN',
+            'STANDARD',
+            'VCENTER',
+            'KUBERNETES',
+            'SMISSERVER',
+            'CDR',
+            'SAPHANA_DB_USER',
+            'SAPHANA_SYSTEMDB_USER',
+            'DDBOOST',
+            'NAS',
+            'CLOUD_SNAPSHOT_MANAGER',
+            'CLOUD_DIRECTOR'
+        )]
+        [Alias('AssetType')][string]$type,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2"
-
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"    
     )
     begin {
         $Response = @()
@@ -19,27 +52,40 @@ function Get-PPDMcredentials {
     Process {
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                if ($usage.IsPresent) {
-                    $URI = "/$myself/$ID/usage"
-                }
-                else {
-                    $URI = "/$myself/$ID"   
-                }
-                
+                $URI = "/$myself/$id"
+                $body = @{}  
+
             }
             default {
                 $URI = "/$myself"
             }
         }  
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
+        }   
         $Parameters = @{
-            body             = $body 
-            Uri              = $Uri
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
             Method           = $Method
-            RequestMethod    = 'Rest'
             PPDM_API_BaseUri = $PPDM_API_BaseUri
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
-        }      
+        }
+        if ($type) {
+            if ($filter) {
+                $filter = 'type eq "' + $type + '" and ' + $filter 
+            }
+            else {
+                $filter = 'type eq "' + $type + '"'
+            }
+        }        
+        if ($filter) {
+            $parameters.Add('filter', $filter)
+        }       
         try {
             $Response += Invoke-PPDMapirequest @Parameters
         }
@@ -52,27 +98,24 @@ function Get-PPDMcredentials {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                if ($usage.ispresent) {
-                    write-output $response.consumerlist  
-                }
-                else {
-                    write-output $response  
-                }
-                 
+                write-output $response 
             }
             default {
-                write-output $response.content 
+                write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
             } 
         }   
     }
 }
-
 # https://developer.dellemc.com/data-protection/powerprotect/data-manager/api/credentials-management/createcredential
 # POST /api/v2/credentials
 
 <#
 .Synopsis
-Stores Credentials / Secrets for external Inventory SOurces / Storage in PPDM´s Database
+Creates a **Credential** in PowerProtect Data Manager. **Credential** contains username and password. The password is securely stored in the lockbox of PowerProtect Data Manager.
+This endpoint supports execution by the following roles: Administrator
 .Description
 
 When Connecting to Data Sources, Storage and Invetories, certain Credential Types need to be passed.
@@ -126,19 +169,24 @@ function New-PPDMcredentials {
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [string]$name,
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('DATADOMAIN',
+        [ValidateSet(
+            'DATADOMAIN',
             'POWERPROTECT',
             'DBUSER',
             'OS',
+            'RMAN',
             'STANDARD',
             'VCENTER',
-            'KUBERNETES',        
+            'KUBERNETES',
             'SMISSERVER',
             'CDR',
             'SAPHANA_DB_USER',
-            'SAPHANA_SYSTEM_DB_USER',
+            'SAPHANA_SYSTEMDB_USER',
             'DDBOOST',
-            'RMAN')]
+            'NAS',
+            'CLOUD_SNAPSHOT_MANAGER',
+            'CLOUD_DIRECTOR'
+        )]
         [string]$type,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [pscredential]$credentials,
@@ -213,6 +261,10 @@ function New-PPDMcredentials {
 
 
 #DELETE /api/v2/credentials/{id}   
+<#
+.SYNOPSIS
+Deletes a **Credential** by ID from PowerProtect Data Manager. The deleted **Credential** is removed from PowerProtect Data Manager.
+#>
 function Remove-PPDMcredentials {
     [CmdletBinding()]
     param(

@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.21'
+ModuleVersion = '19.14.20.28'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -217,6 +217,7 @@ FunctionsToExport = @(
     'New-PPDMFSBackupPolicy',
     'New-PPDMDatabaseBackupSchedule',
     'New-PPDMSQLBackupPolicy',
+    'New-PPDMOracleBackupPolicy',
     'New-PPDMExchangeBackupPolicy',
     'New-PPDMK8SBackupPolicy',    
     'Set-PPDMcertificates',

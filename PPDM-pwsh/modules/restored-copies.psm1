@@ -1298,15 +1298,20 @@ function Restore-PPDMMSSQL_copies {
     [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [switch]$disconnectDatabaseUsers, 
     [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
-    [ValidateSet('ORIGINAL_LOCATION')][string]$fileRelocationOptions = "ORIGINAL_LOCATION",            
+    [ValidateSet('ORIGINAL_LOCATION')]
+    [string]$fileRelocationOptions = "ORIGINAL_LOCATION",            
     [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
-    [ValidateSet('TO_ALTERNATE')][string]$restoreType = "TO_ALTERNATE",
+    [ValidateSet('TO_ALTERNATE')]
+    [string]$restoreType = "TO_ALTERNATE",
+    [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
+    [ValidateSet('RESTORE_TO_PRIMARY', 'RESTORE_TO_ALL')]
+    [string]$aagRestoreType,
     [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [string]$CustomDescription,      
     #  [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     #  [Alias('sources','FileList')][string[]]$RestoreSources,     
     
-
+    [switch]$noop,
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     $apiver = "/api/v2"           
   )
@@ -1341,6 +1346,10 @@ function Restore-PPDMMSSQL_copies {
     $body.restoredCopiesDetails.targetDatabaseInfo.Add('applicationSystemId', $appServerID)
     $body.restoredCopiesDetails.targetDatabaseInfo.Add('hostId', "$HostID")
     $body.restoredCopiesDetails.targetDatabaseInfo.Add('assetName', $assetName)
+    if ($aagRestoreType) {
+      $body.restoredCopiesDetails.targetDatabaseInfo.Add('restoreOptions', @{})
+      $body.restoredCopiesDetails.targetDatabaseInfo.restoreOptions.Add('aagRestoreType', $aagRestoreType)
+    }
     $body.Add('options', @{})
     $body.options.Add('forceDatabaseOverwrite', $true)
     $body.options.Add('enableDebug', $enableDebug.IsPresent) 
@@ -1368,16 +1377,17 @@ function Restore-PPDMMSSQL_copies {
       apiver           = $apiver
       Verbose          = $PSBoundParameters['Verbose'] -eq $true
     }
+    if (!$noop.ispresent) { 
+      try {
+        $Response += Invoke-PPDMapirequest @Parameters
 
-    try {
-      $Response += Invoke-PPDMapirequest @Parameters
-
+      }
+      catch {
+        Get-PPDMWebException  -ExceptionMessage $_
+        break
+      }
+      write-verbose ($response | Out-String)
     }
-    catch {
-      Get-PPDMWebException  -ExceptionMessage $_
-      break
-    }
-    write-verbose ($response | Out-String)
   } 
   end {    
     switch ($PsCmdlet.ParameterSetName) {

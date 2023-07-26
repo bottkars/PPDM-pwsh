@@ -24,17 +24,16 @@ Function Get-PPDMWebException {
                     
                 "*400*" {
                     Write-Host -ForegroundColor Magenta $ExceptionMessage
-                    Write-Host -ForegroundColor White "400 Bad Request Badly formed URI, parameters, headers, or body content. Essentially a request syntax error or object not found
-						Possible wrong password on Session based Authentication"
+                    Write-Host -ForegroundColor White "400: description: The request is not valid."
                 }
                 "*401*" {
                     Write-Host -ForegroundColor Magenta $ExceptionMessage
-                    Write-Host -ForegroundColor White "Session expired or wrong User/Password ?"
+                    Write-Host -ForegroundColor White "401: description: The requestor is not allowed to perform this operation. Session expired or wrong User/Password ?"
                 }
 
                 "*403*" {
                     Write-Host -ForegroundColor Magenta $ExceptionMessage
-                    Write-Host -ForegroundColor White "403 Forbidden Not allowed "
+                    Write-Host -ForegroundColor White "403: description: The requestor is not authorized to perform this operation "
                 }
                 "*404*" {
                     Write-Host -ForegroundColor Magenta $ExceptionMessage

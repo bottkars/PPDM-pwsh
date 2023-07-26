@@ -900,7 +900,21 @@ function New-PPDMDatabaseBackupSchedule {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]               
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
-    [int]$DifferentialBackupInterval,      
+    [int]$DifferentialBackupInterval,  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]               
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [ValidateSet("MINUTELY",
+      "HOURLY")]
+    [string]$CumulativeBackupUnit,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]               
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlyday_')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'monthlydayofweek_')]
+    [int]$CumulativeBackupInterval,             
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'hourly_')]                        
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'daily_')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'weekly_')]               
@@ -999,14 +1013,21 @@ function New-PPDMDatabaseBackupSchedule {
       $DifferentialSchedule.Add('schedule', @{})
       $DifferentialSchedule.schedule.Add('frequency', $DifferentialBackupUnit)
       $DifferentialSchedule.schedule.Add('interval', $DifferentialBackupInterval)
-      $DifferentialSchedule.schedule.Add('diffEnabled', $true)
       $DifferentialSchedule.schedule.Add('duration', "PT$($PTHours)H")
       $DifferentialSchedule.schedule.Add('startTime', $(Get-DAte $starttime -Format yyyy-MM-ddThh:mm:ss.000Z))
-
-      
       $Schedule.Add('differentialSchedule', $DifferentialSchedule)    
     }         
-
+    if ($CumulativeBackupInterval) {
+      $CumulativeSchedule = @{
+        'backupType' = 'CUMULATIVE' 
+      }
+      $CumulativeSchedule.Add('schedule', @{})
+      $CumulativeSchedule.schedule.Add('frequency', $CumulativeBackupUnit)
+      $CumulativeSchedule.schedule.Add('interval', $CumulativeBackupInterval)
+      $CumulativeSchedule.schedule.Add('duration', "PT$($PTHours)H")
+      $CumulativeSchedule.schedule.Add('startTime', $(Get-DAte $starttime -Format yyyy-MM-ddThh:mm:ss.000Z))
+      $Schedule.Add('cumulativeSchedule', $CumulativeSchedule)    
+    }  
   } 
   end {    
     switch ($PsCmdlet.ParameterSetName) {
@@ -1159,7 +1180,7 @@ function New-PPDMVMBackupPolicy {
       $Body.Stages[0].target.Add('dataTargetId', $StorageUnitID)
     }
     
-    $Body = $Body| convertto-json -Depth 7
+    $Body = $Body | convertto-json -Depth 7
 
 
         
@@ -1535,18 +1556,20 @@ function New-PPDMSQLBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [string]$Description = '' ,  
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
-    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
-    $apiver = "/api/v2",
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [switch]$TroubleshootingDebug,
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
+
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [ValidateSet(
+      'ALL',
+      'NONE',
+      'NONE_WITH_WARNINGS'
+    )][string]$promotionType = "ALL",
+
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [switch]$skipSimpleDatabase,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [switch]$skipUnprotectableState,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [switch]$excludeSystemDatabase,
     [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'selfservice')]
@@ -1560,7 +1583,15 @@ function New-PPDMSQLBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
-    [switch]$noop                  
+    [switch]$noop,                  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    $apiver = "/api/v2"
   )
   begin {
     $Response = @()
@@ -1571,7 +1602,7 @@ function New-PPDMSQLBackupPolicy {
     $URI = "/protection-policies"
   
     switch ($pscmdlet.ParameterSetName ) {
-      { $_ -eq 'centralized' -or $_ -eq 'appaware' } { 
+      'appaware' {
         $operations = @()
         $copyoperation = @{}
         $copyoperation.Add('schedule', $Schedule.CopySchedule)
@@ -1587,20 +1618,12 @@ function New-PPDMSQLBackupPolicy {
         if ($schedule.logSchedule) {
           $operations += $schedule.logSchedule   
         }
-
         [switch]$passive = $false
         $Stages = @{}
         $stages.Add('id', (New-Guid).Guid) 
         $stages.Add('type', 'PROTECTION')
         $stages.Add('passive', $passive.IsPresent)
-        $Stages.Add('slaId',$SLAId)
-        $stages.Add('attributes', @{})
-        $Stages.attributes.Add('vm', @{})
-        $stages.attributes.vm.Add('appConsistentProtection', $false)
-        $stages.attributes.vm.Add('dataMoverType', $DataMover)
-        $stages.attributes.vm.Add('excludeSwapFiles', $ExcludeSwapfiles.IsPresent)
-        $Stages.attributes.Add('protection', @{})
-        $Stages.attributes.protection.Add('backupMode', $SizeSegmentation)
+        $Stages.Add('slaId', $SLAId)
         $Stages.Add('target', @{})
         
         $Stages.Target.Add('storageSystemId', $StorageSystemID)
@@ -1610,7 +1633,64 @@ function New-PPDMSQLBackupPolicy {
         $Stages.Add('operations' , $operations)
         $Stages.Add('retention'  , $Schedule.Retention)
       }
-      Default {
+      "centralized" {
+        $operations = @()
+        $copyoperation = @{}
+        $copyoperation.Add('schedule', $Schedule.CopySchedule)
+        $copyoperation.Add('backupType', 'FULL')         
+        $operations += $copyoperation 
+        $mssql_credentials = @{
+          'id'   = $dbCID
+          'type' = 'OS'
+        }
+        if ($schedule.differentialSchedule) {
+          $operations += $schedule.differentialSchedule   
+        }
+        if ($schedule.logSchedule) {
+          $operations += $schedule.logSchedule   
+        }
+        [switch]$passive = $false
+        $Stages = @{}
+        $stages.Add('id', (New-Guid).Guid) 
+        $stages.Add('type', 'PROTECTION')
+        $stages.Add('passive', $passive.IsPresent)
+        $Stages.Add('slaId', $SLAId)
+        $Stages.Add('target', @{})
+        
+        $Stages.Target.Add('storageSystemId', $StorageSystemID)
+        if ($StorageUnitID) {
+          $Stages.target.Add('dataTargetId', $StorageUnitID)
+        }
+        $Stages.Add('operations' , $operations)
+        $Stages.Add('retention'  , $Schedule.Retention)
+        $mssql_options = @{}
+        $mssql_options.Add('excludeSystemDatabase', $excludeSystemDatabase.IsPresent)
+        $mssql_options.Add('troubleShootingOption', "debugEnabled=$($TroubleshootingDebug.ToString().ToLower())")
+        $stages = @{
+          'id'         = (New-Guid).Guid   
+          'type'       = 'PROTECTION'
+          'passive'    = $passive.IsPresent
+          'attributes' = @{
+            'mssql' = $mssql_options
+          }                     
+          'target'     = @{
+            'storageSystemId' = $StorageSystemID
+          }
+          'operations' = $operations
+          'options'    = @{
+            "skipSimpleDatabase"     = $skipSimpleDatabase.IsPresent
+            "skipUnprotectableState" = $skipUnprotectableState.IsPresent
+            "promotionType"          = $promotionType
+
+          }
+          
+        }
+        $stages.Add('retention', $Schedule.retention)
+
+
+      }
+
+      "selfservice" {
         [switch]$passive = $true
         $mssql_options = @{}
         $schedule = @{}
@@ -1627,30 +1707,32 @@ function New-PPDMSQLBackupPolicy {
           'target'     = @{
             'storageSystemId' = $StorageSystemID
           }
-          'operations' = $operations
-          'options'    = @{
-            "skipSimpleDatabase" = $true
-            "promotionType"      = "ALL"
-          }
           'retention'  = $Schedule.Retention
         }
 
       }
     }
     if ($AppAware.IsPresent) {
-      switch ($DataMover) {
-        'SDM' {
-          Write-Verbose "Excluding swap for TSDM"
-          $stages.attributes.vm.excludeSwapFiles=$false
-          $stages.attributes.vm.disableQuiescing=$false
-          Write-Verbose "Done"
-        }
-      }
       Write-Verbose "Checking AppAware"
+      $stages.Add('attributes', @{})
+      $Stages.attributes.Add('vm', @{})
+      $stages.attributes.vm.Add('appConsistentProtection', $false)
+      $stages.attributes.vm.Add('dataMoverType', $DataMover)
+      $stages.attributes.vm.Add('excludeSwapFiles', $ExcludeSwapfiles.IsPresent)
+      $Stages.attributes.Add('protection', @{})
+      $Stages.attributes.protection.Add('backupMode', $SizeSegmentation)
       $AssetType = 'VMWARE_VIRTUAL_MACHINE'
       $details = @{}
       $details.Add('vm', @{}) 
       $details.vm.Add('protectionEngine', 'VMDIRECT')
+      switch ($DataMover) {
+        'SDM' {
+          Write-Verbose "Excluding swap for TSDM"
+          $stages.attributes.vm.excludeSwapFiles = $false
+          $stages.attributes.vm.disableQuiescing = $false
+          Write-Verbose "Done"
+        }
+      }
     }
     else {
       $AssetType = 'MICROSOFT_SQL_DATABASE'
@@ -1893,3 +1975,293 @@ function New-PPDMExchangeBackupPolicy {
 
 
 
+function New-PPDMOracleBackupPolicy {
+  [CmdletBinding()]
+  param(
+    #  [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
+    # [switch]$AppAware, 
+    #  [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
+    #  [ValidateSet('VADP', 'SDM')]
+    # [string]$DataMover = "SDM",
+    #  [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
+    #  [ValidateSet('VSS', 'FSS')]
+    #  [string]$SizeSegmentation = "FSS",    
+    #  [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
+    #  [switch]$ExcludeSwapfiles,          
+    #  [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [psobject]$Schedule,
+    #  [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [string]$dbCID,
+    #  [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [ValidateLength(1, 150)][string]$Name,
+    #  [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [ValidateLength(1, 150)][string]$StorageSystemID,
+    #  [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [Alias('dataTargetId')][string]$StorageUnitID,  
+    #  [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [Alias('')][string]$SLAId,      
+    #  [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [switch]$enabled,
+    #  [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [switch]$encrypted, 
+    #  [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [string]$Description = '' ,  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [switch]$TroubleshootingDebug,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [ValidateRange(0, 3650)][int64]$archiveLogDeletionDays,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [ValidateRange(1, 64)][int64]$filesPerSet,    
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [ValidateRange(1, 4000)][int64]$maximumOpenFiles,   
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [ValidateRange(1, 1024)][int64]$blockSizeKB,  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [ValidateRange(1, 1024)][int64]$sectionSize,  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [ValidateSet("K",
+      "M",
+      "G")]
+    [string]$sectionSizeUnit = "KB",
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [ValidateSet("NONE",
+      "SYNC",
+      "ASYNC")]
+    [string]$RecoveryCatalogOption = "NONE",
+    [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'selfservice')]
+    [ValidateSet("YEAR",
+      "MONTH",
+      "WEEK",
+      "DAY")]
+    [string]$RetentionUnit,
+
+    [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName = 'selfservice')]
+    [ValidateRange(1, 2555)][int]$RetentionInterval,    
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    # [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [switch]$noop,                  
+    # [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    # [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    $apiver = "/api/v2"
+  )
+  begin {
+    $Response = @()
+    $METHOD = "POST"
+  }     
+  Process {
+
+    $URI = "/protection-policies"
+  
+    switch ($pscmdlet.ParameterSetName ) {
+      <#      'appaware' {
+        $operations = @()
+        $copyoperation = @{}
+        $copyoperation.Add('schedule', $Schedule.CopySchedule)
+        $copyoperation.Add('backupType', 'FULL')         
+        $operations += $copyoperation 
+        $oracle_credentials = @{
+          'id'   = $dbCID
+          'type' = 'OS'
+        }
+        if ($schedule.differentialSchedule) {
+          $operations += $schedule.differentialSchedule   
+        }
+        if ($schedule.logSchedule) {
+          $operations += $schedule.logSchedule   
+        }
+        [switch]$passive = $false
+        $Stages = @{}
+        $stages.Add('id', (New-Guid).Guid) 
+        $stages.Add('type', 'PROTECTION')
+        $stages.Add('passive', $passive.IsPresent)
+        $Stages.Add('slaId', $SLAId)
+        $Stages.Add('target', @{})
+        
+        $Stages.Target.Add('storageSystemId', $StorageSystemID)
+        if ($StorageUnitID) {
+          $Stages.target.Add('dataTargetId', $StorageUnitID)
+        }
+        $Stages.Add('operations' , $operations)
+        $Stages.Add('retention'  , $Schedule.Retention)
+      }
+#>
+      "centralized" {
+        $details = @{ 'dbConnection' = @{
+            'tnsName'  = ""
+            'tnsAdmin' = ""
+          }
+        }
+        $operations = @()
+        $copyoperation = @{}
+        $copyoperation.Add('schedule', $Schedule.CopySchedule)
+        $copyoperation.Add('backupType', 'FULL')         
+        $operations += $copyoperation 
+        $oracle_credentials = @{
+          'id'   = $dbCID
+          'type' = 'OS'
+        }
+        if ($schedule.differentialSchedule) {
+          $operations += $schedule.differentialSchedule   
+        }
+        if ($schedule.logSchedule) {
+          $operations += $schedule.logSchedule   
+        }
+        if ($schedule.cumulativeSchedule) {
+          $operations += $schedule.cumulativeSchedule   
+        }
+        [switch]$passive = $false
+        $oracle_options = @{}
+        if ($archiveLogDeletionDays) {
+          $oracle_options.Add('archiveLogDeletionDays', $archiveLogDeletionDays)
+        }
+        $options = @{
+          "syncCatalog" = $RecoveryCatalogOption
+        }
+        If ($filesPerSet) {
+          $options.Add('filesPerSet', $filesPerSet)
+        }
+        If ($blockSizeKB) {
+          $options.Add('blockSize', "$($blockSizeKB)K" )
+        }
+        If ($sectionSize) {
+          $options.Add('sectionSize', "$sectionSize$sectionSizeUnit" )
+        }
+        $oracle_options.Add('troubleShootingOption', "debugEnabled=$($TroubleshootingDebug.ToString().ToLower())")
+        $stages = @{
+          'id'         = (New-Guid).Guid   
+          'type'       = 'PROTECTION'
+          'passive'    = $passive.IsPresent
+          'attributes' = @{
+            'oracle' = $oracle_options
+          }                     
+          'target'     = @{
+            'storageSystemId' = $StorageSystemID
+
+          }
+          'operations' = $operations
+          'options'    = $options
+          'retention'  = $Schedule.retention
+          
+        }
+        if ($StorageUnitID) {
+          $stages.target.Add('dataTargetId', $StorageUnitID)
+        }
+      }
+
+      "selfservice" {
+        [switch]$passive = $true
+        $oracle_options = @{}
+        $schedule = @{}
+        $schedule.add('Retention', @{})
+        $schedule.Retention.add('interval', $RetentionInterval)
+        $schedule.Retention.add('unit', $RetentionUnit)
+        $stages = @{
+          'id'         = (New-Guid).Guid   
+          'type'       = 'PROTECTION'
+          'passive'    = $passive.IsPresent
+          'attributes' = @{
+            'oracle' = $oracle_options
+          }                     
+          'target'     = @{
+            'storageSystemId' = $StorageSystemID
+          }
+          'retention'  = $Schedule.Retention
+        }
+
+      }
+    }
+    if ($AppAware.IsPresent) {
+      Write-Verbose "Checking AppAware"
+      $stages.Add('attributes', @{})
+      $Stages.attributes.Add('vm', @{})
+      $stages.attributes.vm.Add('appConsistentProtection', $false)
+      $stages.attributes.vm.Add('dataMoverType', $DataMover)
+      $stages.attributes.vm.Add('excludeSwapFiles', $ExcludeSwapfiles.IsPresent)
+      $Stages.attributes.Add('protection', @{})
+      $Stages.attributes.protection.Add('backupMode', $SizeSegmentation)
+      $AssetType = 'VMWARE_VIRTUAL_MACHINE'
+      $details = @{}
+      $details.Add('vm', @{}) 
+      $details.vm.Add('protectionEngine', 'VMDIRECT')
+      switch ($DataMover) {
+        'SDM' {
+          Write-Verbose "Excluding swap for TSDM"
+          $stages.attributes.vm.excludeSwapFiles = $false
+          $stages.attributes.vm.disableQuiescing = $false
+          Write-Verbose "Done"
+        }
+      }
+    }
+    else {
+      $AssetType = 'ORACLE_DATABASE'
+    }
+    $Body = [ordered]@{
+      'assetType'       = $AssetType
+      'name'            = $Name
+      'credentials'     = $oracle_credentials
+      'type'            = 'ACTIVE'
+      'dataConsistency' = 'APPLICATION_CONSISTENT'
+      'enabled'         = $enabled.IsPresent
+      'description'     = $Description
+      'encrypted'       = $encrypted.IsPresent
+      'filterIds'       = @()
+      'priority'        = 1
+      'passive'         = $passive.IsPresent
+      'forceFull'       = $false
+      'details'         = $details
+      'stages'          = @($stages)
+       
+    } 
+
+    $Body = $Body  | convertto-json -Depth 7
+    write-verbose ($body | out-string)
+    $Parameters = @{
+      RequestMethod    = 'REST'
+      body             = $body 
+      Uri              = $URI
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    } 
+    if (!$noop.IsPresent) {      
+      try {
+        $Response += Invoke-PPDMapirequest @Parameters
+      }
+      catch {
+        Get-PPDMWebException  -ExceptionMessage $_
+        break
+      }
+      write-verbose ($response | Out-String)
+    } 
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      default {
+        write-output $response
+      } 
+    }   
+  }
+}
