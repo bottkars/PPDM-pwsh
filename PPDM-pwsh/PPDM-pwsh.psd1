@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.28'
+ModuleVersion = '19.14.20.33'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -362,6 +362,10 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
+        2023-07-27 (v19.14.20.33)
+        - added copy maps excludeCopyState
+        - added asset poies paging
+        - Added Oracle SBT Backup        
         2023-07-25 (v19.14.20.16)
         - Working on API Compliance Mandatory // Unallowed for 19.15
         2023-07-21 (v19.14.20.7)

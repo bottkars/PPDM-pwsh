@@ -2005,11 +2005,12 @@ function New-PPDMOracleBackupPolicy {
     #  [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
-    [Alias('dataTargetId')][string]$StorageUnitID,  
+    [Alias('dataTargetId')]
+    [System.Guid]$StorageUnitID,  
     #  [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
-    [Alias('')][string]$SLAId,      
+    [System.Guid]$SLAId,      
     #  [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
@@ -2022,6 +2023,12 @@ function New-PPDMOracleBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [string]$Description = '' ,  
+
+
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [ValidateSet("SBT")]
+    [string]$backupMechanism = "SBT",
+
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [switch]$TroubleshootingDebug,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
@@ -2108,16 +2115,23 @@ function New-PPDMOracleBackupPolicy {
       }
 #>
       "centralized" {
-        $details = @{ 'dbConnection' = @{
-            'tnsName'  = ""
-            'tnsAdmin' = ""
+        $details = @{ 
+          'oracle' = @{
+            'dbConnection' = @{
+              'tnsName'  = ""
+              'tnsAdmin' = ""
+            }
           }
+
         }
+        
+        <# #>
         $operations = @()
         $copyoperation = @{}
         $copyoperation.Add('schedule', $Schedule.CopySchedule)
         $copyoperation.Add('backupType', 'FULL')         
         $operations += $copyoperation 
+        #        $oracle_credentials = (Get-PPDMcredentials -Id $dbCID)
         $oracle_credentials = @{
           'id'   = $dbCID
           'type' = 'OS'
@@ -2154,10 +2168,14 @@ function New-PPDMOracleBackupPolicy {
           'type'       = 'PROTECTION'
           'passive'    = $passive.IsPresent
           'attributes' = @{
-            'oracle' = $oracle_options
+            'oracle'     = $oracle_options
+            'protection' = @{
+              'backupMechanism' = $backupMechanism
+            }
           }                     
           'target'     = @{
             'storageSystemId' = $StorageSystemID
+            'dataTargetId'    = $StorageUnitID
 
           }
           'operations' = $operations
@@ -2165,9 +2183,9 @@ function New-PPDMOracleBackupPolicy {
           'retention'  = $Schedule.retention
           
         }
-        if ($StorageUnitID) {
-          $stages.target.Add('dataTargetId', $StorageUnitID)
-        }
+        #        if ($StorageUnitID) {
+        #          $stages.target.Add('dataTargetId', $StorageUnitID)
+        #        } 
       }
 
       "selfservice" {
@@ -2232,7 +2250,7 @@ function New-PPDMOracleBackupPolicy {
       'forceFull'       = $false
       'details'         = $details
       'stages'          = @($stages)
-       
+      'slaId'           = $SLAId        
     } 
 
     $Body = $Body  | convertto-json -Depth 7

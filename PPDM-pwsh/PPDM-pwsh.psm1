@@ -378,13 +378,6 @@ function Invoke-PPDMapirequest {
 }
 
 # /v1/clusters/{clusterName}/binds/{userName}
-
-
-
-
-
-
-
 # DELETE /api/v0/sessions
 function Disconnect-PPDMsession {
     [CmdletBinding()]
