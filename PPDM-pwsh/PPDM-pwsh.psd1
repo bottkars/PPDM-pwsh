@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.33'
+ModuleVersion = '19.14.20.36'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -288,7 +288,8 @@ FunctionsToExport = @(
     'New-PPDMBackupService_Level_Agreements',
     'Get-PPDMWhitelist',
     'Set-PPDMWhitelist',
-    'Set-PPDMMSSQLassetStreamcount'       
+    'Set-PPDMMSSQLassetStreamcount',
+    'Restore-PPDMOracle_copies'       
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -362,6 +363,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
+        In Dev release:
+        - Oracle Restores
+        - latestcopies Alias for pipelining 
         2023-07-27 (v19.14.20.33)
         - added copy maps excludeCopyState
         - added asset poies paging

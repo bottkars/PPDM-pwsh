@@ -130,7 +130,7 @@ function Get-PPDMlatest_copies {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-        [string[]]$assetID,
+        [Alias('Id')][string[]]$assetID,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $filter,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
