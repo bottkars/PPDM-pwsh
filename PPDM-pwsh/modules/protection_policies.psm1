@@ -2033,7 +2033,7 @@ function New-PPDMOracleBackupPolicy {
     [string]$Description = '' ,  
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
-    [ValidateSet("SBT",'OIM')]
+    [ValidateSet("SBT", 'OIM')]
     [string]$backupMechanism = "SBT",
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
@@ -2130,8 +2130,8 @@ function New-PPDMOracleBackupPolicy {
         $Stages.Add('retention'  , $Schedule.Retention)
       }
 #>
-      {($_ -eq "centralized-sbt") -or ($_ -eq "centralized-oim")} {
-      #"centralized-sbt" 
+      { ($_ -eq "centralized-sbt") -or ($_ -eq "centralized-oim") } {
+        #"centralized-sbt" 
         $details = @{ 
           'oracle' = @{
             'dbConnection' = @{
@@ -2147,12 +2147,37 @@ function New-PPDMOracleBackupPolicy {
         $operations = @()
         $copyoperation = @{}
         $copyoperation.Add('schedule', $Schedule.CopySchedule)
+        $extendedRetentions = @()
         switch ($backupMechanism) {
           'SBT' { 
             $copyoperation.Add('backupType', 'FULL')
           }    
           'OIM' {
             $copyoperation.Add('backupType', 'SYNTHETIC_FULL')
+            $extendedRetentions += @{
+              "retention"  = @{
+                'id'                         = (New-Guid).Guid 
+                'storageSystemRetentionLock' = $false
+                'unit'                       = "WEEK"
+                'interval'                   = 3
+              }
+              'selector'   = @{
+                'backupType' = 'INCREMENTAL'
+              }
+              
+            }
+            $extendedRetentions += @{
+              "retention"  = @{
+                'id'                         = (New-Guid).Guid 
+                'storageSystemRetentionLock' = $false
+                'unit'                       = $Schedule.retention.Unit
+                'interval'                   = $Schedule.retention.interval
+              }
+              'selector'   = @{
+                'backupType' = 'SYNTHETIC_FULL'
+              }
+              
+            }
           }
         }
              
@@ -2190,23 +2215,24 @@ function New-PPDMOracleBackupPolicy {
         }
         $oracle_options.Add('troubleShootingOption', "debugEnabled=$($TroubleshootingDebug.ToString().ToLower())")
         $stages = @{
-          'id'         = (New-Guid).Guid   
-          'type'       = 'PROTECTION'
-          'passive'    = $passive.IsPresent
-          'attributes' = @{
+          'id'                 = (New-Guid).Guid   
+          'type'               = 'PROTECTION'
+          'passive'            = $passive.IsPresent
+          'attributes'         = @{
             'oracle'     = $oracle_options
             'protection' = @{
               'backupMechanism' = $backupMechanism
             }
           }                     
-          'target'     = @{
+          'target'             = @{
             'storageSystemId' = $StorageSystemID
             'dataTargetId'    = $StorageUnitID
 
           }
-          'operations' = $operations
-          'options'    = $options
-          'retention'  = $Schedule.retention
+          'operations'         = $operations
+          'options'            = $options
+          'retention'          = $Schedule.retention
+          'extendedRetentions' = $extendedRetentions
           
         }
         #        if ($StorageUnitID) {
