@@ -1989,68 +1989,84 @@ function New-PPDMOracleBackupPolicy {
     #  [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
     #  [switch]$ExcludeSwapfiles,          
     #  [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
-    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [psobject]$Schedule,
     #  [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
-    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [string]$dbCID,
     #  [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'appaware')]
-    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [ValidateLength(1, 150)][string]$Name,
-    #  [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
-    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [ValidateLength(1, 150)][string]$StorageSystemID,
     #  [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [Alias('dataTargetId')]
     [System.Guid]$StorageUnitID,  
     #  [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [System.Guid]$SLAId,      
     #  [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [switch]$enabled,
     #  [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [switch]$encrypted, 
     #  [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [string]$Description = '' ,  
-
-
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
-    [ValidateSet("SBT")]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
+    [ValidateSet("SBT",'OIM')]
     [string]$backupMechanism = "SBT",
-
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [switch]$TroubleshootingDebug,
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [ValidateRange(0, 3650)][int64]$archiveLogDeletionDays,
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [ValidateRange(1, 64)][int64]$filesPerSet,    
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [ValidateRange(1, 4000)][int64]$maximumOpenFiles,   
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [ValidateRange(1, 1024)][int64]$blockSizeKB,  
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [ValidateRange(1, 1024)][int64]$sectionSize,  
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [ValidateSet("K",
       "M",
       "G")]
     [string]$sectionSizeUnit = "KB",
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [ValidateSet("NONE",
       "SYNC",
       "ASYNC")]
     [string]$RecoveryCatalogOption = "NONE",
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'selfservice')]
     [ValidateSet("YEAR",
       "MONTH",
@@ -2060,16 +2076,16 @@ function New-PPDMOracleBackupPolicy {
 
     [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName = 'selfservice')]
     [ValidateRange(1, 2555)][int]$RetentionInterval,    
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     # [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [switch]$noop,                  
     # [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     # [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     $apiver = "/api/v2"
   )
@@ -2114,7 +2130,8 @@ function New-PPDMOracleBackupPolicy {
         $Stages.Add('retention'  , $Schedule.Retention)
       }
 #>
-      "centralized" {
+      {($_ -eq "centralized-sbt") -or ($_ -eq "centralized-oim")} {
+      #"centralized-sbt" 
         $details = @{ 
           'oracle' = @{
             'dbConnection' = @{
@@ -2126,10 +2143,19 @@ function New-PPDMOracleBackupPolicy {
         }
         
         <# #>
+
         $operations = @()
         $copyoperation = @{}
         $copyoperation.Add('schedule', $Schedule.CopySchedule)
-        $copyoperation.Add('backupType', 'FULL')         
+        switch ($backupMechanism) {
+          'SBT' { 
+            $copyoperation.Add('backupType', 'FULL')
+          }    
+          'OIM' {
+            $copyoperation.Add('backupType', 'SYNTHETIC_FULL')
+          }
+        }
+             
         $operations += $copyoperation 
         #        $oracle_credentials = (Get-PPDMcredentials -Id $dbCID)
         $oracle_credentials = @{
