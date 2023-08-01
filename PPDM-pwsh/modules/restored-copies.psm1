@@ -1598,3 +1598,131 @@ function Restore-PPDMOracle_copies {
     }   
   }
 }
+
+
+
+function Restore-PPDMOracle_OIM_copies {
+  [CmdletBinding()]
+  [Alias('Restore-PPDMDDB_MSSQL')]
+  param(
+    [Parameter(Mandatory = $true, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
+    [alias('assetCopyObject')][psobject]$copyobject, 
+    [Parameter(Mandatory = $true, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
+    [PSobject]$OraCredObject, 
+    [Parameter(Mandatory = $true, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
+    [string]$HostID,
+    [Parameter(Mandatory = $true, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
+    [string]$appServerID,    
+    # [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    # [Alias('copyIds', 'Id')][string[]]$ids,
+    # [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    # [Alias('name')]$assetName,
+    [Parameter(Mandatory = $false, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
+    [switch]$enableDebug,  
+    [Parameter(Mandatory = $false, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
+    [switch]$crossCheckBackup,  
+    [Parameter(Mandatory = $false, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
+    [switch]$enableCompressedRestore,   
+    [Parameter(Mandatory = $false, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
+    [switch]$dryRun, 
+    [Parameter(Mandatory = $false, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
+    [ValidateSet('ORIGINAL_LOCATION')]
+    [string]$fileRelocationOptions = "ORIGINAL_LOCATION",            
+    [Parameter(Mandatory = $false, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
+    [ValidateSet('TO_PRODUCTION')]
+    [string]$restoreType = "TO_PRODUCTION",
+    [Parameter(Mandatory = $false, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
+    [string]$CustomDescription,      
+    #  [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    #  [Alias('sources','FileList')][string[]]$RestoreSources,     
+    
+    [switch]$noop,
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"           
+  )
+  begin {
+    $Response = @()
+    $METHOD = "POST"
+    # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+    $URI = "/restored-copies/"
+  }     
+  Process {
+    switch ($PsCmdlet.ParameterSetName) {
+      'byInstantAccess' {
+      $AssetName = $copyobject.assetName
+        $AssetId = $copyobject.assetId
+        $dataTargetId = $copyobject.dataTargetIds
+      }
+      default {
+     
+      }
+    }  
+    $body = @{}
+    $body.Add('dryRun',$dryRun.IsPresent)
+    if ($CustomDescription) {
+    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('restoreCategory', $restoreType)
+      $body.Add('description', "Restore Oracle OIM Database $restoretype $AssetName, $CustomDescription")  
+    }
+    else {
+      $body.Add('description', "Restore Oracle OIM database $restoretype $AssetName")
+    }
+    $body.Add('restoreType', $restoreType)
+    $body.Add('restoredCopiesDetails', @{})
+    $body.restoredCopiesDetails.Add('targetOracleDatabaseInfo', @{})
+    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('applicationSystemId', $appServerID)
+    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('hostId', "$HostID")
+    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('restoreCategory', $restoreType)
+    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('assetId', $assetId)
+    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('dataTargetId', $dataTargetId[0])
+    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('parallelism', 4)
+    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('targetConnectionInfos', @(
+      @{
+          'credsId' = $OraCredObject.id
+          'connectionType' = $OraCredObject.Type
+      }
+    
+    ))
+    
+    $body.Add('options', @{})
+    $body.options.Add('enableDebug', $enableDebug.IsPresent) 
+    $body.options.Add('crossCheckBackup', $crossCheckBackup.isPresent) 
+    $body.options.Add('enableCompressedRestore', $enableCompressedRestore.IsPresent) 
+    $body.options.Add('restoreSubCategory', 'CURRENT_TIME')
+    $body.options.Add('pitInfo', @{})
+    $body.options.pitInfo.Add('targetTime',(Get-date (Get-Date -format g) -UFormat %s))
+    $body = $body | ConvertTo-Json -Depth 7
+    write-verbose ($body | out-string )
+
+
+    $Parameters = @{
+      RequestMethod    = 'REST'
+      body             = $body
+      Uri              = $URI
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }
+    if (!$noop.ispresent) { 
+      try {
+        $Response += Invoke-PPDMapirequest @Parameters
+
+      }
+      catch {
+        Get-PPDMWebException  -ExceptionMessage $_
+        break
+      }
+      write-verbose ($response | Out-String)
+    }
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response 
+      }
+      default {
+        write-output $response 
+      } 
+    }   
+  }
+}
