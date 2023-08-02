@@ -1141,3 +1141,68 @@ function Set-PPDMMSSQLassetStreamcount {
 
     }
 }
+
+
+
+
+function Set-PPDMOracleOIMProtectionProtocol {
+    [CmdletBinding()]
+    [Alias('Set-PPDMOIMProtocol')]
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [Alias('AssetID')]$ID,
+        [Parameter(Mandatory = $TRUE, ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('NFS','BOOST')]$ProtectionProtocol,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                        
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
+    )
+    begin {
+        $Response = @()
+        $METHOD = "PATCH"
+        $URI = "assets-batch"
+        $requestID = 1
+        $body = @{}
+        $body.Add('requests', @()) 
+   
+    }     
+    Process {
+        $request = @{
+            'id'   = $requestID
+            'body' = @{
+                'id'            = $ID
+                'protectionProtocol' = $ProtectionProtocol
+            }    
+        }
+        $body.requests += $request
+        $requestID++ 
+
+    } 
+    end {  
+
+        $body = $body | Convertto-Json -Depth 7
+        Write-Verbose ( $body | out-string ) 
+        $Parameters = @{
+            body             = $body 
+            Uri              = $URI
+            Method           = $METHOD
+            RequestMethod    = 'WEB'
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            ContentType      = "application/json"
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }  
+        Write-Verbose ($Parameters | Out-String )  
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        Write-Verbose ($Response | Out-String)
+        Write-Host $Response.Headers.Date
+
+    }
+}

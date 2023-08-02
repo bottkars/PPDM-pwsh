@@ -289,7 +289,8 @@ FunctionsToExport = @(
     'Get-PPDMWhitelist',
     'Set-PPDMWhitelist',
     'Set-PPDMMSSQLassetStreamcount',
-    'Restore-PPDMOracle_copies'       
+    'Restore-PPDMOracle_copies',
+    'Set-PPDMOracleOIMProtectionProtocol'       
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -332,7 +333,9 @@ AliasesToExport = @(
     'Connect-PPDMSystem',
     'Get-PPDMidp',
     'Get-PPDMSLAs',
-    'New-PPDMBackupSLA'
+    'New-PPDMBackupSLA',
+    'Set-PPDMOIMProtocol',
+    'Get-PPDMOIMspfile'
 )
 
 # DSC resources to export from this module
