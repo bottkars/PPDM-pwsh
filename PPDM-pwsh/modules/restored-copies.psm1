@@ -551,59 +551,58 @@ function Get-PPDMOIMspfile {
   [CmdletBinding()]
   param(
 
-      [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-      $id,
-      [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
-      $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-      [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
-      $apiver = "/api/v2"
+    [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+    $id,
+    [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+    $apiver = "/api/v2"
   )
 
   begin {
-      $Response = @()
-      $METHOD = "GET"
-      $Myself = "oracle-control-sp-file-info"
+    $Response = @()
+    $METHOD = "GET"
+    $Myself = "oracle-control-sp-file-info"
  
   }     
   Process {
-      switch ($PsCmdlet.ParameterSetName) {
-          default
-          {
-              $URI = "/$myself/$id"
-              $body = @{}  
+    switch ($PsCmdlet.ParameterSetName) {
+      default {
+        $URI = "/$myself/$id"
+        $body = @{}  
 
-          }
-
-      }  
-
-      $Parameters = @{
-          RequestMethod    = 'REST'
-          body             = $body
-          Uri              = $URI
-          Method           = $Method
-          PPDM_API_BaseUri = $PPDM_API_BaseUri
-          apiver           = $apiver
-          Verbose          = $PSBoundParameters['Verbose'] -eq $true
-      }              
-      try {
-          $Response += Invoke-PPDMapirequest @Parameters
       }
-      catch {
-          Get-PPDMWebException  -ExceptionMessage $_
-          break
-      }
-      write-verbose ($response | Out-String)
+
+    }  
+
+    $Parameters = @{
+      RequestMethod    = 'REST'
+      body             = $body
+      Uri              = $URI
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }              
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
   } 
   end {    
-      switch ($PsCmdlet.ParameterSetName) {
-          'byID' {
-              write-output $response 
-          }
-          default {
-              write-output $response.content
+    switch ($PsCmdlet.ParameterSetName) {
+      'byID' {
+        write-output $response 
+      }
+      default {
+        write-output $response.content
 
-          } 
-      }   
+      } 
+    }   
   }
 }
 
@@ -1587,7 +1586,7 @@ function Restore-PPDMOracle_copies {
   Process {
     switch ($PsCmdlet.ParameterSetName) {
       'byCopyObjecttoProduction' {
-      $AssetName = $copyobject.assetName
+        $AssetName = $copyobject.assetName
         $AssetId = $copyobject.assetId
         $dataTargetId = $copyobject.dataTargetIds
       }
@@ -1596,7 +1595,7 @@ function Restore-PPDMOracle_copies {
       }
     }  
     $body = @{}
-    $body.Add('dryRun',$dryRun.IsPresent)
+    $body.Add('dryRun', $dryRun.IsPresent)
     if ($CustomDescription) {
       $body.Add('description', "Restore Oracle Database to original database $AssetName, $CustomDescription")  
     }
@@ -1613,12 +1612,12 @@ function Restore-PPDMOracle_copies {
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('dataTargetId', $dataTargetId[0])
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('parallelism', 4)
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('targetConnectionInfos', @(
-      @{
-          'credsId' = $OraCredObject.id
+        @{
+          'credsId'        = $OraCredObject.id
           'connectionType' = $OraCredObject.Type
-      }
+        }
     
-    ))
+      ))
     
     $body.Add('options', @{})
     $body.options.Add('enableDebug', $enableDebug.IsPresent) 
@@ -1626,7 +1625,7 @@ function Restore-PPDMOracle_copies {
     $body.options.Add('enableCompressedRestore', $enableCompressedRestore.IsPresent) 
     $body.options.Add('restoreSubCategory', 'CURRENT_TIME')
     $body.options.Add('pitInfo', @{})
-    $body.options.pitInfo.Add('targetTime',(Get-date (Get-Date -format g) -UFormat %s))
+    $body.options.pitInfo.Add('targetTime', (Get-date (Get-Date -format g) -UFormat %s))
     $body = $body | ConvertTo-Json -Depth 7
     write-verbose ($body | out-string )
 
@@ -1678,10 +1677,10 @@ function Restore-PPDMOracle_OIM_copies {
     [string]$HostID,
     [Parameter(Mandatory = $true, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
     [string]$appServerID,    
-    # [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    # [Alias('copyIds', 'Id')][string[]]$ids,
-    # [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    # [Alias('name')]$assetName,
+    [Parameter(Mandatory = $true, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
+    [string]$targetSid,  
+    [Parameter(Mandatory = $true, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
+    [string]$targetInstallLocation,     
     [Parameter(Mandatory = $false, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
     [switch]$enableDebug,  
     [Parameter(Mandatory = $false, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
@@ -1714,7 +1713,7 @@ function Restore-PPDMOracle_OIM_copies {
   Process {
     switch ($PsCmdlet.ParameterSetName) {
       'byInstantAccess' {
-      $AssetName = $copyobject.assetName
+        $AssetName = $copyobject.assetName
         $AssetId = $copyobject.assetId
         $dataTargetId = $copyobject.dataTargetIds
       }
@@ -1723,9 +1722,9 @@ function Restore-PPDMOracle_OIM_copies {
       }
     }  
     $body = @{}
-    $body.Add('dryRun',$dryRun.IsPresent)
+    $body.Add('dryRun', $dryRun.IsPresent)
     if ($CustomDescription) {
-    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('restoreCategory', $restoreType)
+      $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('restoreCategory', $restoreType)
       $body.Add('description', "Restore Oracle OIM Database $restoretype $AssetName, $CustomDescription")  
     }
     else {
@@ -1741,20 +1740,43 @@ function Restore-PPDMOracle_OIM_copies {
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('dataTargetId', $dataTargetId[0])
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('parallelism', 4)
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('targetConnectionInfos', @(
-      @{
-          'credsId' = $OraCredObject.id
+        @{
+          'credsId'        = $OraCredObject.id
           'connectionType' = $OraCredObject.Type
+        }
+        $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('restoreProtocol', "NFS")
+        $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('nfsShare', @{})
+    
+      ))
+    write-verbose "Reading SP File"  
+    $spfile = Get-PPDMOIMspfile -id $copyobject.id
+    $body.Add('options', @{
+        "targetSid"               = $targetSid
+        "targetInstallLocation"   = $targetInstallLocation
+        "fileRelocationOptions"   = @{
+          "type"                          = "ORIGINAL_LOCATION"
+          "targetControlFiles"            = $null
+          "targetArchLogFileLocations"    = $null
+          "targetDataFileLocation"        = $null
+          "targetFRAFileLocation"         = $null
+          "targetRedoLogFileLocations"    = $null
+          "targetRootLevelFolderLocation" = $null
+        }
+        "openDatabase"            = $true
+        "changeDbId"              = $false
+        "enableDebug"             = $enableDebug.IsPresent
+        "enableCompressedRestore" = $enableCompressedRestore.IsPresent
+        "restoreSubCategory"      = "BACKUP_TIME"
+        "pitInfo"                 = @{
+          "targetTime" = (Get-Date $copyobject.createTime -UFormat %s)
+        }
+        "restoreSpFile"           = $true
+        "controlSpFileBackupData" = $spfile.oracleControlSpFileInfo
+        "advanceSpFileParameters" = @()
+        "crossCheckBackup"        = $crossCheckBackup.isPresent
+        "enableAutoCleanup"       = $false  
       }
-    
-    ))
-    
-    $body.Add('options', @{})
-    $body.options.Add('enableDebug', $enableDebug.IsPresent) 
-    $body.options.Add('crossCheckBackup', $crossCheckBackup.isPresent) 
-    $body.options.Add('enableCompressedRestore', $enableCompressedRestore.IsPresent) 
-    $body.options.Add('restoreSubCategory', 'CURRENT_TIME')
-    $body.options.Add('pitInfo', @{})
-    $body.options.pitInfo.Add('targetTime',(Get-date (Get-Date -format g) -UFormat %s))
+    )
     $body = $body | ConvertTo-Json -Depth 7
     write-verbose ($body | out-string )
 
