@@ -544,9 +544,9 @@
 .SYNOPSIS
 Gets Control File for Oracle Incremental merge Backups
 .EXAMPLE
+#>
 
 
-#>>
 function Get-PPDMOIMspfile {
   [CmdletBinding()]
   param(
@@ -1696,6 +1696,9 @@ function Restore-PPDMOracle_OIM_copies {
     [ValidateSet('TO_PRODUCTION')]
     [string]$restoreType = "TO_PRODUCTION",
     [Parameter(Mandatory = $false, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
+    [ValidateSet('INSTANT_ACCESS_RECOVERY')]
+    [string]$restoreCategory = "INSTANT_ACCESS_RECOVERY",
+    [Parameter(Mandatory = $false, ParameterSetName = 'byInstantAccess', ValueFromPipelineByPropertyName = $true)]
     [string]$CustomDescription,      
     #  [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     #  [Alias('sources','FileList')][string[]]$RestoreSources,     
@@ -1721,7 +1724,9 @@ function Restore-PPDMOracle_OIM_copies {
      
       }
     }  
-    $body = @{}
+    $body = @{
+      'copyIds'               = @( $CopyObject.id )
+    }
     $body.Add('dryRun', $dryRun.IsPresent)
     if ($CustomDescription) {
       $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('restoreCategory', $restoreType)
@@ -1730,12 +1735,14 @@ function Restore-PPDMOracle_OIM_copies {
     else {
       $body.Add('description', "Restore Oracle OIM database $restoretype $AssetName")
     }
+
     $body.Add('restoreType', $restoreType)
     $body.Add('restoredCopiesDetails', @{})
     $body.restoredCopiesDetails.Add('targetOracleDatabaseInfo', @{})
-    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('applicationSystemId', $appServerID)
+    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('assetName', $targetSid)
+    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('applicationSystemId', $null)
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('hostId', "$HostID")
-    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('restoreCategory', $restoreType)
+    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('restoreCategory',$restoreCategory)
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('assetId', $assetId)
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('dataTargetId', $dataTargetId[0])
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('parallelism', 4)
@@ -1754,7 +1761,7 @@ function Restore-PPDMOracle_OIM_copies {
         "targetSid"               = $targetSid
         "targetInstallLocation"   = $targetInstallLocation
         "fileRelocationOptions"   = @{
-          "type"                          = "ORIGINAL_LOCATION"
+          "type"                          = $fileRelocationOptions
           "targetControlFiles"            = $null
           "targetArchLogFileLocations"    = $null
           "targetDataFileLocation"        = $null
@@ -1813,3 +1820,60 @@ function Restore-PPDMOracle_OIM_copies {
     }   
   }
 }
+
+function Remove-PPDMrestored_copies {
+  [CmdletBinding()]
+  param(
+
+      [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+      $id,
+      [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
+      $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+      [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+      $apiver = "/api/v2"
+  )
+
+  begin {
+      $Response = @()
+      $METHOD = "POST"
+      $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
+ 
+  }     
+  Process {
+      switch ($PsCmdlet.ParameterSetName) {
+
+          default {
+              $URI = "/$myself/$id/remove"
+              $body = @{}                
+          }
+      }  
+  
+      $Parameters = @{
+          RequestMethod    = 'REST'
+          body             = $body
+          Uri              = $URI
+          Method           = $Method
+          PPDM_API_BaseUri = $PPDM_API_BaseUri
+          apiver           = $apiver
+          Verbose          = $PSBoundParameters['Verbose'] -eq $true
+      }
+      try {
+          $Response += Invoke-PPDMapirequest @Parameters
+      }
+      catch {
+          Get-PPDMWebException  -ExceptionMessage $_
+          break
+      }
+      write-verbose ($response | Out-String)
+  } 
+  end {    
+      switch ($PsCmdlet.ParameterSetName) {
+          default {
+              write-output $response
+          } 
+      }   
+  }
+}
+
+
+

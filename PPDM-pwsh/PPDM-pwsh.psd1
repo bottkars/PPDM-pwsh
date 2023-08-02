@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.36'
+ModuleVersion = '19.14.20.40'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -96,7 +96,8 @@ NestedModules = @(
     './modules/sso-mfa',
     './modules/identity-providers',
     './modules/service-level-agreements',
-    './modules/whitelist'
+    './modules/whitelist',
+    './modules/exported-copies'
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -290,7 +291,12 @@ FunctionsToExport = @(
     'Set-PPDMWhitelist',
     'Set-PPDMMSSQLassetStreamcount',
     'Restore-PPDMOracle_copies',
-    'Set-PPDMOracleOIMProtectionProtocol'       
+    'Set-PPDMOracleOIMProtectionProtocol',
+    'Restore-PPDMOracle_OIM_copies',
+    'Get-PPDMOIMspfile',
+    'Remove-PPDMrestored_copies'  
+    'Remove-PPDMexported_copies',
+    'Get-PPDMexported_copies'     
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
