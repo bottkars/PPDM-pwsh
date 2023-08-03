@@ -170,10 +170,11 @@ function Set-PPDMexported_copies {
             default {
                 $URI = "/$myself/$id"
                 $body = @{
-                    'expirationTime' = (get-date ((get-date).AddDays($expirationDays)) -Format yyyy-MM-ddThh:mm:ssZ)
+                    'expirationTime' = (get-date ((get-date).AddDays($expirationDays)) -Format yyyy-MM-ddThh:mm:ss.fffZ)
                 }                
             }
-        }  
+        } 
+        $body = $body | ConvertTo-Json 
         Write-Verbose ($body | Out-String)
         $Parameters = @{
             RequestMethod    = 'REST'
