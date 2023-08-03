@@ -6,9 +6,9 @@ function Get-PPDMexported_copies {
         $id,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         $filter,
- #       [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
- #       [ValidateSet()]
- #       [Alias('AssetType')][string]$type,
+        #       [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        #       [ValidateSet()]
+        #       [Alias('AssetType')][string]$type,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         $pageSize, 
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
@@ -142,7 +142,69 @@ function Remove-PPDMexported_copies {
             } 
         }   
     }
-  }
+}
+
+function Set-PPDMexported_copies {
+    [CmdletBinding()]
+    param(
+  
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        $id,
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [ValidateRange(1,7)][int]$expirationDays,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
+    )
+  
+    begin {
+        $Response = @()
+        $METHOD = "PATCH"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+  
+            default {
+                $URI = "/$myself/$id"
+                $body = @{
+                    'expirationTime' = (get-date ((get-date).AddDays($expirationDays)) -Format yyyy-MM-ddThh:mm:ssZ)
+                }                
+            }
+        }  
+        Write-Verbose ($body | Out-String)
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                write-output $response
+            } 
+        }   
+    }
+}
+  
+  
+  
+    
   
   
   
