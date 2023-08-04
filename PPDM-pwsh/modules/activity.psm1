@@ -239,7 +239,7 @@ function Get-PPDMactivities {
                 }
 
                 if ($filter) {
-                    $filter = "$filterstring $filter"
+                    $filter = "$filterstring and $filter"
                 }
                 else {
                     $filter = $filterstring
