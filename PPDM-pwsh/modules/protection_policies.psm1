@@ -143,21 +143,22 @@ function Get-PPDMprotection_policies {
     #    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
     [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     [switch]$asset_assignments,
-    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    $filter,
-    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
     [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $false)]
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]  
+    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
+    $filter,
+    [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $false)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+    $pageSize, 
+    [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $false)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+    $page, 
+    [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $false)]
+    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+    [hashtable]$body = @{},
+    [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-    [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $true)]
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    $apiver = "/api/v2",
-    [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-    [Parameter(Mandatory = $false, ParameterSetName = 'type', ValueFromPipelineByPropertyName = $true)]
-    [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    [hashtable]$body = @{pageSize = 200 }   
+    [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+    $apiver = "/api/v2"
   )
   begin {
     $Response = @()
@@ -177,6 +178,12 @@ function Get-PPDMprotection_policies {
         $URI = "/$myself"
       }
     } 
+    if ($pagesize) {
+      $body.add('pageSize', $pagesize)
+    }
+    if ($page) {
+      $body.add('page', $page)
+    }     
     $Parameters = @{
       RequestMethod    = 'REST'
       body             = $body 
@@ -186,11 +193,18 @@ function Get-PPDMprotection_policies {
       apiver           = $apiver
       Verbose          = $PSBoundParameters['Verbose'] -eq $true
     }
+
+    if ($type) {
+      if ($Filter) {
+        $filter = "assetType eq `"$type`" and $filter"
+      }
+      else {
+        $Filter = "assetType eq `"$type`""
+      }
+    }
     if ($filter) {
       $parameters.Add('filter', $filter)
-    }
-    if ($type) {
-      $parameters.Add('filter', "assetType eq `"$type`"")
+      
     }    
     Write-Verbose ($Parameters | Out-String)       
     try {
@@ -207,6 +221,9 @@ function Get-PPDMprotection_policies {
       'byID' {
         if ( $asset_assignments.IsPresent ) {
           write-output $response.content
+          if ($response.page) {
+            write-host ($response.page | out-string)
+          }
         }
         else {
           write-output $response
@@ -214,6 +231,9 @@ function Get-PPDMprotection_policies {
       }
       default {
         write-output $response.content
+        if ($response.page) {
+          write-host ($response.page | out-string)
+        }
       } 
     }   
   }
@@ -2155,25 +2175,25 @@ function New-PPDMOracleBackupPolicy {
           'OIM' {
             $copyoperation.Add('backupType', 'SYNTHETIC_FULL')
             $extendedRetentions += @{
-              "retention"  = @{
+              "retention" = @{
                 'id'                         = (New-Guid).Guid 
                 'storageSystemRetentionLock' = $false
                 'unit'                       = "WEEK"
                 'interval'                   = 3
               }
-              'selector'   = @{
+              'selector'  = @{
                 'backupType' = 'INCREMENTAL'
               }
               
             }
             $extendedRetentions += @{
-              "retention"  = @{
+              "retention" = @{
                 'id'                         = (New-Guid).Guid 
                 'storageSystemRetentionLock' = $false
                 'unit'                       = $Schedule.retention.Unit
                 'interval'                   = $Schedule.retention.interval
               }
-              'selector'   = @{
+              'selector'  = @{
                 'backupType' = 'SYNTHETIC_FULL'
               }
               
