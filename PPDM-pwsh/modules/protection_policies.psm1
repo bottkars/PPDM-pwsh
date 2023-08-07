@@ -1104,7 +1104,9 @@ function New-PPDMVMBackupPolicy {
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [ValidateLength(1, 150)][string]$StorageSystemID,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
-    [Alias('dataTargetId')][string]$StorageUnitID,  
+    [Alias('dataTargetId')][System.Guid]$StorageUnitID, 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
+    [Alias('IfId')]$preferredInterfaceId, 
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [Alias('backupMode')][string][ValidateSet('FSS', 'VSS')]$SizeSegmentation = 'VSS',
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
@@ -1188,22 +1190,16 @@ function New-PPDMVMBackupPolicy {
             }
           }                     
           'target'     = @{
-            'storageSystemId' = $StorageSystemID
+            'storageSystemId'      = $StorageSystemID
+            'dataTargetId'         = $StorageUnitID
+            'preferredInterfaceId' = $preferredInterfaceId
           }
           'operations' = $operations
           'retention'  = $Schedule.Retention
         }
       ) 
     } 
-    
-    if ($StorageUnitID) {
-      $Body.Stages[0].target.Add('dataTargetId', $StorageUnitID)
-    }
-    
     $Body = $Body | convertto-json -Depth 7
-
-
-        
     write-verbose ($body | out-string)
     $Parameters = @{
       RequestMethod    = 'Rest'
@@ -1261,11 +1257,13 @@ function New-PPDMK8SBackupPolicy {
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
     [ValidateLength(1, 150)][string]$StorageSystemID,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [Alias('dataTargetId')][System.Guid]$StorageUnitID, 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    [Alias('IfId')]$preferredInterfaceId, 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
     [Alias('BackupMode')][string][ValidateSet('FSS', 'VSS')]$SizeSegmentation = 'VSS',
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
-    [switch]$excludeSwapFiles,
-    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
-    [switch]$disableQuiescing,    
+    [string]$SLAId,  
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
     [switch]$enabled,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
@@ -1313,12 +1311,15 @@ function New-PPDMK8SBackupPolicy {
       }
       'stages'          = @(
         @{
-          'id'         = (New-Guid).Guid   
+          'id'         = (New-Guid).Guid
+          'slaId'      = $SLAId    
           'type'       = 'PROTECTION'
           'passive'    = $false
           'attributes' = @{}                     
           'target'     = @{
-            'storageSystemId' = $StorageSystemID
+            'storageSystemId'      = $StorageSystemID
+            'dataTargetId'         = $StorageUnitID
+            'preferredInterfaceId' = $preferredInterfaceId
           }
           'operations' = $operations
           'retention'  = $Schedule.Retention
@@ -1359,7 +1360,14 @@ function New-PPDMK8SBackupPolicy {
 }
 
 
-
+<#
+.SYNOPSIS
+Creates a Backup Policy for FileSystem
+.EXAMPLE
+$FSSchedule=New-PPDMBackupSchedule -hourly -CreateCopyIntervalHrs 8 -RetentionUnit DAY -RetentionInterval 5
+$StorageSystem=Get-PPDMStorage_systems -Type DATA_DOMAIN_SYSTEM -Filter {name eq "ddve.home.labbuildr.com"}
+New-PPDMFSBackupPolicy -Schedule $FSSchedule -Name "Windows Cluster Filesystem" -Description "Windows Cluster File System Backup" -StorageSystemID $StorageSystem.id -enabled -indexingEnabled -ignoreMissingSystemStateFiles
+#>
 function New-PPDMFSBackupPolicy {
   [CmdletBinding()]
   param(
@@ -1371,6 +1379,12 @@ function New-PPDMFSBackupPolicy {
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [ValidateLength(1, 150)][string]$StorageSystemID,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [Alias('dataTargetId')][System.Guid]$StorageUnitID, 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [Alias('IfId')]$preferredInterfaceId, 
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [switch]$enabled,
@@ -1392,6 +1406,8 @@ function New-PPDMFSBackupPolicy {
     [switch]$excludeNonCriticalDynamicDisks,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [switch]$ignoreThirdPartyServices,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [string]$SLAId,  
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
@@ -1425,7 +1441,9 @@ function New-PPDMFSBackupPolicy {
         if ($Schedule.CopySchedule) {
           $copyoperation = @{}
           $copyoperation.Add('schedule', $Schedule.CopySchedule)
-          $copyoperation.Add('backupType', 'SYNTHETIC_FULL')    
+          $copyoperation.Add('backupType', 'SYNTHETIC_FULL')
+          $copyoperation.Add('id', (New-Guid).UUID)    
+    
           $operations += $copyoperation            
         }
         if ($Schedule.FullSchedule) {
@@ -1436,11 +1454,11 @@ function New-PPDMFSBackupPolicy {
         }  
         [switch]$passive = $false
         $options = @{
-          'indexingEnabled' = $indexingEnabled.ispresent
-          'systemStateRecoveryOnly' = $systemStateRecoveryOnly.ispresent
-          'ignoreMissingSystemStateFiles' = $ignoreMissingSystemStateFiles.ispresent
+          'indexingEnabled'                = $indexingEnabled.ispresent
+          'systemStateRecoveryOnly'        = $systemStateRecoveryOnly.ispresent
+          'ignoreMissingSystemStateFiles'  = $ignoreMissingSystemStateFiles.ispresent
           'excludeNonCriticalDynamicDisks' = $excludeNonCriticalDynamicDisks.ispresent
-          'ignoreThirdPartyServices' = $ignoreThirdPartyServices.ispresent
+          'ignoreThirdPartyServices'       = $ignoreThirdPartyServices.ispresent
         }
       }
       Default {
@@ -1465,23 +1483,26 @@ function New-PPDMFSBackupPolicy {
       'priority'        = 1
       'passive'         = $passive.IsPresent
       'forceFull'       = $false
-      'details'         = ''
+      'details'         = $details
       'stages'          = @(
         @{
           'id'         = (New-Guid).Guid   
           'type'       = 'PROTECTION'
           'passive'    = $passive.IsPresent
+          'slaId'      = $SLAId 
           'attributes' = @{
             'filesytem' = @{
               'troubleShootingOption' = "debugEnabled=$($TroubleshootingDebug.IsPresent)"
             }
           }                     
           'target'     = @{
-            'storageSystemId' = $StorageSystemID
+            'storageSystemId'      = $StorageSystemID
+            'dataTargetId'         = $StorageUnitID
+            'preferredInterfaceId' = $preferredInterfaceId
           }
           'operations' = $operations
           'retention'  = $Schedule.Retention
-          'options' = $options
+          'options'    = $options
         }
       ) 
     } | convertto-json -Depth 7
@@ -1576,11 +1597,15 @@ function New-PPDMSQLBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
-    [Alias('dataTargetId')][string]$StorageUnitID,  
+    [Alias('dataTargetId')][Guid]$StorageUnitID,  
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
-    [Alias('')][string]$SLAId,      
+    [Alias('IfId')]$preferredInterfaceId, 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [string]$SLAId,      
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
@@ -1661,12 +1686,11 @@ function New-PPDMSQLBackupPolicy {
         $stages.Add('type', 'PROTECTION')
         $stages.Add('passive', $passive.IsPresent)
         $Stages.Add('slaId', $SLAId)
-        $Stages.Add('target', @{})
-        
-        $Stages.Target.Add('storageSystemId', $StorageSystemID)
-        if ($StorageUnitID) {
-          $Stages.target.Add('dataTargetId', $StorageUnitID)
-        }
+        $Stages.Add('target', @{
+            'storageSystemId'      = $StorageSystemID
+            'dataTargetId'         = $StorageUnitID
+            'preferredInterfaceId' = $preferredInterfaceId
+          })
         $Stages.Add('operations' , $operations)
         $Stages.Add('retention'  , $Schedule.Retention)
       }
@@ -1687,19 +1711,6 @@ function New-PPDMSQLBackupPolicy {
           $operations += $schedule.logSchedule   
         }
         [switch]$passive = $false
-        $Stages = @{}
-        $stages.Add('id', (New-Guid).Guid) 
-        $stages.Add('type', 'PROTECTION')
-        $stages.Add('passive', $passive.IsPresent)
-        $Stages.Add('slaId', $SLAId)
-        $Stages.Add('target', @{})
-        
-        $Stages.Target.Add('storageSystemId', $StorageSystemID)
-        if ($StorageUnitID) {
-          $Stages.target.Add('dataTargetId', $StorageUnitID)
-        }
-        $Stages.Add('operations' , $operations)
-        $Stages.Add('retention'  , $Schedule.Retention)
         $mssql_options = @{}
         $mssql_options.Add('excludeSystemDatabase', $excludeSystemDatabase.IsPresent)
         $mssql_options.Add('troubleShootingOption', "debugEnabled=$($TroubleshootingDebug.ToString().ToLower())")
@@ -1711,7 +1722,9 @@ function New-PPDMSQLBackupPolicy {
             'mssql' = $mssql_options
           }                     
           'target'     = @{
-            'storageSystemId' = $StorageSystemID
+            'storageSystemId'      = $StorageSystemID
+            'dataTargetId'         = $StorageUnitID
+            'preferredInterfaceId' = $preferredInterfaceId
           }
           'operations' = $operations
           'options'    = @{
@@ -1742,11 +1755,12 @@ function New-PPDMSQLBackupPolicy {
             'mssql' = $mssql_options
           }                     
           'target'     = @{
-            'storageSystemId' = $StorageSystemID
+            'storageSystemId'      = $StorageSystemID
+            'dataTargetId'         = $StorageUnitID
+            'preferredInterfaceId' = $preferredInterfaceId
           }
           'retention'  = $Schedule.Retention
         }
-
       }
     }
     if ($AppAware.IsPresent) {
@@ -1869,6 +1883,12 @@ function New-PPDMExchangeBackupPolicy {
     [ValidateLength(1, 150)][string]$StorageSystemID,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [Alias('dataTargetId')][System.Guid]$StorageUnitID, 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [Alias('IfId')]$preferredInterfaceId, 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [switch]$enabled,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
@@ -1975,7 +1995,9 @@ function New-PPDMExchangeBackupPolicy {
             'exchange' = $exchange_options
           }                     
           'target'     = @{
-            'storageSystemId' = $StorageSystemID
+            'storageSystemId'      = $StorageSystemID
+            'dataTargetId'         = $StorageUnitID
+            'preferredInterfaceId' = $preferredInterfaceId
           }
           'operations' = $operations
           'retention'  = $Schedule.Retention
@@ -2052,7 +2074,11 @@ function New-PPDMOracleBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     [Alias('dataTargetId')]
-    [System.Guid]$StorageUnitID,  
+    [System.Guid]$StorageUnitID,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [Alias('IfId')]$preferredInterfaceId, 
     #  [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
@@ -2267,9 +2293,9 @@ function New-PPDMOracleBackupPolicy {
             }
           }                     
           'target'             = @{
-            'storageSystemId' = $StorageSystemID
-            'dataTargetId'    = $StorageUnitID
-
+            'storageSystemId'      = $StorageSystemID
+            'dataTargetId'         = $StorageUnitID
+            'preferredInterfaceId' = $preferredInterfaceId
           }
           'operations'         = $operations
           'options'            = $options
@@ -2277,9 +2303,6 @@ function New-PPDMOracleBackupPolicy {
           'extendedRetentions' = $extendedRetentions
           
         }
-        #        if ($StorageUnitID) {
-        #          $stages.target.Add('dataTargetId', $StorageUnitID)
-        #        } 
       }
 
       "selfservice" {
@@ -2297,7 +2320,9 @@ function New-PPDMOracleBackupPolicy {
             'oracle' = $oracle_options
           }                     
           'target'     = @{
-            'storageSystemId' = $StorageSystemID
+            'storageSystemId'      = $StorageSystemID
+            'dataTargetId'         = $StorageUnitID
+            'preferredInterfaceId' = $preferredInterfaceId
           }
           'retention'  = $Schedule.Retention
         }
