@@ -39,12 +39,17 @@ function Connect-PPDMapiEndpoint {
         [switch]$force
     )
     Begin {
+        if ($($PSVersionTable.PSVersion.Major) -le 5) {
+            Write-Verbose "Setting TLS1.2"    
+            [Net.ServicePointManager]::SecurityProtocol =
+            [Net.ServicePointManager]::SecurityProtocol -bor
+            [Net.SecurityProtocolType]::Tls12
+        }
         if ($trustCert.IsPresent) {
             if ($($PSVersionTable.PSVersion.Major) -ge 6) {
                 $global:SkipCertificateCheck = $TRUE
             }
             else {
-                
                 Unblock-PPDMSSLCerts    
             }
             
@@ -273,7 +278,7 @@ function Invoke-PPDMapirequest {
         [Parameter(Mandatory = $false, ParameterSetName = 'infile')]
         [ValidateSet('Rest', 'Web')]$RequestMethod,        
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
-        $Body=@{},
+        $Body = @{},
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
         $Filter,
         [Parameter(Mandatory = $true, ParameterSetName = 'infile')]
@@ -452,7 +457,7 @@ function Start-PPDMasset_backups {
         } | convertto-json -compress
         write-verbose ($body | out-string)
         $Parameters = @{
-            RequestMethod   = 'REST'
+            RequestMethod    = 'REST'
             body             = $body 
             Uri              = $Uri
             Method           = $Method
@@ -467,7 +472,7 @@ function Start-PPDMasset_backups {
             Get-PPDMWebException  -ExceptionMessage $_
             break
         }
-       # write-verbose ($response | Out-String)
+        # write-verbose ($response | Out-String)
     } 
     end {    
         switch ($PsCmdlet.ParameterSetName) {
