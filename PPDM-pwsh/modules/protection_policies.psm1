@@ -1383,6 +1383,16 @@ function New-PPDMFSBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [string[]]$FilterIDS,    
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [switch]$indexingEnabled,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [switch]$systemStateRecoveryOnly,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [switch]$ignoreMissingSystemStateFiles,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [switch]$excludeNonCriticalDynamicDisks,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [switch]$ignoreThirdPartyServices,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
@@ -1409,23 +1419,29 @@ function New-PPDMFSBackupPolicy {
   Process {
 
     $URI = "/protection-policies"
-  
     switch ($pscmdlet.ParameterSetName ) {
       'centralized' { 
         $operations = @()
-
-        $copyoperation = @{}
-        $copyoperation.Add('schedule', $Schedule.CopySchedule)
-        $copyoperation.Add('backupType', 'SYNTHETIC_FULL')         
-    
-        $fulloperation = @{}
-        $fulloperation.Add('schedule', $Schedule.FullSchedule)
-        $fulloperation.Add('backupType', 'FULL')         
-          
-        $operations += $copyoperation 
-        $operations += $fulloperation 
+        if ($Schedule.CopySchedule) {
+          $copyoperation = @{}
+          $copyoperation.Add('schedule', $Schedule.CopySchedule)
+          $copyoperation.Add('backupType', 'SYNTHETIC_FULL')    
+          $operations += $copyoperation            
+        }
+        if ($Schedule.FullSchedule) {
+          $fulloperation = @{}
+          $fulloperation.Add('schedule', $Schedule.FullSchedule)
+          $fulloperation.Add('backupType', 'FULL')    
+          $operations += $fulloperation           
+        }  
         [switch]$passive = $false
-
+        $options = @{
+          'indexingEnabled' = $indexingEnabled.ispresent
+          'systemStateRecoveryOnly' = $systemStateRecoveryOnly.ispresent
+          'ignoreMissingSystemStateFiles' = $ignoreMissingSystemStateFiles.ispresent
+          'excludeNonCriticalDynamicDisks' = $excludeNonCriticalDynamicDisks.ispresent
+          'ignoreThirdPartyServices' = $ignoreThirdPartyServices.ispresent
+        }
       }
       Default {
         [switch]$passive = $true
@@ -1465,6 +1481,7 @@ function New-PPDMFSBackupPolicy {
           }
           'operations' = $operations
           'retention'  = $Schedule.Retention
+          'options' = $options
         }
       ) 
     } | convertto-json -Depth 7
@@ -1896,20 +1913,25 @@ function New-PPDMExchangeBackupPolicy {
     switch ($pscmdlet.ParameterSetName ) {
       'centralized' { 
         $operations = @()
+        if ($Schedule.CopySchedule) {
+          $copyoperation = @{}
+          $copyoperation.Add('schedule', $Schedule.CopySchedule)
+          $copyoperation.Add('backupType', 'SYNTHETIC_FULL')         
+          $copyoperation.Add('type', 'AUTO_FULL')
+          $operations += $copyoperation            
+        }
+      
 
-        $copyoperation = @{}
-        $copyoperation.Add('schedule', $Schedule.CopySchedule)
-        $copyoperation.Add('backupType', 'SYNTHETIC_FULL')         
-        $copyoperation.Add('type', 'AUTO_FULL')         
+        if ($Schedule.FullSchedule) {
+          $fulloperation = @{}
+          $fulloperation.Add('schedule', $Schedule.FullSchedule)
+          $fulloperation.Add('backupType', 'FULL')         
+          $fulloperation.Add('type', 'GEN0')         
+          $operations += $fulloperation           
+        }  
 
 
-        $fulloperation = @{}
-        $fulloperation.Add('schedule', $Schedule.FullSchedule)
-        $fulloperation.Add('backupType', 'FULL')         
-        $fulloperation.Add('type', 'GEN0')         
-          
-        $operations += $copyoperation 
-        $operations += $fulloperation 
+
 
         $exchange_options = @{
           'troubleShootingOption' = "debugEnabled=$($TroubleshootingDebug.IsPresent)"
