@@ -88,7 +88,7 @@ function Remove-PPDMflr_sessions {
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $apiver = "/api/v2",
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-       [hashtable]$body = @{pageSize = 200 }  
+        [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
         $Response = @()
@@ -146,7 +146,7 @@ function Get-PPDMflr_sessions {
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [switch]$files,        
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-       [hashtable]$body = @{pageSize = 200 }  
+        [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
         $Response = @()
@@ -210,7 +210,7 @@ function Get-PPDMflr_filelisting {
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $apiver = "/api/v2",      
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-       [hashtable]$body = @{pageSize = 200 }  
+        [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
         $Response = @()
@@ -273,7 +273,7 @@ function Set-PPDMflr_sessions {
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [string]$directory,                 
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-       [hashtable]$body = @{pageSize = 200 }  
+        [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
         $Response = @()
@@ -350,7 +350,7 @@ function Restore-PPDMflr_sessions {
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [string]$targetdirectory = "/tmp",                 
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-       [hashtable]$body = @{pageSize = 200 }  
+        [hashtable]$body = @{pageSize = 200 }  
     )
     begin {
         $Response = @()
@@ -407,4 +407,175 @@ function Restore-PPDMflr_sessions {
                 
         } 
     }   
+}
+
+
+<#
+filter: 
+objectType eq "FS" and 
+name lk "file*" 
+and type lk "%*.txt%" 
+and updatedAt ge "2023-07-07T13:38:20Z" 
+and itemType eq "file" 
+and createdAt ge "2023-08-06T13:38:13Z" 
+and size ge 1000000 
+and size le 200000000 
+and copyEndDate eq null 
+and sourceServer lk "%win*%" 
+and assetId eq "434ba5f0-3c5d-5bba-aba3-1d26684fcabe"
+#>
+
+
+function Get-PPDMfile_instances {
+    [CmdletBinding()]
+    param(
+
+
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $name,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [switch]$filesonly,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $filetype,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        $minsize,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [ValidateSet('KB', 'MB', 'GB', 'TB')]$minsizeUnit = "KB",
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        $maxsize,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [ValidateSet('KB', 'MB', 'GB', 'TB')]$maxsizeUnit = "KB",
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [DATE]$CreatedAtStart,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [DATE]$CreatedAtEnd,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [DATE]$modifiedAtStart,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [DATE]$modifiedAtEnd,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [DATE]$BackupAtStart,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [DATE]$BackupAtEnd,        
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
+    )
+
+    begin {
+        $Response = @()
+        $METHOD = "GET"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                $URI = "/$myself"
+            }
+        }  
+        $Filter = 'objectType eq "FS"'
+        if ($name) {
+            $filter = $filter + { and name lk "$name" }
+        }
+        if ($filetype) {
+            $filter = $filter + { and type lk "%$filetype%" }
+        }
+
+        if ($modifiedAtStart) {
+            if ($modifiedAtEnd) {
+                $Filter = $filter + { and updatedAt ge "$(get-date $modifiedAtStart -Format yyyy-MM-ddT00:00:00Z)" and updatedAt le "$(get-date $modifiedAtEnd -Format yyyy-MM-ddT23:59:59Z)" }
+            }
+            else {
+                $Filter = $filter + { and updatedAt ge "$(get-date $modifiedAtStart -Format yyyy-MM-ddThh:mm:ssZ)" }
+            }
+
+        }
+
+        if ($CreatedAtStart) {
+            if ($CreatedAtEnd) {
+                $Filter = $filter + { and updatedAt ge "$(get-date $CreatedAtStart -Format yyyy-MM-ddT00:00:00Z)" and updatedAt le "$(get-date $CreatedAtEnd -Format yyyy-MM-ddT23:59:59Z)" }
+            }
+            else {
+                $Filter = $filter + { and updatedAt ge "$(get-date $CreatedAtStart -Format yyyy-MM-ddThh:mm:ssZ)" }
+            }
+
+        }
+
+        if ($BackupAtStart) {
+            if ($BackupAtEnd) {
+                $Filter = $filter +  ' and (( copyEndDate gt "' + (get-date $BackupAtStart -Format yyyy-MM-ddT00:00:00Z) + '" and copyEndDate le "' + (get-date $BackupAtEnd -Format yyyy-MM-ddT23:59:59Z) + '") or ( copyStartDate le "' + (get-date $BackupAtEnd -Format yyyy-MM-ddT23:59:59Z) + '" and ( copyEndDate eq null or copyEndDate gt "' + (get-date $BackupAtEnd -Format yyyy-MM-ddT23:59:59Z) + '" )))'
+            }
+            else {
+                $Filter = $filter +  ' and (( copyEndDate gt "' + (get-date $BackupAtStart -Format yyyy-MM-ddT00:00:00Z) + '" and copyEndDate le "' + (get-date $BackupAtStart -Format yyyy-MM-ddT23:59:59Z) + '") or ( copyStartDate le "' + (get-date $BackupAtStart -Format yyyy-MM-ddT23:59:59Z) + '" and ( copyEndDate eq null or copyEndDate gt "' + (get-date $BackupAtStart -Format yyyy-MM-ddT23:59:59Z) + '" )))'
+            }
+
+        }
+
+
+        if ($filesonly.IsPresent) {
+            $filter = $filter + { and itemType lk "file" }
+        }
+        if ($minsize) {
+            $filter = $filter + { and size ge ($minsize * "1$minsizeunit") }
+        } 
+        if ($maxsize) {
+            $filter = $filter + { and size ge ($maxsize * "1$maxsizeunit") }
+        }            
+
+        if ($pagesize) {
+            $body.add('pageSize', $pagesize)
+        }
+        if ($page) {
+            $body.add('page', $page)
+        }   
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+        if ($type) {
+            if ($filter) {
+                $filter = 'type eq "' + $type + '" and ' + $filter 
+            }
+            else {
+                $filter = 'type eq "' + $type + '"'
+            }
+        }        
+        if ($filter) {
+            $parameters.Add('filter', $filter)
+        }       
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                write-output $response 
+            }
+            default {
+                write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
+            } 
+        }   
+    }
 }
