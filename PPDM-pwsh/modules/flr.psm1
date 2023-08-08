@@ -432,7 +432,9 @@ function Get-PPDMfile_instances {
 
 
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        $name,
+        [Alias('filename')]$name,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Alias('filepath')]$location,        
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         [switch]$filesonly,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
@@ -446,17 +448,21 @@ function Get-PPDMfile_instances {
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
         [ValidateSet('KB', 'MB', 'GB', 'TB')]$maxsizeUnit = "KB",
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
-        [DATE]$CreatedAtStart,
+        [datetime]$CreatedAtStart,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
-        [DATE]$CreatedAtEnd,
+        [datetime]$CreatedAtEnd,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
-        [DATE]$modifiedAtStart,
+        [datetime]$modifiedAtStart,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
-        [DATE]$modifiedAtEnd,
+        [datetime]$modifiedAtEnd,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
-        [DATE]$BackupAtStart,
+        [datetime]$BackupAtStart,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
-        [DATE]$BackupAtEnd,        
+        [datetime]$BackupAtEnd,  
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [string]$SourceServer,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [string]$AssetID,                             
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         $pageSize, 
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
@@ -483,59 +489,140 @@ function Get-PPDMfile_instances {
         }  
         $Filter = 'objectType eq "FS"'
         if ($name) {
-            $filter = $filter + { and name lk "$name" }
+            $filter = $filter + ' and name lk "' + $name + '"' 
         }
         if ($filetype) {
-            $filter = $filter + { and type lk "%$filetype%" }
+            $filter = $filter + ' and name lk "%' + $filetype + '%"' 
         }
 
         if ($modifiedAtStart) {
             if ($modifiedAtEnd) {
-                $Filter = $filter + { and updatedAt ge "$(get-date $modifiedAtStart -Format yyyy-MM-ddT00:00:00Z)" and updatedAt le "$(get-date $modifiedAtEnd -Format yyyy-MM-ddT23:59:59Z)" }
+                $Filter = $filter + ' and updatedAt ge "' + $(get-date $modifiedAtStart -Format yyyy-MM-ddT00:00:00Z) + '" and updatedAt le "' + $(get-date $modifiedAtEnd -Format yyyy-MM-ddT23:59:59Z) + '"'
             }
             else {
-                $Filter = $filter + { and updatedAt ge "$(get-date $modifiedAtStart -Format yyyy-MM-ddThh:mm:ssZ)" }
+                $Filter = $filter + ' and updatedAt ge "' + $(get-date $modifiedAtStart -Format yyyy-MM-ddThh:mm:ssZ) + '"'
             }
 
         }
 
         if ($CreatedAtStart) {
             if ($CreatedAtEnd) {
-                $Filter = $filter + { and updatedAt ge "$(get-date $CreatedAtStart -Format yyyy-MM-ddT00:00:00Z)" and updatedAt le "$(get-date $CreatedAtEnd -Format yyyy-MM-ddT23:59:59Z)" }
+                $Filter = $filter + ' and updatedAt ge "' + $(get-date $CreatedAtStart -Format yyyy-MM-ddT00:00:00Z) + '" and updatedAt le "' + $(get-date $CreatedAtEnd -Format yyyy-MM-ddT23:59:59Z) + '"'
             }
             else {
-                $Filter = $filter + { and updatedAt ge "$(get-date $CreatedAtStart -Format yyyy-MM-ddThh:mm:ssZ)" }
+                $Filter = $filter + ' and updatedAt ge "' + $(get-date $CreatedAtStart -Format yyyy-MM-ddThh:mm:ssZ) + '"'
             }
 
         }
 
         if ($BackupAtStart) {
             if ($BackupAtEnd) {
-                $Filter = $filter +  ' and (( copyEndDate gt "' + (get-date $BackupAtStart -Format yyyy-MM-ddT00:00:00Z) + '" and copyEndDate le "' + (get-date $BackupAtEnd -Format yyyy-MM-ddT23:59:59Z) + '") or ( copyStartDate le "' + (get-date $BackupAtEnd -Format yyyy-MM-ddT23:59:59Z) + '" and ( copyEndDate eq null or copyEndDate gt "' + (get-date $BackupAtEnd -Format yyyy-MM-ddT23:59:59Z) + '" )))'
+                $Filter = $filter + ' and (( copyEndDate gt "' + (get-date $BackupAtStart -Format yyyy-MM-ddT00:00:00Z) + '" and copyEndDate le "' + (get-date $BackupAtEnd -Format yyyy-MM-ddT23:59:59Z) + '") or ( copyStartDate le "' + (get-date $BackupAtEnd -Format yyyy-MM-ddT23:59:59Z) + '" and ( copyEndDate eq null or copyEndDate gt "' + (get-date $BackupAtEnd -Format yyyy-MM-ddT23:59:59Z) + '" )))'
             }
             else {
-                $Filter = $filter +  ' and (( copyEndDate gt "' + (get-date $BackupAtStart -Format yyyy-MM-ddT00:00:00Z) + '" and copyEndDate le "' + (get-date $BackupAtStart -Format yyyy-MM-ddT23:59:59Z) + '") or ( copyStartDate le "' + (get-date $BackupAtStart -Format yyyy-MM-ddT23:59:59Z) + '" and ( copyEndDate eq null or copyEndDate gt "' + (get-date $BackupAtStart -Format yyyy-MM-ddT23:59:59Z) + '" )))'
+                $Filter = $filter + ' and (( copyEndDate gt "' + (get-date $BackupAtStart -Format yyyy-MM-ddT00:00:00Z) + '" and copyEndDate le "' + (get-date $BackupAtStart -Format yyyy-MM-ddT23:59:59Z) + '") or ( copyStartDate le "' + (get-date $BackupAtStart -Format yyyy-MM-ddT23:59:59Z) + '" and ( copyEndDate eq null or copyEndDate gt "' + (get-date $BackupAtStart -Format yyyy-MM-ddT23:59:59Z) + '" )))'
             }
 
         }
 
 
         if ($filesonly.IsPresent) {
-            $filter = $filter + { and itemType lk "file" }
+            $filter = $filter + ' and itemType lk "file"'
         }
         if ($minsize) {
-            $filter = $filter + { and size ge ($minsize * "1$minsizeunit") }
+            $filter = $filter + ' and size ge ' + ($minsize * "1$minsizeunit")  
         } 
         if ($maxsize) {
-            $filter = $filter + { and size ge ($maxsize * "1$maxsizeunit") }
-        }            
-
+            $filter = $filter + ' and size ge ' + ($maxsize * "1$maxsizeunit") 
+        }   
+        if ($SourceServer) {
+            $filter = $filter + ' and sourceServer lk "%' + $SourceServer + '%"' 
+        }   
+        if ($location) {
+            $filter = $filter + ' and location lk "%' + $location + '%"' 
+        }             
+        if ($AssetID) {
+            $filter = $filter + ' and assetId eq "' + $AssetID + '"'
+        }
         if ($pagesize) {
             $body.add('pageSize', $pagesize)
         }
         if ($page) {
             $body.add('page', $page)
+        } 
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+        if ($type) {
+            if ($filter) {
+                $filter = 'type eq "' + $type + '" and ' + $filter 
+            }
+            else {
+                $filter = 'type eq "' + $type + '"'
+            }
+        }        
+        if ($filter) {
+            $parameters.Add('filter', $filter)
+        }       
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            'byID' {
+                write-output $response 
+            }
+            default {
+                write-output $response.content
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
+            } 
         }   
+    }
+}
+
+
+
+function Request-PPDMfile_backups {
+    [CmdletBinding()]
+    param(
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipeline = $true)]
+        [psobject]$fileinstance,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]     
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
+    )
+
+    begin {
+        $Response = @()
+        $METHOD = "POST"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(12) -replace "_", "-").ToLower()
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                $URI = "/file-instances/file-backups?backupInfo=latest"
+            }
+        }  
+#        $fileinstance = $fileinstance | select-object 
+        $body = @{'fileInstances' = @($fileinstance) } | ConvertTo-Json
+  
         $Parameters = @{
             RequestMethod    = 'REST'
             body             = $body
