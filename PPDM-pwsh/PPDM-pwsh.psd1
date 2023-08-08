@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.52'
+ModuleVersion = '19.14.20.54'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -297,7 +297,9 @@ FunctionsToExport = @(
     'Remove-PPDMrestored_copies'  
     'Remove-PPDMexported_copies',
     'Get-PPDMexported_copies',
-    'Set-PPDMexported_copies'   
+    'Set-PPDMexported_copies',
+    'Get-PPDMfile_instances',
+    'Request-PPDMfile_backups'   
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
