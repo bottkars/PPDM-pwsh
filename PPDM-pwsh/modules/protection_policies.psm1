@@ -781,11 +781,10 @@ function New-PPDMBackupSchedule {
 
   }     
   Process {
-    if ($endtime -lt $starttime)
-      {
-        $endtime = $endtime + 1d
-      }
-    $PTHours = ($starttime - $endtime).Hours
+    if ($endtime -lt $starttime) {
+      $endtime = $endtime + 1d
+    }
+    $PTHours = ($endtime - $starttime).Hours
     $schedule = @{}
     $retention = @{
       'interval' = $RetentionInterval
@@ -975,11 +974,10 @@ function New-PPDMDatabaseBackupSchedule {
 
   }     
   Process {
-    if ($endtime -lt $starttime)
-    {
+    if ($endtime -lt $starttime) {
       $endtime = $endtime + 1d
     }
-    $PTHours = ($starttime - $endtime).Hours
+    $PTHours = ($endtime - $starttime).Hours
     $schedule = @{}
     $retention = @{
       'interval' = $RetentionInterval

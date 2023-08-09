@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.54'
+ModuleVersion = '19.14.20.56'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -375,9 +375,11 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
-        In Dev release:
-        - Oracle Restores
+        2023-08-09 (v19.14.20.55)
+        - Fixed Time Diff Bug
+        - Oracle Restores, Oracle OIM
         - latestcopies Alias for pipelining 
+        - Powershell Interface to Indexing Search
         2023-07-27 (v19.14.20.33)
         - added copy maps excludeCopyState
         - added asset poies paging
