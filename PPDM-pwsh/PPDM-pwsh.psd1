@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.56'
+ModuleVersion = '19.14.20.57'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()

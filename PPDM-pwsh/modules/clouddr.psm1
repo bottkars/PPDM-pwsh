@@ -136,7 +136,7 @@ function Set-PPDMcloud_dr_accounts {
             'byID' {
                 $URI = "/$myself/$id"
                 $Body = @{
-                    'userKey'   = $UserKey #ä$($Credentials.GetNetworkCredential()).username
+                    'userKey'   = $UserKey  #$($Credentials.GetNetworkCredential()).username
                     'secretKey' = $secretKey #$($Credentials.GetNetworkCredential()).password
                 } | ConvertTo-Json
             }

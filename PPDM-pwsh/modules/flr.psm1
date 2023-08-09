@@ -40,7 +40,7 @@ function Start-PPDMflr_sessions {
                 $Body = [ordered]@{
                     'copyId'          = $copyId
                     'targetVmAssetId' = $targetVmAssetId
-                    'targetUser'      = $($Credentials.GetNetworkCredential()).username
+                    'targetUser'      = $($Credentials.username)
                     'targetPassword'  = $($Credentials.GetNetworkCredential()).password
                     'removeAgent'     = $removeAgent.IsPresent
                     'elevateUser'     = $elevateUser.IsPresent                
