@@ -166,6 +166,8 @@ function Connect-PPDMapiEndpoint {
         }
         $Global:PPDM_Refresh_token = $Response.Refresh_token
         $Global:PPDM_Scope = $Response.Scope
+
+        $Global:PPDM_API_Token=$Response.access_token
         Write-Host "Connected to $PPDM_API_BASEURI with Scope $($Response.Scope)"
         Write-Output $Response
     }
@@ -191,7 +193,9 @@ function Update-PPDMToken {
         $Parameters = @{
             UseBasicParsing = $true 
             body            = $body 
-            Headers         = $($Global:PPDM_API_Headers)
+            Headers         = @{
+               "Authorization" = "Bearer $($Global:PPDM_Refresh_token)" 
+            }
             Uri             = "$($Global:PPDM_API_BaseUri):$($Global:PPDM_API_PORT)$apiver/token"
             Method          = $Method
             Verbose         = $PSBoundParameters['Verbose'] -eq $true
@@ -215,6 +219,7 @@ function Update-PPDMToken {
         $Global:PPDM_API_Headers = @{
             'Authorization' = "Bearer $($Response.access_token)"
         }
+        $Global:PPDM_API_Token = $Response.access_token
         $Global:PPDM_Scope = $Response.Scope
         #  $Global:PPDM_Refresh_token = $Response.Refresh_token
         Write-Host "Connected to $PPDM_API_BASEURI with $($Response.Scope)"
@@ -293,6 +298,23 @@ function Invoke-PPDMapirequest {
 
     $uri = "$($Global:PPDM_API_BaseUri):$apiport/$apiver/$uri"
     if ($Global:PPDM_API_Headers) {
+        # checking token
+        $refreshDate=(Get-Date -Date "01-01-1970") + ([System.TimeSpan]::FromSeconds(((Show-PPDMJWTtoken -token $Global:PPDM_Refresh_token).exp)))
+        $TokenDate=(Get-Date -Date "01-01-1970") + ([System.TimeSpan]::FromSeconds(((Show-PPDMJWTtoken -token $Global:PPDM_API_Token).exp)))
+        $TokenDate=$TokenDate.ToLocalTime()
+        $refreshDate=$refreshDate.ToLocalTime()
+        if ($TokenDate -lt (get-date)) {
+            Write-Warning "Auth Token with $TokenDate.Expired, will try to refresh"
+            if ($refreshDate-lt (get-date)) 
+            {
+                Write-Warning "Refresh Token Expired, please re-authenticate with PPDM"
+                return
+            }
+            else {
+                Write-Verbose "Refreshing Token using Refresh Token"
+                Update-PPDMToken 6>out-null | out-null 
+            }
+        }
         $Headers = $Global:PPDM_API_Headers
         Write-Verbose ($Headers | Out-String)
         Write-Verbose "==> Calling $uri"
@@ -410,7 +432,7 @@ function Disconnect-PPDMsession {
     Remove-Variable PPDM_Scope -Scope Global -ErrorAction SilentlyContinue
     Remove-Variable PPDM_Refresh_token -Scope Global -ErrorAction SilentlyContinue
     Remove-Variable PPDM_API_PORT -Scope Global -ErrorAction SilentlyContinue
-
+    Remove-Variable PPDM_API_Token -Scope Global -ErrorAction SilentlyContinue
 }
 
 
@@ -486,6 +508,44 @@ function Start-PPDMasset_backups {
     }
 }
 
+
+function Show-PPDMJWTtoken {
+ 
+    [cmdletbinding()]
+    param([Parameter(Mandatory=$true)][string]$token)
+ 
+    #Validate as per https://tools.ietf.org/html/rfc7519
+    #Access and ID tokens are fine, Refresh tokens will not work
+    if (!$token.Contains(".") -or !$token.StartsWith("eyJ")) { Write-Error "Invalid token" -ErrorAction Stop }
+ 
+    #Header
+    $tokenheader = $token.Split(".")[0].Replace('-', '+').Replace('_', '/')
+    #Fix padding as needed, keep adding "=" until string length modulus 4 reaches 0
+    while ($tokenheader.Length % 4) { Write-Verbose "Invalid length for a Base-64 char array or string, adding ="; $tokenheader += "=" }
+    Write-Verbose "Base64 encoded (padded) header:"
+    Write-Verbose $tokenheader
+    #Convert from Base64 encoded string to PSObject all at once
+    Write-Verbose "Decoded header:
+    $([System.Text.Encoding]::ASCII.GetString([system.convert]::FromBase64String($tokenheader)) | ConvertFrom-Json |  Out-string)"
+ 
+    #Payload
+    $tokenPayload = $token.Split(".")[1].Replace('-', '+').Replace('_', '/')
+    #Fix padding as needed, keep adding "=" until string length modulus 4 reaches 0
+    while ($tokenPayload.Length % 4) { Write-Verbose "Invalid length for a Base-64 char array or string, adding ="; $tokenPayload += "=" }
+    Write-Verbose "Base64 encoded (padded) payoad:"
+    Write-Verbose $tokenPayload
+    #Convert to Byte array
+    $tokenByteArray = [System.Convert]::FromBase64String($tokenPayload)
+    #Convert to string array
+    $tokenArray = [System.Text.Encoding]::ASCII.GetString($tokenByteArray)
+    Write-Verbose "Decoded array in JSON format:"
+    Write-Verbose $tokenArray
+    #Convert from JSON to PSObject
+    $tokobj = $tokenArray | ConvertFrom-Json
+    Write-Verbose "Decoded Payload:"
+    
+    return $tokobj
+}
 
 
 #######
