@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.62'
+ModuleVersion = '19.14.20.64'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -375,7 +375,8 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
-        2023-08-09 (v19.14.20.55)
+        2023-08-09 (v19.14.20.64)
+        - Automated Token Refresh
         - Fixed Time Diff Bug
         - Oracle Restores, Oracle OIM
         - latestcopies Alias for pipelining 
