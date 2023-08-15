@@ -1155,7 +1155,6 @@ until ($MountedCopy.status -eq "SUCCESS")
 
 $Parameters = @{
   HostID               = $RestoreToHost.id
-  BackupTransactionID  = $RestoreAssetCopy.backupTransactionId
   Hostpath             = "/home/bottk"
   mountURL             = $MountedCopy.restoredCopiesDetails.targetFileSystemInfo.mountUrl
   RestoreAssetHostname = $RestoreFromHost
@@ -1186,12 +1185,6 @@ function Restore-PPDMFileFLR_copies {
     [alias('assetObject')][psobject]$copyobject,
     [Parameter(Mandatory = $true, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [string]$HostID,
-    #[Parameter(Mandatory = $True, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    #$BackupTransactionID,
-    #[Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    #[Alias('copyIds', 'Id')][string[]]$ids,
-    [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $true)]
-    $RestoreAssetHostname,   
     #[Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     # [Alias('name')]$assetName,
     [Parameter(Mandatory = $true, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
@@ -1203,11 +1196,13 @@ function Restore-PPDMFileFLR_copies {
     [Parameter(Mandatory = $true, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [string[]]$RestoreSources, 
     [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
-    [string]$CustomDescription,      
+    [string]$CustomDescription,     
+    [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
+    [ValidateSet('LINUX', 'WINDOWS')][string]$HostOS,   
     #  [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     #  [Alias('sources','FileList')][string[]]$RestoreSources,     
     
-
+    [switch]$noop,
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     $apiver = "/api/v2"           
   )
@@ -1221,17 +1216,13 @@ function Restore-PPDMFileFLR_copies {
       'byCopyObjecttoProduction' {
         $AssetName = $copyobject.assetName
         [string[]]$ids = $copyobject.id
-        $BackupTransactionID = $copyobject.backupTransactionId
       }
       default {
         
       }
     } 
     $body = @{}
-    $Sources = @()
-    foreach ($file in $RestoreSources) {
-      $sources += "/opt/dpsapps/fsagent/tmp/FBB/$($RestoreAssetHostname.tolower())/$($BackupTransactionID)$file"
-    }
+
     if ($CustomDescription) {
       $body.Add('description', "File Level Restore of $AssetName, $CustomDescription")  
     }
@@ -1248,11 +1239,9 @@ function Restore-PPDMFileFLR_copies {
     $body.restoredCopiesDetails.targetFileSystemInfo.Add('conflictStrategy', $conflictStrategy)
     $body.restoredCopiesDetails.targetFileSystemInfo.Add('location', "$RestoreLocation") 
     $body.restoredCopiesDetails.targetFileSystemInfo.Add('hostId', "$HostID")
-    $body.restoredCopiesDetails.targetFileSystemInfo.Add('sources', $sources)
+    $body.restoredCopiesDetails.targetFileSystemInfo.Add('sources', $RestoreSources)
     $body = $body | ConvertTo-Json -Depth 7
     write-verbose ($body | out-string )
-
-
     $Parameters = @{
       RequestMethod    = 'REST'
       body             = $body
@@ -1262,17 +1251,17 @@ function Restore-PPDMFileFLR_copies {
       apiver           = $apiver
       Verbose          = $PSBoundParameters['Verbose'] -eq $true
     }
-
-    try {
-      $Response += Invoke-PPDMapirequest @Parameters
-
-    }
-    catch {
-      Get-PPDMWebException  -ExceptionMessage $_
-      break
-    }
-    write-verbose ($response | Out-String)
-  } 
+    if (!$noop.IsPresent) {
+      try {
+        $Response += Invoke-PPDMapirequest @Parameters
+      }
+      catch {
+        Get-PPDMWebException  -ExceptionMessage $_
+        break
+      }
+      write-verbose ($response | Out-String)
+    } 
+  }
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
@@ -1468,7 +1457,27 @@ function Restore-PPDMMSSQL_copies {
   }
 }
 
+<#
+.SYNOPSIS
+Browses the FLR Mount. Identifies the Mounted Copy Locationon the Host
+.EXAMPLE
+$BMRHost=Get-PPDMhosts -type APP_HOST -filter 'name lk "win-01.demo.local"'
+$BMRRestoreAssetCopy=$BMRAssets | Get-PPDMlatest_Copies
+$BMRRestoredCopy = New-PPDMRestored_copies -copyobject $BMRRestoreAssetCopy  -Hostid $BMRHost.id
+do {
+  Start-Sleep -Seconds 10
+  $MountedCopy = $BMRRestoredCopy | Get-PPDMRestored_copies
+}
+until ($MountedCopy.status -eq "SUCCESS") 
+$Parameters = @{
+    HostID               = $BMRHost.id
+    BackupTransactionID  = $BMRRestoreAssetCopy.backupTransactionId
+    mountURL             = $MountedCopy.restoredCopiesDetails.targetFileSystemInfo.mountUrl
+}
+$Browselist = Get-PPDMFSAgentFLRBrowselist @Parameters
+$Browselist.files
 
+#>
 function Get-PPDMFSAgentFLRBrowselist {
   [CmdletBinding()]
   param(
@@ -1477,11 +1486,7 @@ function Get-PPDMFSAgentFLRBrowselist {
     [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $true)]
     $BackupTransactionID,
     [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $true)]
-    $Hostpath,
-    [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $true)]
-    $mountURL,
-    [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $true)]
-    $RestoreAssetHostname,            
+    $mountURL,    
     $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
     $apiver = "/api/v2"
   )
@@ -1497,10 +1502,9 @@ function Get-PPDMFSAgentFLRBrowselist {
       default {
       }
     }
-
     $Body = @{}
     $Body.Add('hostId', $HostID)
-    $Body.Add('mountUrl', "$($mountURL)/opt/dpsapps/fsagent/tmp/FBB/$($RestoreAssetHostname.tolower())/$($BackupTransactionID)$($HostPath)" )
+    $Body.Add('mountUrl', $mountURL)
 
     $Body = $Body | ConvertTo-Json
     Write-Verbose ( $body | out-string )
@@ -1527,11 +1531,13 @@ function Get-PPDMFSAgentFLRBrowselist {
     switch ($PsCmdlet.ParameterSetName) {
 
       default {
-        write-output $response
+        write-output $response | convertfrom-json
       } 
     }   
   }
 }
+
+
 
 
 
@@ -1728,7 +1734,7 @@ function Restore-PPDMOracle_OIM_copies {
       }
     }  
     $body = @{
-      'copyIds'               = @( $CopyObject.id )
+      'copyIds' = @( $CopyObject.id )
     }
     $body.Add('dryRun', $dryRun.IsPresent)
     if ($CustomDescription) {
@@ -1745,7 +1751,7 @@ function Restore-PPDMOracle_OIM_copies {
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('assetName', $targetSid)
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('applicationSystemId', $null)
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('hostId', "$HostID")
-    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('restoreCategory',$restoreCategory)
+    $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('restoreCategory', $restoreCategory)
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('assetId', $assetId)
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('dataTargetId', $dataTargetId[0])
     $body.restoredCopiesDetails.targetOracleDatabaseInfo.Add('parallelism', 4)
@@ -1828,53 +1834,53 @@ function Remove-PPDMrestored_copies {
   [CmdletBinding()]
   param(
 
-      [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-      $id,
-      [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
-      $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-      [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
-      $apiver = "/api/v2"
+    [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+    $id,
+    [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+    $apiver = "/api/v2"
   )
 
   begin {
-      $Response = @()
-      $METHOD = "POST"
-      $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
+    $Response = @()
+    $METHOD = "POST"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
  
   }     
   Process {
-      switch ($PsCmdlet.ParameterSetName) {
+    switch ($PsCmdlet.ParameterSetName) {
 
-          default {
-              $URI = "/$myself/$id/remove"
-              $body = @{}                
-          }
-      }  
+      default {
+        $URI = "/$myself/$id/remove"
+        $body = @{}                
+      }
+    }  
   
-      $Parameters = @{
-          RequestMethod    = 'REST'
-          body             = $body
-          Uri              = $URI
-          Method           = $Method
-          PPDM_API_BaseUri = $PPDM_API_BaseUri
-          apiver           = $apiver
-          Verbose          = $PSBoundParameters['Verbose'] -eq $true
-      }
-      try {
-          $Response += Invoke-PPDMapirequest @Parameters
-      }
-      catch {
-          Get-PPDMWebException  -ExceptionMessage $_
-          break
-      }
-      write-verbose ($response | Out-String)
+    $Parameters = @{
+      RequestMethod    = 'REST'
+      body             = $body
+      Uri              = $URI
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
   } 
   end {    
-      switch ($PsCmdlet.ParameterSetName) {
-          default {
-              write-output $response
-          } 
-      }   
+    switch ($PsCmdlet.ParameterSetName) {
+      default {
+        write-output $response
+      } 
+    }   
   }
 }
 

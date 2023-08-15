@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.64'
+ModuleVersion = '19.14.20.68'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -375,7 +375,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
-        2023-08-09 (v19.14.20.64)
+        2023-08-14 (v19.14.20.68)
+        - BMR Support
+        - Copies Query
         - Automated Token Refresh
         - Fixed Time Diff Bug
         - Oracle Restores, Oracle OIM
@@ -391,7 +393,7 @@ PrivateData = @{
         - fixed output bug
         2023-07-21 (v19.14.20.5)
         - reverted headerResponse to use webrequest on POST/PUT/PATCH for PSH 5
-        - Updated vcenter api´s for Moref
+        # - Updated vcenter api´s for Moref
         - added initial mfa and idp support 
         - fixes to pagination, streamlined -page and -pagesuze parameters
         - added default activity views for Protection, Asset and System Jobs

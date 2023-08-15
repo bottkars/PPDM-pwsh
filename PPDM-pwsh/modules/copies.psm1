@@ -190,6 +190,106 @@ function Get-PPDMlatest_copies {
 
 
 
+
+function Get-PPDMcopies_query {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, ParameterSetName = 'AssetIDS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Filter', ValueFromPipelineByPropertyName = $true)]
+        [Alias('Id')][string[]]$assetID,
+        [Parameter(Mandatory = $true, ParameterSetName = 'TYPE', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'Filter', ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet(          
+            'VMAXSTORAGEGROUP',
+            'VIRTUALMACHINE',
+            'ORACLE_CDB', 'ORACLE_NON_CDB', 'ORACLE_PDB',
+            'MSSQL',
+            'NTFS', 'ReFS', 'CSVFS', 'ext3', 'ext4', 'xfs', 'btrfs', 'FS_DR', 'JFS', 'JFS2',
+            'K8S_NAMESPACE', 'K8S_POD', 'K8S_PERSISTENT_VOLUME', 'K8S_PERSISTENT_VOLUME_CLAIM',
+            'EXCHANGE_MAILBOX', 'EXCHANGE_PUBLIC_FOLDER',
+            'SAPHANA_SYSTEM', 'SAPHANA_TENANT',
+            'UNITY_NFS', 'UNITY_CIFS', 'POWERSTORE_NFS', 'POWERSTORE_CIFS', 'POWERSCALE_NFS', 'POWERSCALE_CIFS', 'NFS_GENERIC', 'CIFS_GENERIC',
+            'CLOUD_NATIVE_ENTITY',
+            'POWERSTORE_VOLUMEGROUP', 'POWERSTORE_VOLUME',
+            'CLOUD_DIRECTOR_VAPP'
+        )]$Type,
+        [Parameter(Mandatory = $true, ParameterSetName = 'Filter', ValueFromPipelineByPropertyName = $true)]
+        $filter,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $page,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
+    )
+    begin {
+        $body = @{}
+        $Response = @()
+        $METHOD = "POST"
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                $URI = "copies-query"
+            }
+        }
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            contentType      = 'application/x-www-form-urlencoded'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+        if ($type) {
+            if ($filter) {
+                $filter = 'assetSubtype eq "' + $type + '" and ' + $filter 
+            }
+            else {
+                $filter = 'assetSubtype eq "' + $type + '"'
+            }
+        }
+        if ($assetID) {
+            if ($filter) {
+                $filter = 'assetId in ("' + ($assetID -join '","') + '") and ' + $filter 
+            }
+            else {
+                $filter = 'assetId in ("' + ($assetID -join '","') + '")'
+            }            
+        }        
+
+        if ($filter) {
+            write-verbose ($filter | Out-String)
+            $Parameters.Add('filter', $filter)
+        } 
+         
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+
+            default {
+                write-output $response.content 
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
+            } 
+        }   
+    }
+}
+
 function Remove-PPDMcopies {
     [CmdletBinding()]
     param(
@@ -250,8 +350,6 @@ function Remove-PPDMcopies {
 }
 
 
-
-
 function Get-PPDMlatest_copies_old {
     [CmdletBinding()]
     param(
@@ -259,13 +357,11 @@ function Get-PPDMlatest_copies_old {
         $id,        
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
-
     )
     begin {
         $Response = @()
         $METHOD = "GET"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-   
     }     
     Process {
         $URI = "/$myself"
@@ -299,70 +395,3 @@ function Get-PPDMlatest_copies_old {
 }
 
 
-
-
-
-function Get-PPDMcopies_query {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $id,
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
-        $filter,  
-        #        [hashtable]$body = @{pageSize = 200 },  
-        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
-        $apiver = "/api/v2"
-    )
-    begin {
-        $Response = @()
-        $METHOD = "POST"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-   
-    }     
-    Process {
-        $body = @{}
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                #
-                $URI = "/$myself/$id"
-            }
-            default {
-                $URI = "/$myself"
-            }
-        }  
-        if ($filter) {
-            $body.Add('filter', $filter)
-        } 
-        $body = $body | ConvertTo-Json          
-        $Parameters = @{
-            #          body             = $body 
-            Uri              = $Uri
-            Method           = $Method
-            RequestMethod    = 'Rest'
-            PPDM_API_BaseUri = $PPDM_API_BaseUri
-            apiver           = $apiver
-            Verbose          = $PSBoundParameters['Verbose'] -eq $true
-            # ResponseHeadersVariable = 'HeaderResponse'
-        }
-
-    
-        try {
-            $Response += Invoke-PPDMapirequest @Parameters
-        }
-        catch {
-            Get-PPDMWebException  -ExceptionMessage $_
-            break
-        }
-        write-verbose ($response | Out-String)
-    } 
-    end {    
-        switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response 
-            }
-            default {
-                write-output $response.content
-            } 
-        }   
-    }
-}

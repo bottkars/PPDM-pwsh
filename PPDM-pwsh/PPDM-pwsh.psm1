@@ -297,7 +297,7 @@ function Invoke-PPDMapirequest {
     $uri = $uri.trimend('/')
 
     $uri = "$($Global:PPDM_API_BaseUri):$apiport/$apiver/$uri"
-    if ($Global:PPDM_API_Headers) {
+    if (($Global:PPDM_API_Headers) -and ($Global:PPDM_API_Token) -and ($Global:PPDM_Refresh_token)) {
         # checking token
         $refreshDate=(Get-Date -Date "01-01-1970") + ([System.TimeSpan]::FromSeconds(((Show-PPDMJWTtoken -token $Global:PPDM_Refresh_token).exp)))
         $TokenDate=(Get-Date -Date "01-01-1970") + ([System.TimeSpan]::FromSeconds(((Show-PPDMJWTtoken -token $Global:PPDM_API_Token).exp)))
@@ -394,7 +394,7 @@ function Invoke-PPDMapirequest {
         while (($retries -ge 0) -and ($has_error -gt 0))
     }
     else {
-        Write-Warning "PPDM_API_Headers are not present. Did you connect to PPDM_API  using connect-PPDMAPIendpoint ? "
+        Write-Warning "PPDM_API_Headers,PPDM_API_Token or PPDM_refresh_token are not present. Please re-connect using connect-PPDMsystem"
         break
     }
     if ($ResponseHeadersVariable) {
@@ -513,37 +513,18 @@ function Show-PPDMJWTtoken {
  
     [cmdletbinding()]
     param([Parameter(Mandatory=$true)][string]$token)
- 
-    #Validate as per https://tools.ietf.org/html/rfc7519
-    #Access and ID tokens are fine, Refresh tokens will not work
     if (!$token.Contains(".") -or !$token.StartsWith("eyJ")) { Write-Error "Invalid token" -ErrorAction Stop }
- 
     #Header
     $tokenheader = $token.Split(".")[0].Replace('-', '+').Replace('_', '/')
     #Fix padding as needed, keep adding "=" until string length modulus 4 reaches 0
-    while ($tokenheader.Length % 4) { Write-Verbose "Invalid length for a Base-64 char array or string, adding ="; $tokenheader += "=" }
-    Write-Verbose "Base64 encoded (padded) header:"
-    Write-Verbose $tokenheader
-    #Convert from Base64 encoded string to PSObject all at once
-    Write-Verbose "Decoded header:
-    $([System.Text.Encoding]::ASCII.GetString([system.convert]::FromBase64String($tokenheader)) | ConvertFrom-Json |  Out-string)"
- 
+    while ($tokenheader.Length % 4) { $tokenheader += "=" }
     #Payload
     $tokenPayload = $token.Split(".")[1].Replace('-', '+').Replace('_', '/')
     #Fix padding as needed, keep adding "=" until string length modulus 4 reaches 0
-    while ($tokenPayload.Length % 4) { Write-Verbose "Invalid length for a Base-64 char array or string, adding ="; $tokenPayload += "=" }
-    Write-Verbose "Base64 encoded (padded) payoad:"
-    Write-Verbose $tokenPayload
-    #Convert to Byte array
+    while ($tokenPayload.Length % 4) { $tokenPayload += "=" }
     $tokenByteArray = [System.Convert]::FromBase64String($tokenPayload)
-    #Convert to string array
     $tokenArray = [System.Text.Encoding]::ASCII.GetString($tokenByteArray)
-    Write-Verbose "Decoded array in JSON format:"
-    Write-Verbose $tokenArray
-    #Convert from JSON to PSObject
     $tokobj = $tokenArray | ConvertFrom-Json
-    Write-Verbose "Decoded Payload:"
-    
     return $tokobj
 }
 
