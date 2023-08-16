@@ -304,7 +304,7 @@ function Invoke-PPDMapirequest {
         $TokenDate=$TokenDate.ToLocalTime()
         $refreshDate=$refreshDate.ToLocalTime()
         if ($TokenDate -lt (get-date)) {
-            Write-Warning "Auth Token with $TokenDate.Expired, will try to refresh"
+            Write-Warning "Auth Token with timestamp $TokenDate has expired, will try to refresh"
             if ($refreshDate-lt (get-date)) 
             {
                 Write-Warning "Refresh Token Expired, please re-authenticate with PPDM"
