@@ -1122,6 +1122,8 @@ function New-PPDMVMBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [switch]$enabled,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
+    [switch]$indexingEnabled,     
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [switch]$encrypted, 
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [string]$SLAId,     
@@ -1177,6 +1179,7 @@ function New-PPDMVMBackupPolicy {
       'details'         = @{
         'vm' = @{
           'protectionEngine' = 'VMDIRECT'
+          'metadataIndexingEnabled' = $indexingEnabled.IsPresent
         }
       }
       'stages'          = @(
