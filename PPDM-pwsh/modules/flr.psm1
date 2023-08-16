@@ -429,72 +429,102 @@ and assetId eq "434ba5f0-3c5d-5bba-aba3-1d26684fcabe"
 function Get-PPDMfile_instances {
     [CmdletBinding()]
     param(
-
-
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [switch]$Filesystem,
+        [Parameter(Mandatory = $true, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
+        [switch]$VirtualMachine,
+        [Parameter(Mandatory = $False, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('LINUX', 'WINDOWS')]
+        [string]$GuestOS,
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [Alias('filename')]$name,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [Alias('filepath')]$location,        
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [switch]$filesonly,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         $filetype,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         $minsize,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('KB', 'MB', 'GB', 'TB')]$minsizeUnit = "KB",
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
         $maxsize,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('KB', 'MB', 'GB', 'TB')]$maxsizeUnit = "KB",
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [datetime]$CreatedAtStart,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [datetime]$CreatedAtEnd,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [datetime]$modifiedAtStart,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [datetime]$modifiedAtEnd,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
+        [switch]$LastBackupOnly,
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [datetime]$BackupAtStart,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [datetime]$BackupAtEnd,  
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [string]$SourceServer,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [string]$AssetID,                             
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         $pageSize, 
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         $page, 
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [hashtable]$body = @{orderby = 'createdAt DESC' },
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $apiver = "/api/v2"
     )
-
     begin {
         $Response = @()
         $METHOD = "GET"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-   
     }     
     Process {
         switch ($PsCmdlet.ParameterSetName) {
             default {
                 $URI = "/$myself"
             }
-        }  
-        $Filter = 'objectType eq "FS"'
+        }
+        $Filter = 'objectType eq "' + $PsCmdlet.ParameterSetName + '"'
+        Switch ($GuestOS) {
+            'LINUX' {
+                $filter = $filter + ' and backupType in ("ext", "ext2", "ext3", "ext4", "xfs", "btrfs")'
+            }
+            'WINDOWS' {
+                $filter = $filter + ' and backupType in ("ntfs", "fat32")'
+            }
+        }
         if ($name) {
             $filter = $filter + ' and name lk "' + $name + '"' 
         }
         if ($filetype) {
             $filter = $filter + ' and name lk "%' + $filetype + '%"' 
         }
-
         if ($modifiedAtStart) {
             if ($modifiedAtEnd) {
                 $Filter = $filter + ' and updatedAt ge "' + $(get-date $modifiedAtStart -Format yyyy-MM-ddT00:00:00Z) + '" and updatedAt le "' + $(get-date $modifiedAtEnd -Format yyyy-MM-ddT23:59:59Z) + '"'
@@ -502,9 +532,7 @@ function Get-PPDMfile_instances {
             else {
                 $Filter = $filter + ' and updatedAt ge "' + $(get-date $modifiedAtStart -Format yyyy-MM-ddThh:mm:ssZ) + '"'
             }
-
         }
-
         if ($CreatedAtStart) {
             if ($CreatedAtEnd) {
                 $Filter = $filter + ' and updatedAt ge "' + $(get-date $CreatedAtStart -Format yyyy-MM-ddT00:00:00Z) + '" and updatedAt le "' + $(get-date $CreatedAtEnd -Format yyyy-MM-ddT23:59:59Z) + '"'
@@ -512,20 +540,20 @@ function Get-PPDMfile_instances {
             else {
                 $Filter = $filter + ' and updatedAt ge "' + $(get-date $CreatedAtStart -Format yyyy-MM-ddThh:mm:ssZ) + '"'
             }
-
         }
-
-        if ($BackupAtStart) {
-            if ($BackupAtEnd) {
-                $Filter = $filter + ' and (( copyEndDate gt "' + (get-date $BackupAtStart -Format yyyy-MM-ddT00:00:00Z) + '" and copyEndDate le "' + (get-date $BackupAtEnd -Format yyyy-MM-ddT23:59:59Z) + '") or ( copyStartDate le "' + (get-date $BackupAtEnd -Format yyyy-MM-ddT23:59:59Z) + '" and ( copyEndDate eq null or copyEndDate gt "' + (get-date $BackupAtEnd -Format yyyy-MM-ddT23:59:59Z) + '" )))'
-            }
-            else {
-                $Filter = $filter + ' and (( copyEndDate gt "' + (get-date $BackupAtStart -Format yyyy-MM-ddT00:00:00Z) + '" and copyEndDate le "' + (get-date $BackupAtStart -Format yyyy-MM-ddT23:59:59Z) + '") or ( copyStartDate le "' + (get-date $BackupAtStart -Format yyyy-MM-ddT23:59:59Z) + '" and ( copyEndDate eq null or copyEndDate gt "' + (get-date $BackupAtStart -Format yyyy-MM-ddT23:59:59Z) + '" )))'
-            }
-
+        if ($LastBackupOnly.IsPresent) {
+            $Filter = $filter + ' and copyEndDate eq null'
         }
-
-
+        else {
+            if ($BackupAtStart) {
+                if ($BackupAtEnd) {
+                    $Filter = $filter + ' and (( copyEndDate gt "' + (get-date $BackupAtStart -Format yyyy-MM-ddT00:00:00Z) + '" and copyEndDate le "' + (get-date $BackupAtEnd -Format yyyy-MM-ddT23:59:59Z) + '") or ( copyStartDate le "' + (get-date $BackupAtEnd -Format yyyy-MM-ddT23:59:59Z) + '" and ( copyEndDate eq null or copyEndDate gt "' + (get-date $BackupAtEnd -Format yyyy-MM-ddT23:59:59Z) + '" )))'
+                }
+                else {
+                    $Filter = $filter + ' and (( copyEndDate gt "' + (get-date $BackupAtStart -Format yyyy-MM-ddT00:00:00Z) + '" and copyEndDate le "' + (get-date $BackupAtStart -Format yyyy-MM-ddT23:59:59Z) + '") or ( copyStartDate le "' + (get-date $BackupAtStart -Format yyyy-MM-ddT23:59:59Z) + '" and ( copyEndDate eq null or copyEndDate gt "' + (get-date $BackupAtStart -Format yyyy-MM-ddT23:59:59Z) + '" )))'
+                }
+            }
+        }    
         if ($filesonly.IsPresent) {
             $filter = $filter + ' and itemType lk "file"'
         }
@@ -620,7 +648,7 @@ function Request-PPDMfile_backups {
                 $URI = "/file-instances/file-backups?backupInfo=latest"
             }
         }  
-#        $fileinstance = $fileinstance | select-object 
+        #        $fileinstance = $fileinstance | select-object 
         $body = @{'fileInstances' = @($fileinstance) } | ConvertTo-Json
   
         $Parameters = @{

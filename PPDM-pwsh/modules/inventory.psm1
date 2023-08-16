@@ -6,11 +6,26 @@ function Get-PPDMinventory_sources {
         [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $id,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('DATADOMAINMANAGEMENTCENTER',
+        [ValidateSet(
+            'CLOUD_DIRECTOR',
+            'CLOUD_SNAPSHOT_MANAGER',
+            'CDR',
+            'DATA_MANAGER_APPLIANCE',
+            'DATA_MANAGER_VAULT',
+            'DATADOMAINMANAGEMENTCENTER',
             'DDSYSTEM',
-            'VCENTER',
+            'DEFAULTAPPGROUP',
             'EXTERNALDATADOMAIN',
-            'KUBERNETES'        
+            'GENERICNASMANAGEMENTSERVER',
+            'KUBERNETES',
+            'ORACLEGROUP',
+            'POWERSCALEMANAGEMENTSERVER',
+            'POWERSTOREMANAGEMENTSERVER',
+            'PPDM',
+            'SMISPROVIDER',
+            'SQLGROUPS',
+            'UNITYMANAGEMENTSERVER',
+            'VCENTER'     
         )]
         $Type,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]

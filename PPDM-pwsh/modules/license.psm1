@@ -145,6 +145,7 @@ function Set-PPDMLicenses {
     $apiver = "/api/v2", 
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'all')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'byId')]
+    <# noop Parameter will simulate the command only #> 
     [switch]$noop                  
   )
   begin {

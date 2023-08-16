@@ -292,6 +292,7 @@ function Start-PPDMprotection {
     $apiver = "/api/v2",
     [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName = 'byPolicyObject')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'byIDS')]
+    <# noop Parameter will simulate the command only #> 
     [switch]$noop
   )
   begin {
@@ -1120,8 +1121,10 @@ function New-PPDMVMBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [switch]$disableQuiescing,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
+    <# This Swich will enable the Policy #> 
     [switch]$enabled,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
+    <# This switch will enable Enable Metadata Indexing (requires seacrhc index deployed) #>
     [switch]$indexingEnabled,     
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     [switch]$encrypted, 
@@ -1137,6 +1140,7 @@ function New-PPDMVMBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
     $apiver = "/api/v2",
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Stage0')]
+    <# noop Parameter will simulate the command only #> 
     [switch]$noop           
   )
   begin {
@@ -1274,6 +1278,7 @@ function New-PPDMK8SBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
     [string]$SLAId,  
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    <# This Swich will enable the Policy #> 
     [switch]$enabled,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
     [switch]$encrypted, 
@@ -1284,6 +1289,7 @@ function New-PPDMK8SBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
     $apiver = "/api/v2",
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'Set1')]
+    <# noop Parameter will simulate the command only #> 
     [switch]$noop           
   )
   begin {
@@ -1396,6 +1402,7 @@ function New-PPDMFSBackupPolicy {
     [Alias('IfId')]$preferredInterfaceId, 
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    <# This Swich will enable the Policy #> 
     [switch]$enabled,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
@@ -1435,6 +1442,7 @@ function New-PPDMFSBackupPolicy {
     [ValidateRange(1, 2555)][int]$RetentionInterval,    
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    <# noop Parameter will simulate the command only #> 
     [switch]$noop                  
   )
   begin {
@@ -1618,6 +1626,7 @@ function New-PPDMSQLBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    <# This Swich will enable the Policy #> 
     [switch]$enabled,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
@@ -1654,6 +1663,7 @@ function New-PPDMSQLBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    <# noop Parameter will simulate the command only #> 
     [switch]$noop,                  
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
@@ -1898,6 +1908,7 @@ function New-PPDMExchangeBackupPolicy {
     [Alias('IfId')]$preferredInterfaceId, 
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    <# This Swich will enable the Policy #> 
     [switch]$enabled,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
@@ -1929,6 +1940,7 @@ function New-PPDMExchangeBackupPolicy {
     [ValidateRange(1, 2555)][int]$RetentionInterval,    
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    <# noop Parameter will simulate the command only #> 
     [switch]$noop                  
   )
   begin {
@@ -2097,6 +2109,7 @@ function New-PPDMOracleBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    <# This Swich will enable the Policy #> 
     [switch]$enabled,
     #  [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized-oim')]
@@ -2156,6 +2169,7 @@ function New-PPDMOracleBackupPolicy {
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
     # [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    <# noop Parameter will simulate the command only #> 
     [switch]$noop,                  
     # [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'appaware')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized-sbt')]
