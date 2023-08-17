@@ -159,7 +159,7 @@ function Get-PPDMlatest_copies {
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }
         if ($filter) {
-            $filter = 'assetId in ("' + ($assetID -join '","') + '")' + $filter 
+            $filter = 'assetId in ("' + ($assetID -join '","') + '") and ' + $filter 
         }
         else {
             $filter = 'assetId in ("' + ($assetID -join '","') + '")'

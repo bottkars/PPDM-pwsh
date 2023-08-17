@@ -13,11 +13,11 @@ function Get-PPDMprotection_engines {
         $Type,
         [Parameter(Mandatory = $false, ParameterSetName = 'ALL', ValueFromPipelineByPropertyName = $true)]
         $filter,         
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ALL', ValueFromPipelineByPropertyName = $true)]
         $pageSize, 
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ALL', ValueFromPipelineByPropertyName = $true)]
         $page, 
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'ALL', ValueFromPipelineByPropertyName = $true)]
         [hashtable]$body = @{orderby = 'createdAt DESC' },
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
@@ -107,13 +107,28 @@ function Get-PPDMprotectionEngineProxies {
     [CmdletBinding()]
     [Alias('Get-PPDMProxy')]
     param(
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'all',ValueFromPipelineByPropertyName = $true)]
         $VPE,        
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $id,
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('Embedded','Internal','External')]
+        [Alias('Type')][string[]]$ProxyType,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('NAS','Kubernetes','VM')]
+        [Alias('ProtectionTypes')][string[]]$SupportedProtectionTypes,        
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
         $filter,
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $pageSize, 
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        $page, 
+        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [hashtable]$body = @{orderby = 'createdAt DESC' },
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         $apiver = "/api/v2"
     )
     begin {
@@ -139,7 +154,25 @@ function Get-PPDMprotectionEngineProxies {
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
             RequestMethod    = 'Rest'
 
-        }  
+        }
+        if ($ProxyType)  
+        {
+            if ($filter) {
+                $filter = 'Config.ProxyType in ("' + ($ProxyType -join '","') + '") and ' + $filter 
+            }
+            else {
+                $filter = 'Config.ProxyType in ("' + ($ProxyType -join '","') + '")'
+            }
+        }
+        if ($SupportedProtectionTypes)  
+        {
+            if ($filter) {
+                $filter = 'Config.SupportedProtectionTypes in ("' + ($SupportedProtectionTypes -join '","') + '") and ' + $filter 
+            }
+            else {
+                $filter = 'Config.SupportedProtectionTypes in ("' + ($SupportedProtectionTypes -join '","') + '")'
+            }
+        }
         if ($filter) {
             $parameters.Add('filter', $filter)
         }            

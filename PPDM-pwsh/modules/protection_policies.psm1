@@ -1182,7 +1182,7 @@ function New-PPDMVMBackupPolicy {
       'forceFull'       = $false
       'details'         = @{
         'vm' = @{
-          'protectionEngine' = 'VMDIRECT'
+          'protectionEngine'        = 'VMDIRECT'
           'metadataIndexingEnabled' = $indexingEnabled.IsPresent
         }
       }
@@ -1459,7 +1459,7 @@ function New-PPDMFSBackupPolicy {
           $copyoperation = @{}
           $copyoperation.Add('schedule', $Schedule.CopySchedule)
           $copyoperation.Add('backupType', 'SYNTHETIC_FULL')
-          $copyoperation.Add('id', (New-Guid).UUID)    
+          $copyoperation.Add('id', ((New-Guid).GUID))    
     
           $operations += $copyoperation            
         }
@@ -1557,8 +1557,157 @@ function New-PPDMFSBackupPolicy {
 }
 
 
+function New-PPDMNASBackupPolicy {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [psobject]$Schedule,    
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [ValidateLength(1, 150)][string]$Name,
+    [Parameter(Mandatory = $true, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [ValidateLength(1, 150)][string]$StorageSystemID,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Alias('dataTargetId')][System.Guid]$StorageUnitID, 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Alias('IfId')]$preferredInterfaceId, 
+    [Parameter(Mandatory = $True, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    <# NASCid is a nad Credentials ID #>
+    [Alias('NasCredentialsID')]$NASCid, 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    <# This Swich will enable the Policy #> 
+    [switch]$enabled,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [switch]$encrypted, 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [string]$Description = '' ,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [string[]]$FilterIDS,    
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [switch]$indexingEnabled,
+
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [ValidateSet("ACL_ACCESS_DENIED",
+      "DATA_ACCESS_DENIED",
+      "FILENAME_LENGTH_LIMIT_REACHED")][string[]]$ContinueOn,
+
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [ValidateSet("FILENAME_LENGTH_LIMIT_REACHED")][string[]]$skipOn,
 
 
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [string]$SLAId,  
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    $apiver = "/api/v2",
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [switch]$TroubleshootingDebug,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    <# noop Parameter will simulate the command only #> 
+    [switch]$noop                  
+  )
+  begin {
+    $Response = @()
+    $METHOD = "POST"
+  }     
+  Process {
+
+    $URI = "/protection-policies"
+    switch ($pscmdlet.ParameterSetName ) {
+      'centralized' { 
+        $operations = @()
+        if ($Schedule.CopySchedule) {
+          $copyoperation = @{}
+          $copyoperation.Add('schedule', $Schedule.CopySchedule)
+          $copyoperation.Add('backupType', 'SYNTHETIC_FULL')
+          $copyoperation.Add('id', ((New-Guid).GUID))    
+    
+          $operations += $copyoperation            
+        }
+        if ($Schedule.FullSchedule) {
+          $fulloperation = @{}
+          $fulloperation.Add('schedule', $Schedule.FullSchedule)
+          $fulloperation.Add('backupType', 'FULL')    
+          $operations += $fulloperation           
+        }  
+        [switch]$passive = $false
+        $options = @{
+          'debugEnabled'    = $($TroubleshootingDebug.IsPresent)
+          'indexingEnabled' = $indexingEnabled.ispresent
+          'continueOn'      = @($ContinueOn)
+          'skipOn'          = @($skipOn)
+        }
+      }
+
+    }
+    $credentials = @{
+      'id'   = $NasCID
+      'type' = 'NAS'
+    }
+    $Body = [ordered]@{ 
+      'name'            = $Name
+      'assetType'       = 'NAS_SHARE'
+      'type'            = 'ACTIVE'
+      'dataConsistency' = 'CRASH_CONSISTENT'
+      'filterIds'       = $FilterIDS
+      'enabled'         = $enabled.IsPresent
+      'description'     = $Description
+      'encrypted'       = $encrypted.IsPresent
+      'priority'        = 1
+      'passive'         = $passive.IsPresent
+      'forceFull'       = $false
+      'details'         = $details
+      'stages'          = @(
+        @{
+          'id'         = (New-Guid).Guid   
+          'type'       = 'PROTECTION'
+          'passive'    = $passive.IsPresent
+          'slaId'      = $SLAId 
+          'attributes' = @{}                     
+          'target'     = @{
+            'storageSystemId'      = $StorageSystemID
+            'dataTargetId'         = $StorageUnitID
+            'preferredInterfaceId' = $preferredInterfaceId
+          }
+          'operations' = $operations
+          'retention'  = $Schedule.Retention
+          'options'    = $options
+        }
+      )
+      'credentials'     = $credentials 
+    } | convertto-json -Depth 7
+
+
+        
+    write-verbose ($body | out-string)
+    $Parameters = @{
+      RequestMethod    = 'Rest'
+      body             = $body 
+      Uri              = $URI
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    } 
+    if (!$noop.IsPresent) {      
+      try {
+        $Response += Invoke-PPDMapirequest @Parameters
+      }
+      catch {
+        Get-PPDMWebException  -ExceptionMessage $_
+        break
+      }
+      write-verbose ($response | Out-String)
+    } 
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      default {
+        write-output $response
+      } 
+    }   
+  }
+}
 <#
 .SYNOPSIS
 
