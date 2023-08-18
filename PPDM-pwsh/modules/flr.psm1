@@ -15,7 +15,7 @@ function Start-PPDMflr_sessions {
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [string]$copyId,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
-        [pscredential]$credentials,
+        [pscredential][Alias('Credentials')]$Credential,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [switch]$removeAgent,    
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
@@ -29,10 +29,10 @@ function Start-PPDMflr_sessions {
         $Myself = ($MyInvocation.MyCommand.Name.Substring(10) -replace "_", "-").ToLower()   
     }     
     Process {
-        if (!$($Credentials)) {
+        if (!$($Credential)) {
             $username = Read-Host -Prompt "Please a username for Host Connection to FLR CLient"
             $SecurePassword = Read-Host -Prompt "Enter Password for user $username" -AsSecureString
-            $Credentials = New-Object System.Management.Automation.PSCredential($username, $Securepassword)
+            $Credential = New-Object System.Management.Automation.PSCredential($username, $Securepassword)
         }
         switch ($PsCmdlet.ParameterSetName) {
             default {
@@ -40,8 +40,8 @@ function Start-PPDMflr_sessions {
                 $Body = [ordered]@{
                     'copyId'          = $copyId
                     'targetVmAssetId' = $targetVmAssetId
-                    'targetUser'      = $($Credentials.username)
-                    'targetPassword'  = $($Credentials.GetNetworkCredential()).password
+                    'targetUser'      = $($Credential.username)
+                    'targetPassword'  = $($Credential.GetNetworkCredential()).password
                     'removeAgent'     = $removeAgent.IsPresent
                     'elevateUser'     = $elevateUser.IsPresent                
                 } | ConvertTo-Json
@@ -425,10 +425,21 @@ and sourceServer lk "%win*%"
 and assetId eq "434ba5f0-3c5d-5bba-aba3-1d26684fcabe"
 #>
 
-
+<#
+filter: objectType eq "NAS" 
+and name lk "file01" 
+and type lk "%txt%" 
+and size le 200000 
+and copyEndDate eq null 
+and backupType lk "%CIFS%" 
+and not exists (tags.skippedAcl or tags.skippedData or tags.skippedFiltered) 
+and assetId eq "2e378cb2-4a95-5565-bafa-cecadc4fa9d1"
+#>
 function Get-PPDMfile_instances {
     [CmdletBinding()]
     param(
+        [Parameter(Mandatory = $true, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
+        [switch]$NAS,        
         [Parameter(Mandatory = $true, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [switch]$Filesystem,
         [Parameter(Mandatory = $true, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
@@ -436,61 +447,91 @@ function Get-PPDMfile_instances {
         [Parameter(Mandatory = $False, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('LINUX', 'WINDOWS')]
         [string]$GuestOS,
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('CIFS', 'NFS')]
+        [string]$ShareProtocol, 
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('Skipped', 'BackedUp')]
+        [string]$BackupState,         
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [Alias('filename')]$name,
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [Alias('filepath')]$location,        
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [switch]$filesonly,
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         $filetype,
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         $minsize,
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('KB', 'MB', 'GB', 'TB')]$minsizeUnit = "KB",
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]        
+        [ValidateSet('KB', 'MB', 'GB', 'TB')]
+        $minsizeUnit = "KB",
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         $maxsize,
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('KB', 'MB', 'GB', 'TB')]$maxsizeUnit = "KB",
+        [ValidateSet('KB', 'MB', 'GB', 'TB')]
+        $maxsizeUnit = "KB",
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [datetime]$CreatedAtStart,
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [datetime]$CreatedAtEnd,
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [datetime]$modifiedAtStart,
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [datetime]$modifiedAtEnd,
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [switch]$LastBackupOnly,
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [datetime]$BackupAtStart,
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [datetime]$BackupAtEnd,  
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [string]$SourceServer,
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [string]$AssetID,                             
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         $pageSize, 
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         $page, 
+        [Parameter(Mandatory = $False, ParameterSetName = 'NAS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'FS', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'VM', ValueFromPipelineByPropertyName = $true)]
         [hashtable]$body = @{orderby = 'createdAt DESC' },
@@ -511,6 +552,14 @@ function Get-PPDMfile_instances {
             }
         }
         $Filter = 'objectType eq "' + $PsCmdlet.ParameterSetName + '"'
+        Switch ($BackupState) {
+            'BackedUp' {
+                $filter = $filter + ' and not exists (tags.skippedAcl or tags.skippedData or tags.skippedFiltered) '
+            }
+            'Skipped' {
+                $filter = $filter + ' and exists (tags.skippedAcl or tags.skippedData or tags.skippedFiltered) '
+            }
+        }        
         Switch ($GuestOS) {
             'LINUX' {
                 $filter = $filter + ' and backupType in ("ext", "ext2", "ext3", "ext4", "xfs", "btrfs")'
@@ -524,6 +573,9 @@ function Get-PPDMfile_instances {
         }
         if ($filetype) {
             $filter = $filter + ' and name lk "%' + $filetype + '%"' 
+        }
+        if ($ShareProtocol) {
+            $filter = $filter + ' and backupType lk "%' + $ShareProtocol + '%"' 
         }
         if ($modifiedAtStart) {
             if ($modifiedAtEnd) {
@@ -692,5 +744,123 @@ function Request-PPDMfile_backups {
                 }
             } 
         }   
+    }
+}
+
+
+
+function Restore-PPDMNasFiles {
+    [CmdletBinding()]
+    [Alias('Restore-PPDMNASFLR')]
+    param(
+        [Parameter(Mandatory = $true, ParameterSetName = 'RetoreToAlternate', ValueFromPipelineByPropertyName = $true)]
+        [alias('copyNaturalId')]$copyID,
+        [Parameter(Mandatory = $true, ParameterSetName = 'RetoreToAlternate', ValueFromPipeline = $true)]
+        [object[]]$Fileobject,
+        [Parameter(Mandatory = $false, ParameterSetName = 'RetoreToAlternate', ValueFromPipelineByPropertyName = $true)]
+        [pscredential][Alias('Credentials')]$Credential,
+        [Parameter(Mandatory = $false, ParameterSetName = 'RetoreToAlternate', ValueFromPipelineByPropertyName = $true)]
+        [switch]$keepExisting,
+        [Parameter(Mandatory = $false, ParameterSetName = 'RetoreToAlternate', ValueFromPipelineByPropertyName = $true)]
+        [switch]$restoreTopLevelACLs,
+        [Parameter(Mandatory = $false, ParameterSetName = 'RetoreToAlternate', ValueFromPipelineByPropertyName = $true)]
+        [ValidateRange(1800,43200)][int]$updateTimeout=1800,
+        [Parameter(Mandatory = $false, ParameterSetName = 'RetoreToAlternate', ValueFromPipelineByPropertyName = $true)]
+        [switch]$restoreToOriginalPath,        
+        [Parameter(Mandatory = $false, ParameterSetName = 'RetoreToAlternate', ValueFromPipelineByPropertyName = $true)]
+        [string]$targetdirectory = "\\System\ifs",                 
+        [Parameter(Mandatory = $true, ParameterSetName = 'RetoreToAlternate', ValueFromPipelineByPropertyName = $true)]
+        [string]$AssetID,  
+        [Parameter(Mandatory = $false, ParameterSetName = 'RetoreToAlternate', ValueFromPipelineByPropertyName = $true)]
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ParameterSetName = 'RetoreToAlternate', ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2",
+        [switch]$noop
+    )
+    begin {
+        $Response = @()
+        $METHOD = "POST"
+        $URI = "restored-files-batch/"        
+
+    }     
+    Process {
+        $body = [ordered]@{ 
+            'requests' = @(
+                @{
+                    'id'   = $copyId
+                    'body' = [ordered]@{
+                        'source'   = @{
+                            'copyNaturalId' = $copyId
+                            'paths'         = @()
+                        }
+                        'target'   = [ordered]@{
+                        }
+                        'strategy' = @{
+                            'overwriteExisting'           = $keepExisting.isPresent
+                            'restoreToOriginalPath'       = $restoreToOriginalPath.IsPresent
+                            'sourceFileCollisionHandling' = "RENAME"
+                            'retainFolderHierarchy'       = $true
+                        } 
+                        'options'  = @(
+                            '"restoreTlpAcls":' + $restoreTopLevelACLs.IsPresent.ToString().ToLower()
+                            '"updateTimeout":'+ $updateTimeout
+                        )
+
+                    }
+                }
+            )
+        }         
+        switch ($PsCmdlet.ParameterSetName) {
+            'RetoreToAlternate' {
+                if (!$($Credential)) {
+                    $username = Read-Host -Prompt "Please a username for Host Connection to FLR CLient"
+                    $SecurePassword = Read-Host -Prompt "Enter Password for user $username" -AsSecureString
+                    $Credential = New-Object System.Management.Automation.PSCredential($username, $Securepassword)
+                }
+                $targetCredential = @{
+                    'username' = $($Credential.username)
+                    'password' = $($Credential.GetNetworkCredential()).password
+                }
+                $body.requests[0].body.target.Add('assetId', $AssetID)
+                $body.requests[0].body.target.Add('credential', $targetCredential)
+                $body.requests[0].body.target.Add('directory', $targetdirectory)
+            }    
+        }
+
+       
+
+        foreach ($File in $Fileobject) {
+            $path = [ordered]@{    
+                'path'      = "/$($File.assetName)$($File.location)$($File.name)"
+                'pathHash'  = "$($File.id)"
+                'sliceSsid' = "$($File.diskName)"
+                'type'      = "$($File.itemType.toUpper())"
+            }
+            $body.requests[0].body.source.paths += $path
+        }
+        $body = $body | ConvertTo-Json -Depth 7
+        Write-Verbose ($body | out-string)
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+        if (!$noop.IsPresent) {
+            try {
+                $Response += Invoke-PPDMapirequest @Parameters
+            }
+            catch {
+                Get-PPDMWebException  -ExceptionMessage $_
+                break
+            }
+        }
+    }          
+    end {   
+        write-verbose ($response | Out-String)
+        write-output $response
     }
 }
