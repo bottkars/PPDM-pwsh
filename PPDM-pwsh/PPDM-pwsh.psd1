@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.73'
+ModuleVersion = '19.14.20.74'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -300,7 +300,8 @@ FunctionsToExport = @(
     'Set-PPDMexported_copies',
     'Get-PPDMfile_instances',
     'Request-PPDMfile_backups',
-    'New-PPDMNASBackupPolicy'   
+    'New-PPDMNASBackupPolicy',
+    'Restore-PPDMNasFiles'   
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -345,7 +346,8 @@ AliasesToExport = @(
     'Get-PPDMSLAs',
     'New-PPDMBackupSLA',
     'Set-PPDMOIMProtocol',
-    'Get-PPDMOIMspfile'
+    'Get-PPDMOIMspfile',
+    'Restore-PPDMNASFLR'
 )
 
 # DSC resources to export from this module

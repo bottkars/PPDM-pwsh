@@ -1450,7 +1450,6 @@ function New-PPDMFSBackupPolicy {
     $METHOD = "POST"
   }     
   Process {
-
     $URI = "/protection-policies"
     switch ($pscmdlet.ParameterSetName ) {
       'centralized' { 
@@ -1460,7 +1459,6 @@ function New-PPDMFSBackupPolicy {
           $copyoperation.Add('schedule', $Schedule.CopySchedule)
           $copyoperation.Add('backupType', 'SYNTHETIC_FULL')
           $copyoperation.Add('id', ((New-Guid).GUID))    
-    
           $operations += $copyoperation            
         }
         if ($Schedule.FullSchedule) {
@@ -1584,16 +1582,12 @@ function New-PPDMNASBackupPolicy {
     [string[]]$FilterIDS,    
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [switch]$indexingEnabled,
-
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [ValidateSet("ACL_ACCESS_DENIED",
       "DATA_ACCESS_DENIED",
       "FILENAME_LENGTH_LIMIT_REACHED")][string[]]$ContinueOn,
-
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [ValidateSet("FILENAME_LENGTH_LIMIT_REACHED")][string[]]$skipOn,
-
-
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [string]$SLAId,  
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
@@ -1621,7 +1615,6 @@ function New-PPDMNASBackupPolicy {
           $copyoperation.Add('schedule', $Schedule.CopySchedule)
           $copyoperation.Add('backupType', 'SYNTHETIC_FULL')
           $copyoperation.Add('id', ((New-Guid).GUID))    
-    
           $operations += $copyoperation            
         }
         if ($Schedule.FullSchedule) {
@@ -1676,9 +1669,6 @@ function New-PPDMNASBackupPolicy {
       )
       'credentials'     = $credentials 
     } | convertto-json -Depth 7
-
-
-        
     write-verbose ($body | out-string)
     $Parameters = @{
       RequestMethod    = 'Rest'

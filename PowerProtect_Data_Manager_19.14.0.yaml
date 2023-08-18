@@ -34526,7 +34526,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProtectionPolicy'
+                $ref: '#'
           description: Successfully created the protection policy.
         '400':
           content:
