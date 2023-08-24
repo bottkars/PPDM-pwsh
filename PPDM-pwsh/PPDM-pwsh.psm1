@@ -21,7 +21,7 @@ function Connect-PPDMapiEndpoint {
     [Alias('Connect-PPDMsystem')]
     param(
         [Parameter(Mandatory = $false, ParameterSetName = 'Credential', ValueFromPipelineByPropertyName = $true)]
-        [pscredential]$PPDM_API_Credentials = $Global:PPDM_API_Credentials,
+        [Alias('credential')][pscredential]$PPDM_API_Credentials = $Global:PPDM_API_Credentials,
         # [Parameter(Mandatory = $true, ParameterSetName = 'User')]
         #[switch]$user,
         #        [Parameter(Mandatory = $false, ParameterSetName = 'client', ValueFromPipelineByPropertyName = $true)]
@@ -312,7 +312,7 @@ function Invoke-PPDMapirequest {
             }
             else {
                 Write-Verbose "Refreshing Token using Refresh Token"
-                Update-PPDMToken 6>out-null | out-null 
+                Update-PPDMToken 6>$null | out-null
             }
         }
         $Headers = $Global:PPDM_API_Headers

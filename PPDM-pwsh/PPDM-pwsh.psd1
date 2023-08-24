@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.74'
+ModuleVersion = '19.14.20.76'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -97,7 +97,8 @@ NestedModules = @(
     './modules/identity-providers',
     './modules/service-level-agreements',
     './modules/whitelist',
-    './modules/exported-copies'
+    './modules/exported-copies',
+    './modules/reporting'
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -301,7 +302,13 @@ FunctionsToExport = @(
     'Get-PPDMfile_instances',
     'Request-PPDMfile_backups',
     'New-PPDMNASBackupPolicy',
-    'Restore-PPDMNasFiles'   
+    'Restore-PPDMNasFiles',
+    'New-PPDMreport_nodes',
+    'Get-PPDMreport_schedules',
+    'Get-PPDMreport_nodes',
+    'New-PPDMJobStatusSummaryReport',
+    'Get-PPDMreport',  
+    'Request-PPDMreport' 
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -378,7 +385,9 @@ PrivateData = @{
 
         # ReleaseNotes of this module
         ReleaseNotes = '
-        2023-08-14 (v19.14.20.68)
+        2023-08-14 (v19.14.20.76)
+        - Reporting Support phase 1
+        2023-08-14 (v19.14.20.74)
         - BMR Support
         - Copies Query
         - Automated Token Refresh

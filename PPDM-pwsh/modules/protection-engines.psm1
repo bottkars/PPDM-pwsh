@@ -417,9 +417,6 @@ function New-PPDMProtectionEngineProxy {
                 $URI = "/$myself/$vpe/proxies"
             }
         }
-        
-        
-
         $body = [ordered]@{
             Config = [ordered]@{
                 ProxyType                = 'External' 
