@@ -92,9 +92,11 @@ function Set-PPDMWhitelist {
     [CmdletBinding()]
     param(
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-        $id,
-        [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        $IP,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $DaysToExpire=1,
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('APPROVED','REJECTED')]$state,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
@@ -104,20 +106,26 @@ function Set-PPDMWhitelist {
 
     begin {
         $Response = @()
-        $METHOD = "GET"
+        $METHOD = "POST"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
    
     }     
     Process {
         switch ($PsCmdlet.ParameterSetName) {
             default {
-                $URI = "/$myself/$id"
+                $URI = "/$myself"
                 $body = @{}  
 
             }
         }  
+        $myDate=(get-date).AddDays($DaysToExpire)
+        $usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
         $body = @{}
-        $body.add('state', $state)
+        $body.Add('state', $state)
+        $body.Add('ip', $IP)
+        $body.Add('expiresAt',$usedate )
+        $body=$body | convertto-json -Depth 7
+        Write-Verbose $Body | Out-String
         $Parameters = @{
             RequestMethod    = 'REST'
             body             = $body
@@ -127,17 +135,6 @@ function Set-PPDMWhitelist {
             apiver           = $apiver
             Verbose          = $PSBoundParameters['Verbose'] -eq $true
         }
-        if ($type) {
-            if ($filter) {
-                $filter = 'type eq "' + $type + '" and ' + $filter 
-            }
-            else {
-                $filter = 'type eq "' + $type + '"'
-            }
-        }        
-        if ($filter) {
-            $parameters.Add('filter', $filter)
-        }       
         try {
             $Response += Invoke-PPDMapirequest @Parameters
         }
@@ -149,9 +146,6 @@ function Set-PPDMWhitelist {
     } 
     end {    
         switch ($PsCmdlet.ParameterSetName) {
-            'byID' {
-                write-output $response 
-            }
             default {
                 write-output $response.content
                 if ($response.page) {

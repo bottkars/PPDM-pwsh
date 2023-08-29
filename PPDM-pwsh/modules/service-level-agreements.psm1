@@ -360,3 +360,55 @@ function New-PPDMBackupService_Level_Agreements {
         }   
     }
 }
+
+
+function Remove-PPDMService_Level_Agreements {
+    [CmdletBinding()]
+    [Alias('Remove-PPDMSLAs')]
+    param(
+      $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+      $apiver = "/api/v2",
+      [Parameter(Mandatory = $true, Position = 1, ValueFromPipelineByPropertyName = $true)]
+      $id
+    )
+    begin {
+      $Response = @()
+      $METHOD = "DELETE"
+      $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
+      # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
+   
+    }     
+    Process {
+  
+      $URI = "/$myself/$id"
+      $Parameters = @{
+        #            body             = $body 
+        Uri              = $Uri
+        Method           = $Method
+        RequestMethod    = 'WEB'
+        PPDM_API_BaseUri = $PPDM_API_BaseUri
+        apiver           = $apiver
+        Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        # ResponseHeadersVariable = 'HeaderResponse'
+      }      
+      try {
+        $Response += Invoke-PPDMapirequest @Parameters      
+      }
+      catch {
+        Get-PPDMWebException  -ExceptionMessage $_
+        break
+      }
+      write-verbose ($response | Out-String)
+    } 
+    end {    
+      switch ($PsCmdlet.ParameterSetName) {
+        'byID' {
+          write-output $response 
+        }
+        default {
+          write-host $response.Headers.Date
+        } 
+      }   
+    }
+  }
+  

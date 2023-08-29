@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.76'
+ModuleVersion = '19.14.20.77'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -259,7 +259,6 @@ FunctionsToExport = @(
     'Set-PPDMapp_hosts',
     'Get-PPDMprotection_groups',
     'Get-PPDMagents_update_sessions',       
-    'Get-PPDMwhitelist',
     'Set-PPDMagents_update_sessions',
     'Remove-PPDMagents_update_sessions',
     'Get-PPDMEula',
@@ -308,7 +307,8 @@ FunctionsToExport = @(
     'Get-PPDMreport_nodes',
     'New-PPDMJobStatusSummaryReport',
     'Get-PPDMreport',  
-    'Request-PPDMreport' 
+    'Request-PPDMreport'
+    'Remove-PPDMService_Level_Agreements'
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -351,6 +351,7 @@ AliasesToExport = @(
     'Connect-PPDMSystem',
     'Get-PPDMidp',
     'Get-PPDMSLAs',
+    'Remove-PPDMSLAs',
     'New-PPDMBackupSLA',
     'Set-PPDMOIMProtocol',
     'Get-PPDMOIMspfile',
