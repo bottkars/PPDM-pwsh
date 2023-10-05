@@ -1,4 +1,4 @@
-$exludeBus=(1)
+$exludeBus=(0)
 $ExcludeUnit=(1,2)
 $Filter='details.vm.disks.busNumber ge 1 and details.vm.disks.unitNumber in ("' + ($ExcludeUnit -join '","') + '") and protectionStatus in ("PROTECTED","UNPROTECTED")'
 Write-Host $Filter
@@ -14,9 +14,9 @@ $Assets.foreach( {
     $disks_bus1 = $disks | Where-Object busNumber -eq 0
     $disks_bus0 = $disks | Where-Object busNumber -eq 1
     write-host "We have $($disks_bus1.count) Harddisks at bus1 detected"
-    write-host "We have $($disks_bus0.count) Harddisks at bus1 detected"
+    write-host "We have $($disks_bus0.count) Harddisks at bus0 detected"
     $disks.foreach({
-        if ( $_.busNumber -in $ExludeBus) {
+        if ( $_.busNumber -in $exludeBus) {
             write-host "Detected disk Bus $($_.busNumber) Unit $($_.UnitNumber) at Exluded Bus"
             if ( $_.unitNumber -in $ExcludeUnit) {
                 Write-Host -ForegroundColor Magenta "Detecting Exclude Unit disk Bus $($_.busNumber) Unit $($_.UnitNumber)"

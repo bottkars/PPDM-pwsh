@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.78'
+ModuleVersion = '19.14.20.79'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -288,7 +288,9 @@ FunctionsToExport = @(
     'Get-PPDMService_Level_Agreements',
     'New-PPDMBackupService_Level_Agreements',
     'Get-PPDMWhitelist',
-    'Set-PPDMWhitelist',
+    'Set-PPDMWhitelist',    
+    'Remove-PPDMWhitelist',
+    'Update-PPDMWhitelist',
     'Set-PPDMMSSQLassetStreamcount',
     'Restore-PPDMOracle_copies',
     'Set-PPDMOracleOIMProtectionProtocol',

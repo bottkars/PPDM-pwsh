@@ -1,13 +1,12 @@
 function Get-PPDMWhitelist {
     [CmdletBinding()]
     param(
-
+        [Parameter(Mandatory = $true, ParameterSetName = 'automatic', ValueFromPipelineByPropertyName = $true)]
+        [switch]$automatic,
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         $id,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
         $filter,
- #       [ValidateSet()]
- #       [Alias('AssetType')][string]$type,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
         $pageSize, 
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
@@ -32,6 +31,9 @@ function Get-PPDMWhitelist {
                 $URI = "/$myself/$id"
                 $body = @{}  
 
+            }
+            'automatic' {
+                $URI = "/$myself/automatic"
             }
             default {
                 $URI = "/$myself"
@@ -77,6 +79,9 @@ function Get-PPDMWhitelist {
             'byID' {
                 write-output $response 
             }
+            'automatic' {
+                write-output $response 
+            }
             default {
                 write-output $response.content
                 if ($response.page) {
@@ -88,16 +93,18 @@ function Get-PPDMWhitelist {
 }
 
 
-function Set-PPDMWhitelist {
+
+function Update-PPDMWhitelist {
     [CmdletBinding()]
     param(
-
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-        $IP,
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
-        $DaysToExpire=1,
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-        [ValidateSet('APPROVED','REJECTED')]$state,
+        [Parameter(Mandatory = $true, ParameterSetName = 'IP', ValueFromPipelineByPropertyName = $true)]
+        $ip,        
+        [Parameter(Mandatory = $true, ParameterSetName = 'IP', ValueFromPipelineByPropertyName = $true)]
+        $id,
+        [Parameter(Mandatory = $false, ParameterSetName = 'IP', ValueFromPipelineByPropertyName = $true)]
+        $DaysToExpire,
+        [Parameter(Mandatory = $true, ParameterSetName = 'IP', ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('APPROVED', 'REJECTED', 'UNDEFINED', 'AUTOMATIC')]$state,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
@@ -106,25 +113,19 @@ function Set-PPDMWhitelist {
 
     begin {
         $Response = @()
-        $METHOD = "POST"
-        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
-   
+        $METHOD = "PUT"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
     }     
     Process {
-        switch ($PsCmdlet.ParameterSetName) {
-            default {
-                $URI = "/$myself"
-                $body = @{}  
-
-            }
-        }  
-        $myDate=(get-date).AddDays($DaysToExpire)
-        $usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
-        $body = @{}
+        $URI = "$myself/$id"
+        $myDate = (get-date).AddDays($DaysToExpire)
+        $usedate = get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
+        $body = @{}         
+        $body.Add('expiresAt', $usedate )       
         $body.Add('state', $state)
         $body.Add('ip', $IP)
-        $body.Add('expiresAt',$usedate )
-        $body=$body | convertto-json -Depth 7
+ 
+        $body = $body | convertto-json -Depth 7
         Write-Verbose $Body | Out-String
         $Parameters = @{
             RequestMethod    = 'REST'
@@ -147,11 +148,136 @@ function Set-PPDMWhitelist {
     end {    
         switch ($PsCmdlet.ParameterSetName) {
             default {
-                write-output $response.content
+                write-output $response
                 if ($response.page) {
                     write-host ($response.page | out-string)
                 }
             } 
         }   
+    }
+}
+
+
+function Set-PPDMWhitelist {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, ParameterSetName = 'automatic', ValueFromPipelineByPropertyName = $true)]
+        [switch]$automatic,
+        [Parameter(Mandatory = $true, ParameterSetName = 'IP', ValueFromPipelineByPropertyName = $true)]
+        $IP,
+        [Parameter(Mandatory = $false, ParameterSetName = 'IP', ValueFromPipelineByPropertyName = $true)]
+        [Parameter(Mandatory = $false, ParameterSetName = 'automatic', ValueFromPipelineByPropertyName = $true)]
+        $DaysToExpire = 1,
+        [Parameter(Mandatory = $true, ParameterSetName = 'IP', ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('APPROVED', 'REJECTED', 'UNDEFINED', 'AUTOMATIC')]$state,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
+    )
+
+    begin {
+        $Response = @()
+        $METHOD = "POST"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+    }     
+    Process {
+        $myDate = (get-date).AddDays($DaysToExpire)
+        $usedate = get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
+        $body = @{}         
+        $body.Add('expiresAt', $usedate )       
+        switch ($PsCmdlet.ParameterSetName) {
+            'automatic' {
+                $URI = "/$myself/automatic"
+                $body.Add('state', 'AUTOMATIC')
+                $body.Add('ip', '0.0.0.0')
+                
+            }        
+            default {
+                $URI = "/$myself"
+                $body.Add('state', $state)
+                $body.Add('ip', $IP)
+            }
+        }  
+        $body = $body | convertto-json -Depth 7
+        Write-Verbose $Body | Out-String
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                write-output $response
+                if ($response.page) {
+                    write-host ($response.page | out-string)
+                }
+            } 
+        }   
+    }
+}
+
+
+function Remove-PPDMWhitelist {
+    [CmdletBinding()]
+    param(
+
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        $id,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $apiver = "/api/v2"
+    )
+
+    begin {
+        $Response = @()
+        $METHOD = "DELETE"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
+   
+    }     
+    Process {
+
+        $URI = "/$myself/$id"
+        $body = @{} 
+        $Parameters = @{
+            RequestMethod    = 'WEB'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }       
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+
+        write-output $response.Headers.Date
+        if ($response.page) {
+            write-host ($response.page | out-string)
+        }
+ 
     }
 }
