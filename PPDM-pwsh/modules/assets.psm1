@@ -26,7 +26,9 @@ function Get-PPDMassets {
         [alias('assetIds')]$id,
         [Parameter(Mandatory = $false, ParameterSetName = 'byID')]
         [alias('assetHosts')]
-        [switch]$Hosts,        
+        [switch]$Hosts,
+        [Parameter(Mandatory = $false, ParameterSetName = 'byID')]
+        [switch]$activeHosts,                    
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
         $filter,
         [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $false)]
@@ -66,10 +68,16 @@ function Get-PPDMassets {
     Process {
         switch ($PsCmdlet.ParameterSetName) {
             'byID' {
-                if ($Hosts) {
+                if (!$Hosts -and $activeHosts) {
+                    $URI = "/$myself/$id/active-hosts"
+                }                
+                if ($Hosts -and $activeHosts) {
+                    $URI = "/$myself/$id/active-hosts"
+                }
+                if ($Hosts -and !$activeHosts) {
                     $URI = "/$myself/$id/hosts"
                 }
-                else {
+                if (!$hosts -and !$activehosts){
                     $URI = "/$myself/$id"                    
                 }
                 $body = @{}  

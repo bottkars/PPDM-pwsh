@@ -1439,7 +1439,14 @@ function New-PPDMFSBackupPolicy {
       "DAY")]
     [string]$RetentionUnit,
     [Parameter(Mandatory = $false, ValueFromPipeline = $true, ParameterSetName = 'selfservice')]
-    [ValidateRange(1, 2555)][int]$RetentionInterval,    
+    [ValidateRange(1, 2555)][int]$RetentionInterval,
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
+    [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
+    [ValidateSet("Auto",
+    "BBB",
+    "FBB")]
+    <# Backup type using BBB, FBB or Auto #> 
+    [string]$backupMechanism ="Auto",     
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     <# noop Parameter will simulate the command only #> 
@@ -1506,6 +1513,9 @@ function New-PPDMFSBackupPolicy {
           'passive'    = $passive.IsPresent
           'slaId'      = $SLAId 
           'attributes' = @{
+            'protection' = @{
+              'backupMechanism' = $backupMechanism
+            }
             'filesytem' = @{
               'troubleShootingOption' = "debugEnabled=$($TroubleshootingDebug.IsPresent)"
             }
