@@ -355,7 +355,7 @@ function Start-PPDMprotection {
 
       switch ($PsCmdlet.ParameterSetName) {
         default {
-          Write-Output $response
+          Write-Output $Response
         } 
       }   
     }
