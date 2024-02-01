@@ -444,10 +444,10 @@ function Start-PPDMprotection_policies {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
-        write-host $response.Headers.Date
+        Write-Output $response
       }
       default {
-        write-host $response.Headers.Date
+        Write-Output $response
       } 
     }   
   }
