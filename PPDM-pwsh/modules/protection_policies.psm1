@@ -329,7 +329,7 @@ function Start-PPDMprotection {
     write-verbose ($body | out-string)
     Write-Verbose $PolicyID
     $Parameters = @{
-      RequestMethod    = 'WEB'
+      RequestMethod    = 'REST'
       body             = $body 
       Uri              = "protection-policies/$PolicyID/protections"
       Method           = $Method
