@@ -124,6 +124,7 @@ FunctionsToExport = @(
     'Disable-PPDMProtectionEngineProxy',
     'Get-PPDMprotection_policies',
     'New-PPDMprotection_policies',
+    'Set-PPDMprotection_policies',    
     'Get-PPDMdiscoveries',
     'Set-PPDMdiscoveries',
     'Start-PPDMprotection_policies',

@@ -10,8 +10,8 @@ Function Get-PPDMWebException {
     switch -Wildcard ($ExceptionMessage.FullyQualifiedErrorId) {
         "*System.UriFormatException,Microsoft.PowerShell.Commands.Invoke*Command*" {
             Write-Host -ForegroundColor Magenta "$($ExceptionMessage.Exception.Message)"
-            write-Host "Most likely you are not connected to Operations Manager"
-            write-Host "please use Connect-PCFopsmman to connect"
+            write-Host "Most likely you are not connected to PowerProtect Datamanager"
+            write-Host "please use Connect-PPDMsystem to connect"
         }
             
         "*WebCmdletWebResponseException,Microsoft.PowerShell.Commands.Invoke*Command*" {

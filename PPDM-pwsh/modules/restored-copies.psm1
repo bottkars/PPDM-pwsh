@@ -896,6 +896,7 @@ function Restore-PPDMVMcopies {
         $body.restoredCopiesDetails.targetVmInfo.Add('hostMoref', ($hostMoref -split ":")[-1])
         $body.restoredCopiesDetails.targetVmInfo.Add('vmPowerOn', $vmPowerOn.IsPresent)
         $body.restoredCopiesDetails.targetVmInfo.Add('vmReconnectNic', $vmReconnectNic.IsPresent)
+        $body.restoredCopiesDetails.targetVmInfo.Remove('restoreBiosUuid')
       }
     }
       

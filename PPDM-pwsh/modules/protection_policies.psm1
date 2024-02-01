@@ -1203,15 +1203,19 @@ function New-PPDMVMBackupPolicy {
             }
           }                     
           'target'     = @{
-            'storageSystemId'      = $StorageSystemID
-            'dataTargetId'         = $StorageUnitID
-            'preferredInterfaceId' = $preferredInterfaceId
+            'storageSystemId' = $StorageSystemID
           }
           'operations' = $operations
           'retention'  = $Schedule.Retention
         }
       ) 
     } 
+    if ($preferredInterfaceId) {
+      $Body.stages.target.Add('preferredInterfaceId', $preferredInterfaceId)
+    }  
+    if ($StorageUnitID) {
+      $Body.stages.target.Add('dataTargetId', $StorageUnitID)
+    }
     $Body = $Body | convertto-json -Depth 7
     write-verbose ($body | out-string)
     $Parameters = @{
@@ -1332,15 +1336,21 @@ function New-PPDMK8SBackupPolicy {
           'passive'    = $false
           'attributes' = @{}                     
           'target'     = @{
-            'storageSystemId'      = $StorageSystemID
-            'dataTargetId'         = $StorageUnitID
-            'preferredInterfaceId' = $preferredInterfaceId
+            'storageSystemId' = $StorageSystemID
           }
           'operations' = $operations
           'retention'  = $Schedule.Retention
         }
       ) 
-    } | convertto-json -Depth 7
+    } 
+
+    if ($preferredInterfaceId) {
+      $Body.stages.target.Add('preferredInterfaceId', $preferredInterfaceId)
+    }  
+    if ($StorageUnitID) {
+      $Body.stages.target.Add('dataTargetId', $StorageUnitID)
+    }
+    $Body = $body | convertto-json -Depth 7
 
 
         
@@ -1382,6 +1392,15 @@ Creates a Backup Policy for FileSystem
 $FSSchedule=New-PPDMBackupSchedule -hourly -CreateCopyIntervalHrs 8 -RetentionUnit DAY -RetentionInterval 5
 $StorageSystem=Get-PPDMStorage_systems -Type DATA_DOMAIN_SYSTEM -Filter {name eq "ddve.home.labbuildr.com"}
 New-PPDMFSBackupPolicy -Schedule $FSSchedule -Name "Windows Cluster Filesystem" -Description "Windows Cluster File System Backup" -StorageSystemID $StorageSystem.id -enabled -indexingEnabled -ignoreMissingSystemStateFiles
+.EXAMPLE
+# This Approves an Agent, creates a Policy and assigns Assets
+
+Set-PPDMWhitelist -IP hvnode2022.dpslab.home.labbuildr.com -state APPROVED
+$FSSchedule=New-PPDMBackupSchedule -hourly -CreateCopyIntervalHrs 8 -RetentionUnit DAY -RetentionInterval 5
+$StorageSystem=Get-PPDMStorage_systems -Type DATA_DOMAIN_SYSTEM -Filter {name eq "ddve.home.labbuildr.com"}
+$Policy=New-PPDMFSBackupPolicy -Schedule $FSSchedule -Name "Windows Filesystem" -Description "Windows File System Backup" -StorageSystemID $StorageSystem.id -enabled -backupMechanism Auto
+$Assets=Get-PPDMassets -filter 'details.fileSystem.clusterName in ("hvnode2022.dpslab.home.labbuildr.com")'
+$Policy | Add-PPDMProtection_policy_assignment -AssetID $Assets.id
 #>
 function New-PPDMFSBackupPolicy {
   [CmdletBinding()]
@@ -1442,11 +1461,11 @@ function New-PPDMFSBackupPolicy {
     [ValidateRange(1, 2555)][int]$RetentionInterval,
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
-    [ValidateSet("Auto",
-    "BBB",
-    "FBB")]
+    [ValidateSet("AUTO",
+      # "BBB",
+      "FBB")]
     <# Backup type using BBB, FBB or Auto #> 
-    [string]$backupMechanism ="Auto",     
+    [string]$backupMechanism = "AUTO",     
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'centralized')]
     [Parameter(Mandatory = $false, ValueFromPipeline = $false, ParameterSetName = 'selfservice')]
     <# noop Parameter will simulate the command only #> 
@@ -1498,14 +1517,12 @@ function New-PPDMFSBackupPolicy {
       'assetType'       = 'FILE_SYSTEM'
       'type'            = 'ACTIVE'
       'dataConsistency' = 'CRASH_CONSISTENT'
-      'filterIds'       = $FilterIDS
       'enabled'         = $enabled.IsPresent
       'description'     = $Description
       'encrypted'       = $encrypted.IsPresent
       'priority'        = 1
       'passive'         = $passive.IsPresent
       'forceFull'       = $false
-      'details'         = $details
       'stages'          = @(
         @{
           'id'         = (New-Guid).Guid   
@@ -1516,21 +1533,30 @@ function New-PPDMFSBackupPolicy {
             'protection' = @{
               'backupMechanism' = $backupMechanism
             }
-            'filesytem' = @{
-              'troubleShootingOption' = "debugEnabled=$($TroubleshootingDebug.IsPresent)"
+            'fileSystem' = @{
+              'troubleShootingOption' = "debugEnabled=$($TroubleshootingDebug.ToString().ToLower())"
             }
           }                     
           'target'     = @{
-            'storageSystemId'      = $StorageSystemID
-            'dataTargetId'         = $StorageUnitID
-            'preferredInterfaceId' = $preferredInterfaceId
+            'storageSystemId' = $StorageSystemID
+
           }
           'operations' = $operations
           'retention'  = $Schedule.Retention
           'options'    = $options
         }
       ) 
-    } | convertto-json -Depth 7
+    }
+    if ($FilterIDS) {
+      $Body.Add('filterIds', $FilterIDS)
+    }
+    if ($preferredInterfaceId) {
+      $Body.stages.target.Add('preferredInterfaceId', $preferredInterfaceId)
+    }  
+    if ($StorageUnitID) {
+      $Body.stages.target.Add('dataTargetId', $StorageUnitID)
+    }
+    $Body = $Body | convertto-json -Depth 7
 
 
         
@@ -1635,7 +1661,7 @@ function New-PPDMNASBackupPolicy {
         }  
         [switch]$passive = $false
         $options = @{
-          'debugEnabled'    = $($TroubleshootingDebug.IsPresent)
+          'debugEnabled'    = $($TroubleshootingDebug.ToString().ToLower())
           'indexingEnabled' = $indexingEnabled.ispresent
           'continueOn'      = @($ContinueOn)
           'skipOn'          = @($skipOn)
@@ -1659,7 +1685,6 @@ function New-PPDMNASBackupPolicy {
       'priority'        = 1
       'passive'         = $passive.IsPresent
       'forceFull'       = $false
-      'details'         = $details
       'stages'          = @(
         @{
           'id'         = (New-Guid).Guid   
@@ -1668,9 +1693,7 @@ function New-PPDMNASBackupPolicy {
           'slaId'      = $SLAId 
           'attributes' = @{}                     
           'target'     = @{
-            'storageSystemId'      = $StorageSystemID
-            'dataTargetId'         = $StorageUnitID
-            'preferredInterfaceId' = $preferredInterfaceId
+            'storageSystemId' = $StorageSystemID
           }
           'operations' = $operations
           'retention'  = $Schedule.Retention
@@ -1678,7 +1701,15 @@ function New-PPDMNASBackupPolicy {
         }
       )
       'credentials'     = $credentials 
-    } | convertto-json -Depth 7
+    } 
+    if ($preferredInterfaceId) {
+      $Body.stages.target.Add('preferredInterfaceId', $preferredInterfaceId)
+    }  
+    if ($StorageUnitID) {
+      $Body.stages.target.Add('dataTargetId', $StorageUnitID)
+    }
+    
+    $Body = $Body | convertto-json -Depth 7
     write-verbose ($body | out-string)
     $Parameters = @{
       RequestMethod    = 'Rest'
@@ -1855,10 +1886,14 @@ function New-PPDMSQLBackupPolicy {
         $stages.Add('passive', $passive.IsPresent)
         $Stages.Add('slaId', $SLAId)
         $Stages.Add('target', @{
-            'storageSystemId'      = $StorageSystemID
-            'dataTargetId'         = $StorageUnitID
-            'preferredInterfaceId' = $preferredInterfaceId
+            'storageSystemId' = $StorageSystemID
           })
+        if ($preferredInterfaceId) {
+          $Stages.target.Add('preferredInterfaceId', $preferredInterfaceId)
+        }  
+        if ($StorageUnitID) {
+          $Stages.target.Add('dataTargetId', $StorageUnitID)
+        }
         $Stages.Add('operations' , $operations)
         $Stages.Add('retention'  , $Schedule.Retention)
       }
@@ -1890,9 +1925,7 @@ function New-PPDMSQLBackupPolicy {
             'mssql' = $mssql_options
           }                     
           'target'     = @{
-            'storageSystemId'      = $StorageSystemID
-            'dataTargetId'         = $StorageUnitID
-            'preferredInterfaceId' = $preferredInterfaceId
+            'storageSystemId' = $StorageSystemID
           }
           'operations' = $operations
           'options'    = @{
@@ -1901,10 +1934,17 @@ function New-PPDMSQLBackupPolicy {
             "promotionType"          = $promotionType
 
           }
-          
         }
         $stages.Add('retention', $Schedule.retention)
-
+        $Stages.Add('target', @{
+            'storageSystemId' = $StorageSystemID
+          })
+        if ($preferredInterfaceId) {
+          $Stages.target.Add('preferredInterfaceId', $preferredInterfaceId)
+        }  
+        if ($StorageUnitID) {
+          $Stages.target.Add('dataTargetId', $StorageUnitID)
+        }
 
       }
 
@@ -1923,11 +1963,18 @@ function New-PPDMSQLBackupPolicy {
             'mssql' = $mssql_options
           }                     
           'target'     = @{
-            'storageSystemId'      = $StorageSystemID
-            'dataTargetId'         = $StorageUnitID
-            'preferredInterfaceId' = $preferredInterfaceId
+            'storageSystemId' = $StorageSystemID
           }
           'retention'  = $Schedule.Retention
+        }
+        $Stages.Add('target', @{
+            'storageSystemId' = $StorageSystemID
+          })
+        if ($preferredInterfaceId) {
+          $Stages.target.Add('preferredInterfaceId', $preferredInterfaceId)
+        }  
+        if ($StorageUnitID) {
+          $Stages.target.Add('dataTargetId', $StorageUnitID)
         }
       }
     }
@@ -1969,10 +2016,13 @@ function New-PPDMSQLBackupPolicy {
       'priority'        = 1
       'passive'         = $passive.IsPresent
       'forceFull'       = $false
-      'details'         = $details
       'stages'          = @($stages)
        
     } 
+    if ($details) {
+      $body.Add('details', $details)
+    }
+    
 
     $Body = $Body  | convertto-json -Depth 7
     write-verbose ($body | out-string)
@@ -2124,7 +2174,7 @@ function New-PPDMExchangeBackupPolicy {
 
 
         $exchange_options = @{
-          'troubleShootingOption' = "debugEnabled=$($TroubleshootingDebug.IsPresent)"
+          'troubleShootingOption' = "debugEnabled=$($TroubleshootingDebug.ToString().ToLower())"
           'consistencyCheck'      = $consistencyCheck
         }
 
@@ -2155,7 +2205,6 @@ function New-PPDMExchangeBackupPolicy {
       'priority'        = 1
       'passive'         = $passive.IsPresent
       'forceFull'       = $false
-      'details'         = $details
       'stages'          = @(
         @{
           'id'         = (New-Guid).Guid   
@@ -2165,15 +2214,21 @@ function New-PPDMExchangeBackupPolicy {
             'exchange' = $exchange_options
           }                     
           'target'     = @{
-            'storageSystemId'      = $StorageSystemID
-            'dataTargetId'         = $StorageUnitID
-            'preferredInterfaceId' = $preferredInterfaceId
+            'storageSystemId' = $StorageSystemID
           }
           'operations' = $operations
           'retention'  = $Schedule.Retention
         }
       ) 
-    } | convertto-json -Depth 7
+    } 
+
+    if ($preferredInterfaceId) {
+      $Body.stages.target.Add('preferredInterfaceId', $preferredInterfaceId)
+    }  
+    if ($StorageUnitID) {
+      $Body.stages.target.Add('dataTargetId', $StorageUnitID)
+    }
+    $Body = $Body | convertto-json -Depth 7
 
 
         
@@ -2465,15 +2520,20 @@ function New-PPDMOracleBackupPolicy {
             }
           }                     
           'target'             = @{
-            'storageSystemId'      = $StorageSystemID
-            'dataTargetId'         = $StorageUnitID
-            'preferredInterfaceId' = $preferredInterfaceId
+            'storageSystemId' = $StorageSystemID
           }
           'operations'         = $operations
           'options'            = $options
           'retention'          = $Schedule.retention
           'extendedRetentions' = $extendedRetentions
           
+        }
+
+        if ($preferredInterfaceId) {
+          $Stages.target.Add('preferredInterfaceId', $preferredInterfaceId)
+        }  
+        if ($StorageUnitID) {
+          $Stages.target.Add('dataTargetId', $StorageUnitID)
         }
       }
 
@@ -2492,13 +2552,19 @@ function New-PPDMOracleBackupPolicy {
             'oracle' = $oracle_options
           }                     
           'target'     = @{
-            'storageSystemId'      = $StorageSystemID
-            'dataTargetId'         = $StorageUnitID
-            'preferredInterfaceId' = $preferredInterfaceId
+            'storageSystemId' = $StorageSystemID
           }
           'retention'  = $Schedule.Retention
         }
-
+        $Stages.Add('target', @{
+            'storageSystemId' = $StorageSystemID
+          })
+        if ($preferredInterfaceId) {
+          $Stages.target.Add('preferredInterfaceId', $preferredInterfaceId)
+        }  
+        if ($StorageUnitID) {
+          $Stages.target.Add('dataTargetId', $StorageUnitID)
+        }
       }
     }
     if ($AppAware.IsPresent) {
@@ -2539,10 +2605,12 @@ function New-PPDMOracleBackupPolicy {
       'priority'        = 1
       'passive'         = $passive.IsPresent
       'forceFull'       = $false
-      'details'         = $details
       'stages'          = @($stages)
       'slaId'           = $SLAId        
     } 
+    if ($details) {
+      $body.Add('details', $details)
+    }
 
     $Body = $Body  | convertto-json -Depth 7
     write-verbose ($body | out-string)
@@ -2570,6 +2638,61 @@ function New-PPDMOracleBackupPolicy {
     switch ($PsCmdlet.ParameterSetName) {
       default {
         write-output $response
+      } 
+    }   
+  }
+}
+
+
+function Set-PPDMProtection_Policies {
+  [CmdletBinding()]
+  [Alias('Set-PPDMAsset')]
+  param(
+    [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+    $id,
+    [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+    $configobject,        
+    $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+    $apiver = "/api/v2"
+
+  )
+  begin {
+    $Response = @()
+    $METHOD = "PUT"
+    $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+ 
+  }     
+  Process {
+    switch ($PsCmdlet.ParameterSetName) {
+      default {
+        $URI = "/$myself/$id"
+      }
+    }
+    $body = $configobject | ConvertTo-json -Depth 7 
+    write-verbose ($body | out-string)
+    $Parameters = @{
+      RequestMethod    = 'REST'
+      body             = $body
+      Uri              = $URI
+      Method           = $Method
+      PPDM_API_BaseUri = $PPDM_API_BaseUri
+      apiver           = $apiver
+      Verbose          = $PSBoundParameters['Verbose'] -eq $true
+    }   
+          
+    try {
+      $Response += Invoke-PPDMapirequest @Parameters
+    }
+    catch {
+      Get-PPDMWebException  -ExceptionMessage $_
+      break
+    }
+    write-verbose ($response | Out-String)
+  } 
+  end {    
+    switch ($PsCmdlet.ParameterSetName) {
+      default {
+        write-output ($response)
       } 
     }   
   }

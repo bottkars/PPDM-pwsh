@@ -160,25 +160,19 @@ function Get-PPDMactivities {
         $PredefinedFilter,  
         [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [alias('taskid', 'id')]$activityId,
-
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         $filter,
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         $query,
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         $pageSize, 
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         $page, 
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
         [Parameter(Mandatory = $false, ParameterSetName = 'default', ValueFromPipelineByPropertyName = $true)]
         [hashtable]$body = @{orderby = 'createdAt DESC' },
         [Parameter(Mandatory = $false, ParameterSetName = 'predefined', ValueFromPipelineByPropertyName = $true)]
@@ -249,9 +243,10 @@ function Get-PPDMactivities {
 
             'byID' {
                 $URI = "/$myself/$activityId"
+                $body=@{}
             }
             default {
-                $URI = "/$myself/$activityId"
+                $URI = "/$myself"
             }            
 
         }
@@ -385,12 +380,6 @@ function Get-PPDMactivity_metrics {
         $filter,
         #       [ValidateSet()]
         #       [Alias('AssetType')][string]$type,
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        $pageSize, 
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        $page, 
-        [Parameter(Mandatory = $false, ParameterSetName = 'all', ValueFromPipelineByPropertyName = $true)]
-        [hashtable]$body = @{orderby = 'createdAt DESC' },
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
@@ -414,12 +403,7 @@ function Get-PPDMactivity_metrics {
                 $URI = "/$myself"
             }
         }  
-        if ($pagesize) {
-            $body.add('pageSize', $pagesize)
-        }
-        if ($page) {
-            $body.add('page', $page)
-        }   
+ 
         $Parameters = @{
             RequestMethod    = 'REST'
             body             = $body
@@ -505,10 +489,6 @@ function Stop-PPDMactivities {
         }   
     }
 }
-
-
-
-
 #/api/v2/activities/{id}/retry
 <#
 .SYNOPSIS
