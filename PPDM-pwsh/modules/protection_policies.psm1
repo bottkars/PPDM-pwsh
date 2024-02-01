@@ -427,7 +427,7 @@ function Start-PPDMprotection_policies {
       Method           = $Method
       PPDM_API_BaseUri = $PPDM_API_BaseUri
       apiver           = $apiver
-      RequestMethod    = "REST"
+      RequestMethod    = "WEB"
       Verbose          = $PSBoundParameters['Verbose'] -eq $true
       # ResponseHeadersVariable = 'HeaderResponse'
 
@@ -444,10 +444,10 @@ function Start-PPDMprotection_policies {
   end {    
     switch ($PsCmdlet.ParameterSetName) {
       'byID' {
-        Write-Output $response
+        write-host $response.Headers.Date
       }
       default {
-        Write-Output $response
+        write-host $response.Headers.Date
       } 
     }   
   }
