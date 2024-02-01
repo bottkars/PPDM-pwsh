@@ -903,7 +903,7 @@ function Restore-PPDMVMcopies {
     $body = $body | convertto-json -Depth 5
     write-verbose ($body | out-string)
     $Parameters = @{
-      RequestMethod    = 'Web'
+      RequestMethod    = 'REST'
       body             = $body 
       Uri              = "/restored-copies/"
       Method           = $Method
@@ -928,7 +928,7 @@ function Restore-PPDMVMcopies {
 
       switch ($PsCmdlet.ParameterSetName) {
         default {
-          write-host $response.Headers.Date
+          Write-Output $response
         } 
       }   
     }
