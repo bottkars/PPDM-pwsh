@@ -41937,7 +41937,7 @@ paths:
       x-codegen-request-body-name: body
       x-ppdm-executable-roles: admin,security_admin
 servers:
-- url: https://ppdm.home.labbuildr.com:8443
+- url: https://localhost:8443
 tags:
 - name: Agent Update Session
 - name: Appliance Management
