@@ -167,7 +167,7 @@ function Connect-PPDMapiEndpoint {
         $Global:PPDM_Refresh_token = $Response.Refresh_token
         $Global:PPDM_Scope = $Response.Scope
 
-        $Global:PPDM_API_Token=$Response.access_token
+        $Global:PPDM_API_Token = $Response.access_token
         Write-Host "Connected to $PPDM_API_BASEURI with Scope $($Response.Scope)"
         Write-Output $Response
     }
@@ -194,7 +194,7 @@ function Update-PPDMToken {
             UseBasicParsing = $true 
             body            = $body 
             Headers         = @{
-               "Authorization" = "Bearer $($Global:PPDM_Refresh_token)" 
+                "Authorization" = "Bearer $($Global:PPDM_Refresh_token)" 
             }
             Uri             = "$($Global:PPDM_API_BaseUri):$($Global:PPDM_API_PORT)$apiver/token"
             Method          = $Method
@@ -285,6 +285,8 @@ function Invoke-PPDMapirequest {
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
         $Body = @{},
         [Parameter(Mandatory = $false, ParameterSetName = 'default')]
+        [switch]$ChangeUserPassword,
+        [Parameter(Mandatory = $false, ParameterSetName = 'default')]
         $Filter,
         [Parameter(Mandatory = $true, ParameterSetName = 'infile')]
         $InFile,
@@ -297,33 +299,39 @@ function Invoke-PPDMapirequest {
     $uri = $uri.trimend('/')
 
     $uri = "$($Global:PPDM_API_BaseUri):$apiport/$apiver/$uri"
-    if (($Global:PPDM_API_Headers) -and ($Global:PPDM_API_Token) -and ($Global:PPDM_Refresh_token)) {
+    if ((($Global:PPDM_API_Headers) -and ($Global:PPDM_API_Token) -and ($Global:PPDM_Refresh_token)) -or ($ChangeUserPassword.ispresent)) {
         # checking token
-        $refreshDate=(Get-Date -Date "01-01-1970") + ([System.TimeSpan]::FromSeconds(((Show-PPDMJWTtoken -token $Global:PPDM_Refresh_token).exp)))
-        $TokenDate=(Get-Date -Date "01-01-1970") + ([System.TimeSpan]::FromSeconds(((Show-PPDMJWTtoken -token $Global:PPDM_API_Token).exp)))
-        $TokenDate=$TokenDate.ToLocalTime()
-        $refreshDate=$refreshDate.ToLocalTime()
-        if ($TokenDate -lt (get-date)) {
-            Write-Warning "Auth Token with timestamp $TokenDate has expired, will try to refresh"
-            if ($refreshDate-lt (get-date)) 
-            {
-                Write-Warning "Refresh Token Expired, please re-authenticate with PPDM"
-                return
+        Write-Verbose "Checking Token"
+        if (!$ChangeUserPassword.IsPresent) {
+            $refreshDate = (Get-Date -Date "01-01-1970") + ([System.TimeSpan]::FromSeconds(((Show-PPDMJWTtoken -token $Global:PPDM_Refresh_token).exp)))
+            $TokenDate = (Get-Date -Date "01-01-1970") + ([System.TimeSpan]::FromSeconds(((Show-PPDMJWTtoken -token $Global:PPDM_API_Token).exp)))
+            $TokenDate = $TokenDate.ToLocalTime()
+            $refreshDate = $refreshDate.ToLocalTime()
+            if ($TokenDate -lt (get-date)) {
+                Write-Warning "Auth Token with timestamp $TokenDate has expired, will try to refresh"
+                if ($refreshDate -lt (get-date)) {
+                    Write-Warning "Refresh Token Expired, please re-authenticate with PPDM"
+                    return
+                }
+                else {
+                    Write-Verbose "Refreshing Token using Refresh Token"
+                    Update-PPDMToken 6>$null | out-null
+                }
+          
             }
-            else {
-                Write-Verbose "Refreshing Token using Refresh Token"
-                Update-PPDMToken 6>$null | out-null
-            }
+            $Headers = $Global:PPDM_API_Headers
+            Write-Verbose ($Headers | Out-String)  
         }
-        $Headers = $Global:PPDM_API_Headers
-        Write-Verbose ($Headers | Out-String)
+
         Write-Verbose "==> Calling $uri"
         $Parameters = @{
             UseBasicParsing = $true 
             Method          = $Method
-            Headers         = $Headers
             ContentType     = $ContentType
             Verbose         = $PSBoundParameters['Verbose'] -eq $true
+        }
+        if ($Headers) { 
+            $Parameters.Add('Headers', $Headers)
         }
         write-verbose ($PsCmdlet.ParameterSetName)
         switch ($PsCmdlet.ParameterSetName) {    
@@ -512,7 +520,7 @@ function Start-PPDMasset_backups {
 function Show-PPDMJWTtoken {
  
     [cmdletbinding()]
-    param([Parameter(Mandatory=$true)][string]$token)
+    param([Parameter(Mandatory = $true)][string]$token)
     if (!$token.Contains(".") -or !$token.StartsWith("eyJ")) { Write-Error "Invalid token" -ErrorAction Stop }
     #Header
     $tokenheader = $token.Split(".")[0].Replace('-', '+').Replace('_', '/')

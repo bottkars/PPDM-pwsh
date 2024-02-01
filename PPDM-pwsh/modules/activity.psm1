@@ -146,7 +146,8 @@ $FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB
 # filter for Successfull system:
 # get a date stamp from -1 week ( Adjust to you duration)
 $myDate=(get-date).AddDays(-7)
-$usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ$FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "OK"'
+$usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
+$FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "OK"'
 #>
 
 function Get-PPDMactivities {
@@ -225,7 +226,7 @@ function Get-PPDMactivities {
                         $filterstring = 'createTime gt "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("HOST_CONFIGURATION","CLOUD_COPY_RECOVER","CLOUD_DR","CONFIG","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE")'
                     }
                     'ASSET_JOBS' {
-                        $filterstring = 'createTime gt "' + $timespan + '" and classType eq "JOB" and asset.id ne null"'
+                        $filterstring = 'createTime gt "' + $timespan + '" and classType eq "JOB" and asset.id ne null'
                     }
                     'PROTECTION_JOBS' {
                         $filterstring = 'createTime gt "' + $timespan + '" parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_PROTECT","CLOUD_TIER","EXPORT_REUSE","INDEX","INSTANT_ACCESS_ATTACH","INSTANT_ACCESS_DELETE_SESSION","INSTANT_ACCESS_DETACH","PROTECT","REPLICATE","RESTORE")'

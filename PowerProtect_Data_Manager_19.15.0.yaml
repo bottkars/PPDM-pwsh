@@ -143,7 +143,7 @@ components:
       - access_token
       - token_type
       type: object
-    AccountChangePasswordResponse:
+    :
       description: Account Change Password Response.
       properties:
         username:

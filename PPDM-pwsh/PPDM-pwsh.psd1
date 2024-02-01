@@ -12,7 +12,7 @@
 RootModule = 'PPDM-pwsh.psm1'
 
 # Version number of this module.
-ModuleVersion = '19.14.20.79'
+ModuleVersion = '19.15.0'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -98,7 +98,8 @@ NestedModules = @(
     './modules/service-level-agreements',
     './modules/whitelist',
     './modules/exported-copies',
-    './modules/reporting'
+    './modules/reporting',
+    './modules/account'
 )
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
@@ -311,7 +312,8 @@ FunctionsToExport = @(
     'New-PPDMJobStatusSummaryReport',
     'Get-PPDMreport',  
     'Request-PPDMreport'
-    'Remove-PPDMService_Level_Agreements'
+    'Remove-PPDMService_Level_Agreements',
+    'Set-PPDMuserpassword'
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -451,7 +453,7 @@ PrivateData = @{
         - added diconnect (removes Global Variables )
         - added force connect (removes Global Variables )
         '
-    # Prerelease = 'Pre'
+    Prerelease = 'Pre'
     } # End of PSData hashtable
 
 } # End of PrivateData hashtable

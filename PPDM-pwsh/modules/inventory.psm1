@@ -359,9 +359,9 @@ function Add-PPDMinventory_sources {
         [switch]$isAssetSource,  
         [Parameter(Mandatory = $false, ParameterSetName = 'Host', ValueFromPipelineByPropertyName = $true)]
         [switch]$vSphereUiIntegration,                       
-        [Parameter(Mandatory = $false, ParameterSetName = 'Host', ValueFromPipelineByPropertyName = $true)]
-        [Parameter(Mandatory = $false, ParameterSetName = 'GENERIC_NAS', ValueFromPipelineByPropertyName = $true)]
-        [switch]$ssl,
+       # [Parameter(Mandatory = $false, ParameterSetName = 'Host', ValueFromPipelineByPropertyName = $true)]
+       # [Parameter(Mandatory = $false, ParameterSetName = 'GENERIC_NAS', ValueFromPipelineByPropertyName = $true)]
+       # [switch]$ssl,
         $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
         $apiver = "/api/v2"
 
@@ -407,7 +407,7 @@ function Add-PPDMinventory_sources {
                     }    
                     $body.details.k8s.Add('distributionType', $K8S_TYPE )
                 }                
-                $body.Add('ssl', $ssl.isPresent )                
+#                $body.Add('ssl', $ssl.isPresent )                
                 $body = $body | ConvertTo-Json
             }
             'GENERIC_NAS' {
