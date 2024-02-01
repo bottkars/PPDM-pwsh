@@ -355,7 +355,7 @@ function Start-PPDMprotection {
 
       switch ($PsCmdlet.ParameterSetName) {
         default {
-          write-host $response.Headers.Date
+          write-host $response
         } 
       }   
     }
