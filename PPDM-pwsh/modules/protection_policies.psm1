@@ -427,7 +427,7 @@ function Start-PPDMprotection_policies {
       Method           = $Method
       PPDM_API_BaseUri = $PPDM_API_BaseUri
       apiver           = $apiver
-      RequestMethod    = "WEB"
+      RequestMethod    = "REST"
       Verbose          = $PSBoundParameters['Verbose'] -eq $true
       # ResponseHeadersVariable = 'HeaderResponse'
 
