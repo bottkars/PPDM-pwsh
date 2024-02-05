@@ -326,7 +326,7 @@ function Start-PPDMprotection {
         } )
     } 
     if ($AssetIDs) {
-      $Body = $Body.Add('assetIds',$AssetIDs)
+    $Body.Add('assetIds',$AssetIDs)
     }
     $Body=$Body | convertto-json -Depth 3
     write-verbose ($body | out-string)
