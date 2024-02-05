@@ -304,31 +304,41 @@ function Start-PPDMprotection {
   Process {
     switch ($PsCmdlet.ParameterSetName) {
       default {
+        $Body = [ordered]@{
+          'stages' = @(
+            @{
+              'id'        = $StageID  
+              'operation' = @{
+                'backupType' = $BackupType
+              }  
+              'retention' = @{
+                'interval' = $RetentionInterval
+                'unit'     = $RetentionUnit
+              }
+            } )
+        } 
+        if ($AssetIDs) {
+          $Body.Add('assetIds', $AssetIDs)
+        }
       }
       'byPolicyObject' {
         $StageID = ($PolicyObject.stages | Where-Object type -eq PROTECTION).id
         $BackupType = ($PolicyObject.stages | Where-Object type -eq PROTECTION).operations.backupType
         $PolicyID = $PolicyObject.id
+        $Body = [ordered]@{
+          'stages' = @(
+            @{
+              'id'        = $StageID  
+            } )
+        } 
+        if ($AssetIDs) {
+          $Body.Add('assetIds', $AssetIDs)
+        }        
       }
 
     }    
-    $Body = [ordered]@{
-      'stages'   = @(
-        @{
-          'id'        = $StageID  
-          'operation' = @{
-            'backupType' = $BackupType
-          }  
-          'retention' = @{
-            'interval' = $RetentionInterval
-            'unit'     = $RetentionUnit
-          }
-        } )
-    } 
-    if ($AssetIDs) {
-    $Body.Add('assetIds',$AssetIDs)
-    }
-    $Body=$Body | convertto-json -Depth 3
+
+    $Body = $Body | convertto-json -Depth 3
     write-verbose ($body | out-string)
     Write-Verbose $PolicyID
     $Parameters = @{
