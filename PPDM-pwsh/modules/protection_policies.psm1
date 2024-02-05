@@ -260,7 +260,7 @@ function Start-PPDMprotection {
   param(
     [Parameter(Mandatory = $true, ValueFromPipeline = $true, ParameterSetName = 'byPolicyObject')]
     [psobject]$PolicyObject,
-    [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byPolicyObject')]
+    [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byPolicyObject')]
     [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byIDS')]
     [string[]][alias('Assets')]$AssetIDs,  
     [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'byIDS')]
