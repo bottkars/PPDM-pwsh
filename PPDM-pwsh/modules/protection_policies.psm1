@@ -1924,9 +1924,6 @@ function New-PPDMSQLBackupPolicy {
           'attributes' = @{
             'mssql' = $mssql_options
           }                     
-          'target'     = @{
-            'storageSystemId' = $StorageSystemID
-          }
           'operations' = $operations
           'options'    = @{
             "skipSimpleDatabase"     = $skipSimpleDatabase.IsPresent
