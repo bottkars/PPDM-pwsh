@@ -102,7 +102,7 @@ function Update-PPDMWhitelist {
         [Parameter(Mandatory = $true, ParameterSetName = 'IP', ValueFromPipelineByPropertyName = $true)]
         $id,
         [Parameter(Mandatory = $false, ParameterSetName = 'IP', ValueFromPipelineByPropertyName = $true)]
-        $DaysToExpire,
+        $DaysToExpire=1,
         [Parameter(Mandatory = $true, ParameterSetName = 'IP', ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('APPROVED', 'REJECTED', 'UNDEFINED', 'AUTOMATIC')]$state,
         [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]                
