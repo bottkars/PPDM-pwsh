@@ -325,7 +325,11 @@ function Start-PPDMprotection {
             'unit'     = $RetentionUnit
           }
         } )
-    } | convertto-json -Depth 3
+    } 
+    if ($AssetIDs) {
+      $Body = $Body.Add('assetIds',$AssetIDs)
+    }
+    $Body=$Body | convertto-json -Depth 3
     write-verbose ($body | out-string)
     Write-Verbose $PolicyID
     $Parameters = @{
