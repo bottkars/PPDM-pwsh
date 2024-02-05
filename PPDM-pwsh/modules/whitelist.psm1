@@ -119,7 +119,7 @@ function Update-PPDMWhitelist {
     Process {
         $URI = "$myself/$id"
         $myDate = (get-date).AddDays($DaysToExpire)
-        $usedate = get-date $myDate -Format yyyy-MM-ddThh:mm:ss.ffffFFFFZ
+        $usedate = get-date $myDate -Format yyyy-MM-ddThh:mm:ss.ffffZ
         $body = @{}         
         $body.Add('expiresAt', $usedate )       
         $body.Add('state', $state)
