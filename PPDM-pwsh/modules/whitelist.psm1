@@ -113,7 +113,7 @@ function Update-PPDMWhitelist {
 
     begin {
         $Response = @()
-        $METHOD = "PUT"
+        $METHOD = "PATCH"
         $Myself = ($MyInvocation.MyCommand.Name.Substring(11) -replace "_", "-").ToLower()
     }     
     Process {
