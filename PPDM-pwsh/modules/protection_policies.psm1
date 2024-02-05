@@ -313,7 +313,6 @@ function Start-PPDMprotection {
 
     }    
     $Body = [ordered]@{
-      'assetIds' = $AssetIDs
       'stages'   = @(
         @{
           'id'        = $StageID  
