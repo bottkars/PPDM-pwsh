@@ -425,7 +425,7 @@ function Set-PPDMagents_update_sessions {
         $updatehost = @{}
         $updatehost.Add('appServerTypes', $type)
         $updatehost.Add('id', $hostid)
-        $updatehost.Add('privileged', "true")
+        $updatehost.Add('privileged', $true)
         $body = @{}
         $body.Add('hosts', @())
         $body.hosts += $updatehost
