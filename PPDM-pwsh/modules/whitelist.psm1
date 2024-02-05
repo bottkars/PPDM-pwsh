@@ -124,7 +124,7 @@ function Update-PPDMWhitelist {
         $body.Add('expiresAt', $usedate )       
         $body.Add('state', $state)
         $body.Add('ip', $IP)
- 
+        Write-Verbose $URI
         $body = $body | convertto-json -Depth 7
         Write-Verbose $Body | Out-String
         $Parameters = @{
