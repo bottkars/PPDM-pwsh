@@ -338,6 +338,7 @@ function Start-PPDMprotection {
 
     }    
 
+
     $Body = $Body | convertto-json -Depth 3
     write-verbose ($body | out-string)
     Write-Verbose $PolicyID
@@ -1041,7 +1042,7 @@ function New-PPDMDatabaseBackupSchedule {
       $LogSchedule.Add('schedule', @{})
       $LogSchedule.schedule.Add('interval', $LogBackupInterval)
       $LogSchedule.schedule.Add('frequency', $LogBackupUnit)
-      $LogSchedule.schedule.Add('logEnabled', $True)
+#      $LogSchedule.schedule.Add('logEnabled', $True) strict API
       $LogSchedule.schedule.Add('duration' , "PT$($PTHours)H")
       $LogSchedule.schedule.Add('startTime', $(Get-DAte $starttime -Format yyyy-MM-ddThh:mm:ss.000Z))
       $Schedule.Add('logSchedule', $logSchedule)   
