@@ -433,7 +433,7 @@ function Set-PPDMagents_update_sessions {
         $body.Add('precheckOnly', $precheckOnly.IsPresent)
         $body.Add('name', $Name)
         #if ($scheduledAt) {
-            $body.Add('scheduledAt', $(Get-DAte $scheduledAt -Format yyyy-MM-ddTHH:mm:ssZ))
+        $body.Add('scheduledAt', $(Get-DAte $scheduledAt -Format yyyy-MM-ddTHH:mm:ssZ))
 
         #}
         $Uri = $Myself
