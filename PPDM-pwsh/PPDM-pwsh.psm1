@@ -350,7 +350,7 @@ function Invoke-PPDMapirequest {
                     Write-Verbose ($Body | Out-String)
                 }
                 if ($query) {
-                    $Parameters.Add('body', $query)
+                    $body.Add('q', $query)
                     Write-Verbose ($Query | Out-String)
                 }
 

@@ -84,7 +84,7 @@ elif [[ "$BACKUP_LEVEL" == "LOG" ]]; then
             ${COPY_COMMAND} --max-age ${INCREMENTAL_MAX_AGE} --transfers ${STREAMS} --multi-thread-write-buffer-size 512k --multi-thread-streams 1 --progress ${CLOUD_PROFILE}:${BUCKET}${PREFIX} ${BASE_BACKUP_DIR}/  2>&1 >> /tmp/rclone.log
             exit_status=$?
     if [ $exit_status -ne 0 ]; then
-       echo "Unable to perform FULL backup"
+       echo "Unable to perform Incremental backup"
        exit 1
     fi
     echo "Backup Completed Successfully"

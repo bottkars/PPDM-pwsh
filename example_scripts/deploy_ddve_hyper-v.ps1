@@ -1,7 +1,7 @@
 
-$ddvevmname = "mcl-ddve-azlocal"
-$ddvehostname = "mcl-ddve-azlocal.edub.csc"
-$Destination = "C:\ClusterStorage\CSV01\$ddvevmname\"
+$ddvevmname = "mcl-ddve-acplocal"
+$ddvehostname = "mcl-ddve-acplocal.edub.csc"
+$Destination = "C:\ClusterStorage\UserStorage_3\$ddvevmname\"
 $data_disk_size = 1024GB
 $data_disk_count = 7
 
@@ -24,10 +24,10 @@ $Parameters = @{
 
 .\ddve-installer.ps1 @Parameters
 
-$DDVEVM = get-vm $ddvevmname
-for ($i = 1; $i -le $data_disk_count ; $i++) { 
+$DDVEVM = get-vm -ComputerName mcl-mc760-n01  -Name $ddvevmname 
+foreach ($i in 8..16) { 
     write-host "Creating Data Disk $ddvevmname-data$i.vhdx"
     new-vhd -Path "$Destination\$ddvevmname-data$($i).vhdx" -SizeBytes $data_disk_size
-    $DDVEVM | Add-VMHardDiskDrive -ControllerType SCSI -ControllerNumber 0 -Path "$Destination\$ddvevmname-data$($i).vhdx"
+    $DDVEVM | Add-VMHardDiskDrive -ControllerType SCSI -ControllerNumber 1 -Path "$Destination\$ddvevmname-data$($i).vhdx"
 }
 $DDVEVM | start-vm
