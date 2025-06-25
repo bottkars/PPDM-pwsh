@@ -121,33 +121,33 @@ Get-PPDMactivities -PredefinedFilter PROTECT_FAILED -days 1 | where { $_.actions
 # get a date stamp from -1 week ( Adjust to you duration)
 $myDate=(get-date).AddDays(-7)
 $usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
-$FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT")'
+$FILTER='startTime ge "'+$usedate+'" and parentId ne null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT")'
 Get-PPDMactivities -Filter $FILTER  | Select-Object * -ExpandProperty result | ft 
 .EXAMPLE
 # all failed last week
 # get a date stamp from -1 week ( Adjust to you duration)
 $myDate=(get-date).AddDays(-7)
 $usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
-FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT") and result.status eq "FAILED"'
+FILTER='startTime ge "'+$usedate+'" and parentId ne null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT") and result.status eq "FAILED"'
 Get-PPDMactivities -Filter $FILTER  | Select-Object * -ExpandProperty result | ft 
 .EXAMPLE
 # Protect SUCCEEDED
 # get a date stamp from -1 week ( Adjust to you duration)
 $myDate=(get-date).AddDays(-7)
-$usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ$FILTER='result.status in  ("OK","OK_WITH_ERRORS") and startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("PROTECT")'
+$usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ$FILTER='result.status in  ("OK","OK_WITH_ERRORS") and startTime ge "'+$usedate+'" and parentId ne null and classType in ("JOB", "JOB_GROUP") and category in ("PROTECT")'
 Get-PPDMactivities -Filter $FILTER  | Select-Object * -ExpandProperty result | ft 
 .EXAMPLE
 # filter for failed system jobs
 # get a date stamp from -1 week ( Adjust to you duration)
 $myDate=(get-date).AddDays(-7)
 $usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
-$FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "FAILED"'
+$FILTER='startTime ge "'+$usedate+'" and parentId ne null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "FAILED"'
 .EXAMPLE
 # filter for Successfull system:
 # get a date stamp from -1 week ( Adjust to you duration)
 $myDate=(get-date).AddDays(-7)
 $usedate=get-date $myDate -Format yyyy-MM-ddThh:mm:ssZ
-$FILTER='startTime ge "'+$usedate+'" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "OK"'
+$FILTER='startTime ge "'+$usedate+'" and parentId ne null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "OK"'
 #>
 
 function Get-PPDMactivities {
@@ -198,32 +198,32 @@ function Get-PPDMactivities {
 
                 switch ($PredefinedFilter) {
                     'PROTECT_OK' {
-                        $filterstring = 'result.status in ("OK","OK_WITH_ERRORS") and startTime ge "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("PROTECT")'
+                        $filterstring = 'result.status in ("OK","OK_WITH_ERRORS") and startTime ge "' + $timespan + '" and parentId ne null and classType in ("JOB", "JOB_GROUP") and category in ("PROTECT")'
                     }
                     'PROTECT_FAILED' {
-                        $filterstring = 'result.status in ("FAILED") and startTime ge "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("PROTECT")'
+                        $filterstring = 'result.status in ("FAILED") and startTime ge "' + $timespan + '" and parentId ne null and classType in ("JOB", "JOB_GROUP") and category in ("PROTECT")'
                     }
                     'SYSTEM_FAILED' {
-                        $filterstring = 'startTime ge "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "FAILED"'                    
+                        $filterstring = 'startTime ge "' + $timespan + '" and parentId ne null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "FAILED"'                    
                     }
                     'SYSTEM_OK' {
-                        $filterstring = 'startTime ge "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "OK"'
+                        $filterstring = 'startTime ge "' + $timespan + '" and parentId ne null and classType in ("JOB", "JOB_GROUP") and category in ("CONSOLE","CONFIG","CLOUD_DR","CLOUD_COPY_RECOVER","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE") and result.status eq "OK"'
                     }
                     'CLOUD_PROTECT_OK' {
-                        $filterstring = 'startTime ge "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_PROTECT") and result.status eq "OK"'
+                        $filterstring = 'startTime ge "' + $timespan + '" and parentId ne null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_PROTECT") and result.status eq "OK"'
                     }
 
                     'CLOUD_PROTECT_FAILED' {
-                        $filterstring = 'startTime ge "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_PROTECT") and result.status eq "FAILED"'
+                        $filterstring = 'startTime ge "' + $timespan + '" and parentId ne null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_PROTECT") and result.status eq "FAILED"'
                     }
                     'QUEUED' {
-                        $filterstring = 'createTime gt "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT") and state eq "QUEUED"'
+                        $filterstring = 'createTime gt "' + $timespan + '" and parentId ne null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT") and state eq "QUEUED"'
                     }
                     'RUNNING' {
-                        $filterstring = 'createTime gt "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT") and state eq "RUNNING"'
+                        $filterstring = 'createTime gt "' + $timespan + '" and parentId ne null and classType in ("JOB", "JOB_GROUP") and category in ("CLOUD_TIER","EXPORT_REUSE","PROTECT","REPLICATE","RESTORE","CLOUD_PROTECT") and state eq "RUNNING"'
                     }
                     'SYSTEM_JOBS' {
-                        $filterstring = 'createTime gt "' + $timespan + '" and parentId eq null and classType in ("JOB", "JOB_GROUP") and category in ("HOST_CONFIGURATION","CLOUD_COPY_RECOVER","CLOUD_DR","CONFIG","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE")'
+                        $filterstring = 'createTime gt "' + $timespan + '" and parentId ne null and classType in ("JOB", "JOB_GROUP") and category in ("HOST_CONFIGURATION","CLOUD_COPY_RECOVER","CLOUD_DR","CONFIG","DELETE","DISASTER_RECOVERY","DISCOVER","MANAGE","NOTIFY","SYSTEM","VALIDATE")'
                     }
                     'ASSET_JOBS' {
                         $filterstring = 'createTime gt "' + $timespan + '" and classType eq "JOB" and asset.id ne null'
