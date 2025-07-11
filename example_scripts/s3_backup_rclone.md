@@ -1,0 +1,155 @@
+# Cloud-to-Local Backup Script
+
+This script enables automated, robust, and auditable backups from a remote/cloud storage location—accessed via [rclone]—to a local directory. It supports both full and incremental (LOG) backup types, with log rotation for easy diagnostics.
+
+---
+
+## Features
+
+- **Supports Full and Incremental Backups:** Choose between a complete (FULL) or recent changes only (LOG) backup.
+- **Flexible Backup Source:** Pull data from any rclone-supported cloud or remote storage with profile authentication.
+- **Parallel Transfers:** Configure number of simultaneous file transfers for faster performance.
+- **Log Rotation:** Keeps detailed timestamped logs, with automatic cleanup of older log files.
+- **Customizable Backup Ages:** Specify the maximum file age for full and incremental backups.
+- **Fail-fast Error Handling:** Script exits non-zero on error with detailed logs for troubleshooting.
+
+---
+
+## Requirements
+
+- **Operating system:** Linux or any UNIX-like system with Bash.
+- **Dependencies:**
+  - `rclone` (tested with v1.6x+, must be installed and configured with correct remote profiles)
+  - Core utils: `find`, `sort`, `tail`, `xargs`, `date`, `basename`, `dirname`
+- **Environment variables:**
+  - `DD_TARGET_DIRECTORY`: Local path for backup destination.
+  - `BACKUP_LEVEL`: Set to `FULL` or `LOG` to control backup type.
+
+---
+
+## Usage
+
+```sh
+./s3_backup_rclone.sh \
+  -b <BUCKET> \
+  -c <CLOUD_PROFILE> \
+  [-p <PREFIX>] \
+  -s <STREAMS> \
+  -i <INCREMENTAL_MAX_AGE> \
+  -f <FULL_MAX_AGE>
+```
+
+#### Required Environment Variables
+
+- `DD_TARGET_DIRECTORY`  
+  Path to the local backup directory (e.g., `/mnt/backups`).
+
+- `BACKUP_LEVEL`  
+  Must be set to either `FULL` (complete backup) or `LOG` (incremental backup).
+
+#### Script Arguments
+
+| Option | Required? | Description                                                        |
+|--------|-----------|--------------------------------------------------------------------|
+| `-b`   | yes       | Cloud bucket name (container or directory on remote)               |
+| `-c`   | yes       | rclone profile name (matches credentials/config in `rclone.conf`)  |
+| `-p`   | no        | Optional path prefix inside the bucket (e.g., `/2025/July/`)       |
+| `-s`   | yes       | Number of parallel transfer streams (e.g., `4`)                    |
+| `-i`   | yes       | Max age for incremental (LOG) backup in format rclone accepts (e.g., `24h`) |
+| `-f`   | yes       | Max age for full (FULL) backup in format rclone accepts (e.g., `720h`)      |
+
+##### Example
+
+```sh
+export DD_TARGET_DIRECTORY="/data/company_backups"
+export BACKUP_LEVEL="FULL"
+
+./backup-script.sh \
+  -b my-databucket \
+  -c my-cloud-profile \
+  -p "/nightly" \
+  -s 8 \
+  -i 24h \
+  -f 168h
+```
+
+---
+
+## How It Works
+
+1. **Log Rotation:** Maintains up to 5 rotated logs in `/tmp/rclone.log.*` for troubleshooting.
+2. **Parameter Parsing:** Validates and loads supplied cloud bucket, rclone profile, prefix, stream count, and age limits.
+3. **Backup Decision:** Depending on `BACKUP_LEVEL`, the script triggers either a FULL or LOG backup.
+4. **Rclone Backup:** Uses `rclone copy`, limited to files younger than the specified max age, with parallel streams.
+5. **Logging and Exit:** All actions and errors are logged in `/tmp/rclone.log`; the script exits with error on failure.
+
+---
+
+## Troubleshooting & Log Files
+
+- **Log location:** `/tmp/rclone.log` (rotated with timestamps)
+- Only the 5 most recent logs are retained; older logs are deleted automatically.
+
+Check the log for messages like "Backup failed with status..." for details in case of incomplete backups.
+
+---
+
+## Notes & Best Practices
+
+- Ensure both environment variables (`DD_TARGET_DIRECTORY` and `BACKUP_LEVEL`) are set, or the script will exit with an error.
+- `rclone` must be pre-configured for the named `CLOUD_PROFILE`.
+- Set appropriate file ages (`-i`, `-f`) in formats recognized by `rclone` (e.g., `24h`, `7d`, `10m`).
+- Run this script under a user account with read/write rights to both the destination directory and `/tmp`.
+
+---
+
+## License & Author
+
+- © 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
+- Author: Karsten Bott (karsten.bott@dell.com)
+
+# Log script start and environment variables
+log "Script started with arguments: $*"
+log "Entering backup phase..."
+
+# Validate required environment variables
+if [ -z "$BASE_BACKUP_DIR" ]; then
+  log "Error: BASE_BACKUP_DIR is not set."
+  exit 1
+fi
+if [ -z "$BACKUP_LEVEL" ]; then
+  log "Error: BACKUP_LEVEL is not set."
+  exit 1
+fi
+
+# Define rclone command and common options
+COPY_COMMAND="rclone copy"
+COMMON_OPTIONS="--transfers ${STREAMS} --multi-thread-write-buffer-size 512k --multi-thread-streams 1 --stats-log-level NOTICE --stats=10s"
+
+# Perform backup based on the specified BACKUP_LEVEL
+case "$BACKUP_LEVEL" in
+  FULL)
+    log "Starting FULL backup..."
+    $COPY_COMMAND --max-age "${FULL_MAX_AGE}" $COMMON_OPTIONS \
+      "${CLOUD_PROFILE}:${BUCKET}${PREFIX}" "${BASE_BACKUP_DIR}/" >> "$LOG_FILE" 2>&1
+    ;;
+  LOG)
+    log "Starting LOG (incremental) backup..."
+    $COPY_COMMAND --max-age "${INCREMENTAL_MAX_AGE}" $COMMON_OPTIONS \
+      "${CLOUD_PROFILE}:${BUCKET}${PREFIX}" "${BASE_BACKUP_DIR}/" >> "$LOG_FILE" 2>&1
+    ;;
+  *)
+    log "Invalid backup level. Please specify 'FULL' or 'LOG'."
+    exit 1
+    ;;
+esac
+
+# Check the result of the backup operation
+exit_status=$?
+if [ $exit_status -ne 0 ]; then
+  log "Backup failed with status $exit_status."
+  exit 1
+else
+  log "Backup completed successfully."
+  exit 0
+fi
