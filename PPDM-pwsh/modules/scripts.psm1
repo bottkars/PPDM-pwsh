@@ -16,7 +16,8 @@ Sdet a backup Script
 .DESCRIPTION
 Used for Pre, Post and Backup Scripts
 .EXAMPLE
-set-ppdMscripts -scriptfile .\example_scripts\s3_backup_rclone.sh -scriptname "TRANSFER_4_THREAD_512k" -Verbose -Type BACKUP  -AssetSubType GENERIC_RCLONE -OSType LINUX
+set-ppdMscripts -scriptfile .\example_scripts\s3_backup_rclone.sh -scriptname "OBJECT_RCLONE" -Verbose -Type BACKUP  -AssetSubType GENERIC_RCLONE -OSType LINUX
+set-ppdMscripts -scriptfile .\example_scripts\s3_backup_aws_sync.sh -scriptname "OBJECT_AWS" -Verbose -Type BACKUP  -AssetSubType GENERIC_S3 -OSType LINUX
 #>
 function Set-PPDMscripts {
     [CmdletBinding()]
@@ -33,7 +34,11 @@ function Set-PPDMscripts {
             'GENERIC_POSTGRES',
             'GENERIC_MYSQL',
             'GENERIC_S3',
-            'GENERIC_RCLONE'
+            'GENERIC_RCLONE',
+            'GENERIC_PAAS_DATABASE',
+            'GENERIC_MONGO_DATABASE',
+            'GENERIC_REDIS_DATABASE',
+            'GENERIC_MARIA_DATABASE'
         )]
         $AssetSubType,  
         [Parameter(Mandatory = $true, ParameterSetName = 'from_file' )]  
@@ -89,9 +94,9 @@ function Set-PPDMscripts {
             $parameters       = @(
                 @{
                     type        = "STRING"
-                    value       = "/s3"
-                    displayName = "mountpoint"
-                    alias       = "-m"
+                    value       = "MY_BUCKET"
+                    displayName = "BUCKET"
+                    alias       = "-b"
                 }
                 @{
                     type        = "STRING"
@@ -99,9 +104,39 @@ function Set-PPDMscripts {
                     displayName = "PREFIX"
                     alias       = "-p"                    
                 }
+                @{
+                    type        = "STRING"
+                    value       = "awsprofile"
+                    displayName = "CLOUD_PROFILE"
+                    alias       = "-c"                    
+                } 
+                @{
+                    type        = "STRING"
+                    value       = "https://endpoint:9000"
+                    displayName = "ENDPOINT_URL"
+                    alias       = "-e"                    
+                }                   
+                @{
+                    type        = "STRING"
+                    value       = "4"
+                    displayName = "STREAMS"
+                    alias       = "-s"                    
+                }
+                @{
+                    type        = "STRING"
+                    value       = "3"
+                    displayName = "Incremental Max Age in Days"
+                    alias       = "-i"                    
+                } 
+                @{
+                    type        = "STRING"
+                    value       = "9999"
+                    displayName = "Full Max Age in Days"
+                    alias       = "-f"                    
+                }                                                     
             )
-            $body.extendedData.subTypes[0]="GENERIC_POSTGRES"    
-        }
+            $body.extendedData.subTypes[0]="GENERIC_PAAS_DATABASE"
+        } 
         "GENERIC_RCLONE" {
             $parameters       = @(
                 @{
@@ -112,7 +147,7 @@ function Set-PPDMscripts {
                 }
                 @{
                     type        = "STRING"
-                    value       = "/"
+                    value       = "''"
                     displayName = "PREFIX"
                     alias       = "-p"                    
                 }
@@ -141,7 +176,7 @@ function Set-PPDMscripts {
                     alias       = "-f"                    
                 }                                                     
             )
-            $body.extendedData.subTypes[0]="GENERIC_POSTGRES"    
+            $body.extendedData.subTypes[0]="GENERIC_PAAS_DATABASE"
         }        
         "GENERIC_POSTGRES" {
             $parameters       = @(
