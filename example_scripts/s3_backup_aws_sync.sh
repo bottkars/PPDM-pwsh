@@ -55,7 +55,7 @@ fi
 # Perform a full backup
 if [[ "$BACKUP_LEVEL" == "FULL" ]]; then
   COPY_COMMAND="/usr/local/bin/aws s3 sync"
-  $COPY_COMMAND s3://$BUCKET "$BASE_BACKUP_DIR" \
+  $COPY_COMMAND s3://${BUCKET}${PREFIX} "$BASE_BACKUP_DIR" \
     --profile "$CLOUD_PROFILE" \
     --endpoint-url "$ENDPOINT_URL" >> "$LOG_FILE" 2>&1
 

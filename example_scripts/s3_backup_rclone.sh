@@ -9,11 +9,18 @@
 BASE_BACKUP_DIR="${DD_TARGET_DIRECTORY}"
 
 # Define log file path and log rotation settings
-LOG_FILE="/tmp/rclone.log"
-MAX_LOGS=5
-LOG_BASENAME=$(basename "$LOG_FILE")
-LOG_DIR=$(dirname "$LOG_FILE")
+LOG_DIR="/var/log/rclone"
+LOG_FILE="$LOG_DIR/rclone.log"
+MAX_LOG_SIZE=1048576  # 1MB
 
+# Ensure log directory exists
+mkdir -p "$LOG_DIR"
+
+# Rotate log if it exceeds MAX_LOG_SIZE
+if [ -f "$LOG_FILE" ] && [ $(stat -c%s "$LOG_FILE") -ge $MAX_LOG_SIZE ]; then
+  mv "$LOG_FILE" "$LOG_FILE.$(date +%Y%m%d%H%M%S)"
+  touch "$LOG_FILE"
+fi
 # Rotate the current log file if it exists by renaming it with a timestamp
 if [ -f "$LOG_FILE" ]; then
   TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
@@ -30,7 +37,18 @@ find "$LOG_DIR" -name "${LOG_BASENAME}.*" -type f \
 log() {
   echo "$(date '+%Y-%m-%d %H:%M:%S') - $*" >> "$LOG_FILE"
 }
+# Function to calculate timestamp difference
+# This function calculates the difference between the current time and a given timestamp
+# It takes a timestamp as input and outputs the difference in seconds.
+# Usage: timestamp_diff <timestamp>
+timestamp_diff() {
+  local input_timestamp=$1
+  local current_timestamp
+  current_timestamp=$(date +%s)
+  local diff=$((current_timestamp - input_timestamp))
 
+  echo "$diff"
+}
 # Parse command-line options
 while getopts ":b:c:p:s:i:f:" opt; do
   case $opt in
@@ -53,11 +71,11 @@ log "Entering backup phase..."
 
 # Validate required environment variables
 if [ -z "$BASE_BACKUP_DIR" ]; then
-  log "Error: BASE_BACKUP_DIR is not set."
+  log "❌ Error: BASE_BACKUP_DIR is not set."
   exit 1
 fi
 if [ -z "$BACKUP_LEVEL" ]; then
-  log "Error: BACKUP_LEVEL is not set."
+  log "❌ Error: BACKUP_LEVEL is not set."
   exit 1
 fi
 
@@ -73,8 +91,11 @@ case "$BACKUP_LEVEL" in
       "${CLOUD_PROFILE}:${BUCKET}${PREFIX}" "${BASE_BACKUP_DIR}/" >> "$LOG_FILE" 2>&1
     ;;
   LOG)
-    log "Starting LOG (incremental) backup..."
-    $COPY_COMMAND --max-age "${INCREMENTAL_MAX_AGE}" $COMMON_OPTIONS \
+    if [ "$INCREMENTAL_MAX_AGE" = "off" ]; then
+      INCREMENTAL_MAX_AGE=$(timestamp_diff $LAST_BACKUP_TIME)
+    fi
+    log "Starting LOG (incremental) backup...from INCREMENTAL_MAX_AGE: $INCREMENTAL_MAX_AGE"
+    $COPY_COMMAND --max-age "$(timestamp_diff $LAST_BACKUP_TIME)" $COMMON_OPTIONS \
       "${CLOUD_PROFILE}:${BUCKET}${PREFIX}" "${BASE_BACKUP_DIR}/" >> "$LOG_FILE" 2>&1
     ;;
   *)
@@ -86,9 +107,9 @@ esac
 # Check the result of the backup operation
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
-  log "Backup failed with status $exit_status."
+  log "❌ Backup failed with status $exit_status."
   exit 1
 else
-  log "Backup completed successfully."
+  log "✅ Backup completed successfully."
   exit 0
 fi
