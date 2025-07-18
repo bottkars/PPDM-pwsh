@@ -1,5 +1,4 @@
 #!/bin/bash
-
 ###############################################################################
 # Copyright (c) 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 # Author: Karsten.Bott@dell.com
@@ -8,23 +7,21 @@
 # Set the base directory for backups, provided by the agent via environment variable
 BASE_BACKUP_DIR="${DD_TARGET_DIRECTORY}"
 
-# Define log file path and log rotation settings
+# Log configuration
 LOG_DIR="/var/log/rclone"
-LOG_FILE="$LOG_DIR/rclone.log"
+LOG_BASENAME="rclone.log"
+LOG_FILE="${LOG_DIR}/${LOG_BASENAME}"
 MAX_LOG_SIZE=1048576  # 1MB
+MAX_LOGS=5            # Number of rotated logs to keep
 
 # Ensure log directory exists
 mkdir -p "$LOG_DIR"
 
 # Rotate log if it exceeds MAX_LOG_SIZE
 if [ -f "$LOG_FILE" ] && [ $(stat -c%s "$LOG_FILE") -ge $MAX_LOG_SIZE ]; then
-  mv "$LOG_FILE" "$LOG_FILE.$(date +%Y%m%d%H%M%S)"
-  touch "$LOG_FILE"
-fi
-# Rotate the current log file if it exists by renaming it with a timestamp
-if [ -f "$LOG_FILE" ]; then
   TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
   mv "$LOG_FILE" "${LOG_FILE}.${TIMESTAMP}"
+  touch "$LOG_FILE"
 fi
 
 # Keep only the most recent 5 rotated logs, delete older ones
@@ -46,7 +43,6 @@ timestamp_diff() {
   local current_timestamp
   current_timestamp=$(date +%s)
   local diff=$((current_timestamp - input_timestamp))
-
   echo "$diff"
 }
 # Parse command-line options
