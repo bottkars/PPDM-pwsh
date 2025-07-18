@@ -45,7 +45,8 @@ function Get-PPDMcopies {
             'UNITY_NFS', 'UNITY_CIFS', 'POWERSTORE_NFS', 'POWERSTORE_CIFS', 'POWERSCALE_NFS', 'POWERSCALE_CIFS', 'NFS_GENERIC', 'CIFS_GENERIC',
             'CLOUD_NATIVE_ENTITY',
             'POWERSTORE_VOLUMEGROUP', 'POWERSTORE_VOLUME',
-            'CLOUD_DIRECTOR_VAPP'
+            'CLOUD_DIRECTOR_VAPP',
+            'GENERIC_APPLICATION_ASSET' 
         )]$Type,
         [Parameter(Mandatory = $false, ParameterSetName = 'TYPE', ValueFromPipelineByPropertyName = $true)]
         $filter,  
@@ -189,7 +190,81 @@ function Get-PPDMlatest_copies {
 }
 
 
+function Search-PPDMcopies {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [Alias('Id')][string[]]$assetID,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        $filter,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [switch]$latestCopyForAssetOnly,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [switch]$includeDependencies,
+        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
+        [switch]$includeDependants,
+        $PPDM_API_BaseUri = $Global:PPDM_API_BaseUri,
+        $apiver = "/api/v3"
+    )
+    begin {
+        $body = @{}
+        $Response = @()
+        $METHOD = "POST"
+        $Myself = ($MyInvocation.MyCommand.Name.Substring(8) -replace "_", "-").ToLower()
+   
+    }     
+    Process {
+        switch ($PsCmdlet.ParameterSetName) {
+            default {
+                $URI = "/copies-search"
+            }
+        }
+        if ($filter) {
+            $body.Add('filter', 'assetId in ("' + ($assetID -join '","') + '") and ' + $filter)
+        }
+        else {
+            $body.Add('filter', 'assetId in ("' + ($assetID -join '","') + '")')
+        }
+        if ($latestCopyForAssetOnly.IsPresent) {
+            $body.Add('latestCopyForAssetOnly', $latestCopyForAssetOnly.ToString().ToLower())
+        }
+        if ($includeDependencies.IsPresent) {
+            $body.Add('includeDependencies', $includeDependencies.ToString().ToLower())
+        }
+        if ($includeDependants.IsPresent) {
+            $body.Add('includeDependants', $includeDependants.ToString().ToLower())
+        }
+        $body = $body | ConvertTo-Json -Depth 10
 
+        $Parameters = @{
+            RequestMethod    = 'REST'
+            body             = $body
+            Uri              = $URI
+            Method           = $Method
+            PPDM_API_BaseUri = $PPDM_API_BaseUri
+            apiver           = $apiver
+            Verbose          = $PSBoundParameters['Verbose'] -eq $true
+        }
+ 
+        try {
+            $Response += Invoke-PPDMapirequest @Parameters
+        }
+        
+        catch {
+            Get-PPDMWebException  -ExceptionMessage $_
+            break
+        }
+        write-verbose ($response | Out-String)
+    } 
+    end {    
+        switch ($PsCmdlet.ParameterSetName) {
+
+            default {
+                write-output $response.content 
+            } 
+        }   
+    }
+}
 
 function Get-PPDMcopies_query {
     [CmdletBinding()]
@@ -210,7 +285,12 @@ function Get-PPDMcopies_query {
             'CLOUD_NATIVE_ENTITY',
             'POWERSTORE_VOLUMEGROUP', 'POWERSTORE_VOLUME',
             'CLOUD_DIRECTOR_VAPP',
-            'GENERIC_POSTGRES'
+            'GENERIC_POSTGRES',
+            'GENERIC_MYSQL',
+            'GENERIC_PAAS_DATABASE',
+            'GENERIC_MONGO_DATABASE',
+            'GENERIC_REDIS_DATABASE',
+            'GENERIC_MARIA_DATABASE'
         )]$SUBType,
         [Parameter(Mandatory = $false, ParameterSetName = 'Filter', ValueFromPipelineByPropertyName = $true)]
         $filter,
