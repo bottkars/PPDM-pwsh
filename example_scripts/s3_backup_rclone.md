@@ -1,4 +1,4 @@
-# Cloud-to-BoostFS Backup Script, Using Dell PowerProtect DataManager Generic Application Agent
+# Cloud-to-BoostFS Backup Script, Using Dell PowerProtect DataManager Generic Application Agent for PAAS
 
 This script enables automated, robust, and auditable backups from a remote/cloud storage location—accessed via [rclone]—to a Dell PowerProtect DataDomain BoostFS directory.
 It is Orchestrated by Dell PowerProtect Generic Application Agent.   
@@ -28,6 +28,54 @@ It supports both full and incremental (LOG) backup types, with log rotation for 
   - `BACKUP_LEVEL`: Set to `FULL` or `LOG` to control backup type.
 
 ---
+
+### PPDM Generic PAAS Parameters
+```pwsh
+@{
+    type        = "STRING"
+    value       = "MY_BUCKET"
+    displayName = "BUCKET"
+    alias       = "-b"
+}
+@{
+    type        = "STRING"
+    value       = "''"
+    displayName = "PREFIX"
+    alias       = "-p"                    
+}
+@{
+    type        = "STRING"
+    value       = "rclone"
+    displayName = "CLOUD_PROFILE"
+    alias       = "-c"                    
+}   
+@{
+    type        = "STRING"
+    value       = "4"
+    displayName = "STREAMS"
+    alias       = "-s"                    
+}
+@{
+    type        = "STRING"
+    value       = "off"
+    displayName = "Incremental Max Age ms|s|m|h|d|w|M|y (default off)"
+    alias       = "-i"                    
+} 
+@{
+    type        = "STRING"
+    value       = "off"
+    displayName = "Full Max Age ms|s|m|h|d|w|M|y (default off)"
+    alias       = "-f"                    
+}
+@{
+    type        = "BOOLEAN"
+    value       = "false"
+    displayName = "Versioning"
+    alias       = "-v"                    
+}
+```
+
+--- 
 
 ## Usage
 
