@@ -30,50 +30,17 @@ It supports both full and incremental (LOG) backup types, with log rotation for 
 ---
 
 ### PPDM Generic PAAS Parameters
-```pwsh
-@{
-    type        = "STRING"
-    value       = "MY_BUCKET"
-    displayName = "BUCKET"
-    alias       = "-b"
-}
-@{
-    type        = "STRING"
-    value       = "''"
-    displayName = "PREFIX"
-    alias       = "-p"                    
-}
-@{
-    type        = "STRING"
-    value       = "rclone"
-    displayName = "CLOUD_PROFILE"
-    alias       = "-c"                    
-}   
-@{
-    type        = "STRING"
-    value       = "4"
-    displayName = "STREAMS"
-    alias       = "-s"                    
-}
-@{
-    type        = "STRING"
-    value       = "off"
-    displayName = "Incremental Max Age ms|s|m|h|d|w|M|y (default off)"
-    alias       = "-i"                    
-} 
-@{
-    type        = "STRING"
-    value       = "off"
-    displayName = "Full Max Age ms|s|m|h|d|w|M|y (default off)"
-    alias       = "-f"                    
-}
-@{
-    type        = "BOOLEAN"
-    value       = "false"
-    displayName = "Versioning"
-    alias       = "-v"                    
-}
-```
+
+| Display Name                                           | Alias | Type    | Default Value |
+|--------------------------------------------------------|-------|---------|----------------|
+| BUCKET                                                 | -b    | STRING  | MY_BUCKET      |
+| PREFIX                                                 | -p    | STRING  | ''             |
+| CLOUD_PROFILE                                          | -c    | STRING  | rclone         |
+| STREAMS                                                | -s    | STRING  | 4              |
+| Incremental Max Age ms\|s\|m\|h\|d\|w\|M\|y (default off) | -i    | STRING  | off            |
+| Full Max Age ms\|s\|m\|h\|d\|w\|M\|y (default off)       | -f    | STRING  | off            |
+| Versioning                                             | -v    | BOOLEAN | false          |
+
 
 --- 
 
