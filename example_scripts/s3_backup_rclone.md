@@ -56,10 +56,10 @@ It supports both full and incremental (LOG) backup types, with log rotation for 
   -f <FULL_MAX_AGE>
 ```
 
-#### Required Environment Variables
+#### Required Environment Variables, will be provided bei Generic Application Agent
 
 - `DD_TARGET_DIRECTORY`  
-  Path to the local backup directory (e.g., `/mnt/backups`).
+  Path to the local backup directory (e.g., `/mnt/backups`), 
 
 - `BACKUP_LEVEL`  
   Must be set to either `FULL` (complete backup) or `LOG` (incremental backup).
