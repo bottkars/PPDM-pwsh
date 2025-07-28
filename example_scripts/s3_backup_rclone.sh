@@ -2,6 +2,11 @@
 ###############################################################################
 # Copyright (c) 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 # Author: Karsten.Bott@dell.com
+# Date Modified : 2025-07-28
+# Version      : 1.03
+# change log: 2025-07-20 - Initial version
+#              2025-07-26 - Added incremental backup support
+#              2025-07-28- Added support for rclone S3 versioning
 ###############################################################################
 
 # Set the base directory for backups, provided by the agent via environment variable
@@ -46,7 +51,7 @@ timestamp_diff() {
   echo "$diff"
 }
 # Parse command-line options
-while getopts ":b:c:p:s:i:f:" opt; do
+while getopts ":b:c:p:s:i:f:v:" opt; do
   case $opt in
     b) BUCKET="$OPTARG" ;;               # Cloud bucket name
     c) CLOUD_PROFILE="$OPTARG" ;;        # Rclone cloud profile
@@ -54,6 +59,7 @@ while getopts ":b:c:p:s:i:f:" opt; do
     s) STREAMS="$OPTARG" ;;              # Number of parallel transfer streams
     i) INCREMENTAL_MAX_AGE="$OPTARG" ;;  # Max age for incremental backups (in hours)
     f) FULL_MAX_AGE="$OPTARG" ;;         # Max age for full backups (in hours)
+    v) export RCLONE_S3_VERSIONS="$OPTARG" ;; # Enable S3 versioning if -v is specified
     \?)
       log "Invalid option: -$OPTARG"
       exit 1

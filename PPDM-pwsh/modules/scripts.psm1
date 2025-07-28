@@ -133,7 +133,8 @@ function Set-PPDMscripts {
                     value       = "9999"
                     displayName = "Full Max Age in Days"
                     alias       = "-f"                    
-                }                                                     
+                } 
+                                                  
             )
             $body.extendedData.subTypes[0]="GENERIC_PAAS_DATABASE"
         } 
@@ -174,7 +175,13 @@ function Set-PPDMscripts {
                     value       = "off"
                     displayName = "Full Max Age ms|s|m|h|d|w|M|y (default off)"
                     alias       = "-f"                    
-                }                                                     
+                }
+                                @{
+                    type        = "BOOLEAN"
+                    value       = "false"
+                    displayName = "Versioning"
+                    alias       = "-v"                    
+                }                                                        
             )
             $body.extendedData.subTypes[0]="GENERIC_PAAS_DATABASE"
         }        

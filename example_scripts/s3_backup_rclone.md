@@ -59,6 +59,7 @@ It supports both full and incremental (LOG) backup types, with log rotation for 
 | `-s`   | yes       | Number of parallel transfer streams (e.g., `4`)                    |
 | `-i`   | yes       | Max age for incremental (LOG) backup in format rclone accepts (e.g., `24h`) |
 | `-f`   | yes       | Max age for full (FULL) backup in format rclone accepts (e.g., `720h`)      |
+| `-v`   | no        | enable support for vesrioning      |
 
 ##### Example
 
