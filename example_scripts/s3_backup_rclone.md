@@ -145,6 +145,7 @@ COPY_COMMAND="rclone copy"
 COMMON_OPTIONS="--transfers ${STREAMS} --multi-thread-write-buffer-size 512k --multi-thread-streams 1 --stats-log-level NOTICE --stats=10s"
 
 # Perform backup based on the specified BACKUP_LEVEL
+```bash
 case "$BACKUP_LEVEL" in
   FULL)
     log "Starting FULL backup..."
@@ -161,8 +162,9 @@ case "$BACKUP_LEVEL" in
     exit 1
     ;;
 esac
-
+```
 # Check the result of the backup operation
+```bash
 exit_status=$?
 if [ $exit_status -ne 0 ]; then
   log "Backup failed with status $exit_status."
@@ -171,3 +173,4 @@ else
   log "Backup completed successfully."
   exit 0
 fi
+```
