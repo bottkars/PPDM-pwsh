@@ -127,6 +127,7 @@ Check the log for messages like "Backup failed with status..." for details in ca
 - Author: Karsten Bott (karsten.bott@dell.com)
 
 # Log script start and environment variables
+```bash
 log "Script started with arguments: $*"
 log "Entering backup phase..."
 
@@ -139,10 +140,13 @@ if [ -z "$BACKUP_LEVEL" ]; then
   log "Error: BACKUP_LEVEL is not set."
   exit 1
 fi
+```
 
 # Define rclone command and common options
+```bash
 COPY_COMMAND="rclone copy"
 COMMON_OPTIONS="--transfers ${STREAMS} --multi-thread-write-buffer-size 512k --multi-thread-streams 1 --stats-log-level NOTICE --stats=10s"
+```
 
 # Perform backup based on the specified BACKUP_LEVEL
 ```bash
@@ -163,6 +167,7 @@ case "$BACKUP_LEVEL" in
     ;;
 esac
 ```
+
 # Check the result of the backup operation
 ```bash
 exit_status=$?
