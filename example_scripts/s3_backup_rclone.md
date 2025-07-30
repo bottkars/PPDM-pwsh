@@ -157,8 +157,11 @@ case "$BACKUP_LEVEL" in
       "${CLOUD_PROFILE}:${BUCKET}${PREFIX}" "${BASE_BACKUP_DIR}/" >> "$LOG_FILE" 2>&1
     ;;
   LOG)
-    log "Starting LOG (incremental) backup..."
-    $COPY_COMMAND --max-age "${INCREMENTAL_MAX_AGE}" $COMMON_OPTIONS \
+    if [ "$INCREMENTAL_MAX_AGE" = "off" ]; then
+      INCREMENTAL_MAX_AGE=$(timestamp_diff $LAST_BACKUP_TIME)
+    fi
+    log "Starting LOG (incremental) backup...from INCREMENTAL_MAX_AGE: $INCREMENTAL_MAX_AGE"
+    $COPY_COMMAND --max-age "$(timestamp_diff $LAST_BACKUP_TIME)" $COMMON_OPTIONS \
       "${CLOUD_PROFILE}:${BUCKET}${PREFIX}" "${BASE_BACKUP_DIR}/" >> "$LOG_FILE" 2>&1
     ;;
   *)
