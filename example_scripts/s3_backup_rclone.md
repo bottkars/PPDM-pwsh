@@ -126,6 +126,51 @@ Check the log for messages like "Backup failed with status..." for details in ca
 - © 2025 Dell Inc. or its subsidiaries. All Rights Reserved.
 - Author: Karsten Bott (karsten.bott@dell.com)
 
+
+## Script Function Reference
+
+### `log`
+Logs a message with a timestamp to the log file.
+
+**Usage:**
+```bash
+log "Your message here"
+```
+- Prepends the current date and time to the message and appends it to the log file (`$LOG_FILE`).
+- Used throughout the script for consistent, timestamped logging of events and errors.
+
+---
+
+### `timestamp_diff`
+Calculates the difference in seconds between the current time and a given Unix timestamp.
+
+**Usage:**
+```bash
+timestamp_diff <timestamp>
+```
+- `<timestamp>`: A Unix epoch timestamp (seconds since 1970-01-01 00:00:00 UTC).
+- Returns the number of seconds elapsed since the provided timestamp.
+- Useful for determining how much time has passed since a previous event (e.g., last backup).
+
+**Example:**
+If the last backup was at `1722336000` and the current time is `1722343200`:
+```bash
+timestamp_diff 1722336000
+```
+will output `7200` (seconds), which is 2 hours.
+
+---
+
+### `getopts` (used for option parsing)
+Not a custom function, but a built-in Bash utility used to parse command-line options.
+
+- Handles script arguments like `-b`, `-c`, `-p`, `-s`, `-i`, `-f`, and `-v`.
+- Assigns values to variables such as `BUCKET`, `CLOUD_PROFILE`, `PREFIX`, etc., based on user input.
+
+---
+
+**Note:**  
+Other logic in the script (such as log rotation and backup execution) is implemented directly in the main body and not encapsulated in named functions.
 # Log script start and environment variables
 ```bash
 log "Script started with arguments: $*"
