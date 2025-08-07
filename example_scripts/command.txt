@@ -1,0 +1,14 @@
+sudo ddfsrc -h DFA_SI=TRUE \
+  -h DFA_SI_USE_DD=TRUE \
+  -h DFA_SI_DD_HOST=192.168.1.241 \
+   -h DFA_SI_DD_USER=selfservice-ppdm-baremeta-cfdfc \
+    -h DFA_SI_DEVICE_PATH=selfservice-ppdm-baremetal-cfdfc/PLCTLP-84529c4c-8374-4b39-97e7-293878015af7 \
+    -k mount \
+    -c $HOSTNAME \
+    -S 1753962900
+
+
+
+ddfssv -l FULL -a DFA_SI_DD_HOST=192.168.1.241 -a DFA_SI_DD_USER=selfservice-ppdm-baremeta-cfdfc 
+-a DFA_SI_DEVICE_PATH=selfservice-ppdm-baremetal-cfdfc/PLCTLP-84529c4c-8374-4b39-97e7-293878015af7 
+/home
