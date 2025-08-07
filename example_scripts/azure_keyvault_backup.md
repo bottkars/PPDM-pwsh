@@ -144,4 +144,3 @@ MIT License – see script for full terms.
 - Azure Key Vault Documentation
 - Dell PPDM User Guide (Generic Application Protection)
 
----

@@ -138,4 +138,3 @@ MIT License – see script header for full terms.
 - Azure DNS Documentation
 - Dell PPDM User Guide – Generic Application Protection
 
----
