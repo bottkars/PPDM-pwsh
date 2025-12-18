@@ -1226,7 +1226,7 @@ function Restore-PPDMFileFLR_copies {
     $body = @{}
 
     if ($CustomDescription) {
-      $body.Add('description', "File Level Restore of $AssetName, $CustomDescription")  
+      $body.Add('description', "$CustomDescription")  
     }
     else {
       $body.Add('description', "File Level Restore of $AssetName")
@@ -1325,7 +1325,16 @@ $Parameters = @{
   disconnectDatabaseUsers = $true
   restoreType             = "TO_ALTERNATE" 
   CustomDescription       = "Restore from Powershell"
+  fileRelocationOptions   = $fileRelocationOptions 
+  enableCompressedRestore = $true
+  forceDatabaseOverwrite = $false
+  targetNewDatabaseName   = $DestDbName
   Verbose                 = $false
+}
+
+if ($fileRelocationOptions = "CUSTOM_LOCATION") {
+    $Parameters.add('RestoreDataPath',$RestoreDataPath)                            
+    $Parameters.add('RestoreLogPath',$RestoreLogPath)    
 }
 $Restore = Restore-PPDMMSSQL_copies @Parameters
 
@@ -1337,6 +1346,12 @@ function Restore-PPDMMSSQL_copies {
   [CmdletBinding()]
   [Alias('Restore-PPDMDDB_MSSQL')]
   param(
+    [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
+    [string]$targetNewDatabaseName,  
+    [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
+    [string]$RestoreDataPath, 
+    [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
+    [string]$RestoreLogPath, 
     [Parameter(Mandatory = $true, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [alias('assetObject')][psobject]$copyobject,    
     [Parameter(Mandatory = $true, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
@@ -1345,10 +1360,12 @@ function Restore-PPDMMSSQL_copies {
     [string]$appServerID,    
     # [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
     # [Alias('copyIds', 'Id')][string[]]$ids,
-    # [Parameter(Mandatory = $true, ParameterSetName = 'byID', ValueFromPipelineByPropertyName = $true)]
-    # [Alias('name')]$assetName,
+    #[Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
+    #[Alias('name')]$assetName,
     [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [switch]$enableDebug,  
+    [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
+    [switch]$forceDatabaseOverwrite,  
     [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [switch]$performTailLogBackup,  
     [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
@@ -1356,8 +1373,8 @@ function Restore-PPDMMSSQL_copies {
     [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [switch]$disconnectDatabaseUsers, 
     [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
-    [ValidateSet('ORIGINAL_LOCATION')]
-    [string]$fileRelocationOptions = "ORIGINAL_LOCATION",            
+    [ValidateSet('ORIGINAL_LOCATION', 'DEFAULT_LOCATION', 'CUSTOM_LOCATION')]
+    [string]$fileRelocationOptions,            
     [Parameter(Mandatory = $false, ParameterSetName = 'byCopyObjecttoProduction', ValueFromPipelineByPropertyName = $true)]
     [ValidateSet('TO_ALTERNATE')]
     [string]$restoreType = "TO_ALTERNATE",
@@ -1379,7 +1396,7 @@ function Restore-PPDMMSSQL_copies {
     # $response = Invoke-WebRequest -Method $Method -Uri $Global:PPDM_API_BaseUri/api/v0/$Myself -Headers $Global:PPDM_API_Headers
     $URI = "/restored-copies/"
   }     
-  Process {
+ Process {
     switch ($PsCmdlet.ParameterSetName) {
       'byCopyObjecttoProduction' {
         $AssetName = $copyobject.assetName
@@ -1389,9 +1406,10 @@ function Restore-PPDMMSSQL_copies {
         
       }
     }  
+ 
     $body = @{}
     if ($CustomDescription) {
-      $body.Add('description', "Restore to original database $AssetName, $CustomDescription")  
+      $body.Add('description', "$CustomDescription")  
     }
     else {
       $body.Add('description', "Restore to original database $AssetName")
@@ -1403,23 +1421,38 @@ function Restore-PPDMMSSQL_copies {
     $body.restoredCopiesDetails.Add('targetDatabaseInfo', @{})
     $body.restoredCopiesDetails.targetDatabaseInfo.Add('applicationSystemId', $appServerID)
     $body.restoredCopiesDetails.targetDatabaseInfo.Add('hostId', "$HostID")
-    $body.restoredCopiesDetails.targetDatabaseInfo.Add('assetName', $assetName)
+    
     if ($aagRestoreType) {
       $body.restoredCopiesDetails.targetDatabaseInfo.Add('restoreOptions', @{})
       $body.restoredCopiesDetails.targetDatabaseInfo.restoreOptions.Add('aagRestoreType', $aagRestoreType)
     }
     $body.Add('options', @{})
-    $body.options.Add('forceDatabaseOverwrite', $true)
+    $body.options.Add('forceDatabaseOverwrite', $forceDatabaseOverwrite.IsPresent)
     $body.options.Add('enableDebug', $enableDebug.IsPresent) 
     $body.options.Add('recoveryState', "RECOVERY") 
     $body.options.Add('performTailLogBackup', $performTailLogBackup.isPresent) 
     $body.options.Add('enableCompressedRestore', $enableCompressedRestore.IsPresent) 
     $body.options.Add('disconnectDatabaseUsers', $disconnectDatabaseUsers.IsPresent) 
     $body.options.Add('fileRelocationOptions', @{})
+    
+   if ($targetNewDatabaseName) {
+      write-host "Changing DB Name to $targetNewDatabaseName"  
+      $body.restoredCopiesDetails.targetDatabaseInfo.Add('assetName', $targetNewDatabaseName)
+    } else {
+      $body.restoredCopiesDetails.targetDatabaseInfo.Add('assetName', $AssetName)
+    }
 
     switch ($fileRelocationOptions) {
       'ORIGINAL_LOCATION' {
         $body.options.fileRelocationOptions.Add('type', $fileRelocationOptions)
+      }
+      'DEFAULT_LOCATION' {
+        $body.options.fileRelocationOptions.Add('type', $fileRelocationOptions)
+      }
+      'CUSTOM_LOCATION' {
+        $body.options.fileRelocationOptions.Add('type', $fileRelocationOptions)
+        $body.options.fileRelocationOptions.Add('targetDataFileLocation', $RestoreDataPath)
+        $body.options.fileRelocationOptions.Add('targetLogFileLocation', $RestoreLogPath)
       }
     }
     $body = $body | ConvertTo-Json -Depth 7
